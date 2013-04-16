@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="#ffffff" >
+
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NFC 상태  : "/>
+        <Switch 
+            android:id="@+id/nfc_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+        
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/hello"
+        android:textColor="#000000" />
+    
+    <EditText 
+        android:id="@+id/output"
+        android:layout_width="fill_parent"
+        android:layout_height="400dp"
+        android:text="NFC Ndef Message..."
+        android:textColor="#000000"/>
+    
+    <Button 
+        android:id="@+id/nfcwrite"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Go to Write Page"
+        android:textColor="#000000"
+        android:onClick="onClick"/>
+
+</LinearLayout>
