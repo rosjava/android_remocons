@@ -1,3 +1,6 @@
+*~
+.metadata
+.gradle
 # built application files
 *.apk
 *.ap_
@@ -18,3 +21,4 @@ local.properties
 # Eclipse project files
 .classpath
 .project
+build.gradle
