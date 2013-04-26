@@ -1,0 +1,12 @@
+# Name of the app to launch
+string name
+Remapping[] remappings
+---
+# true ifapp started, false otherwise
+bool started
+# classifying start success/failure, see ErrorCodes.msg
+int32 error_code
+# human friendly string for debugging (usually upon error)
+string message
+# Namespace where the app interface can be found
+string app_namespace

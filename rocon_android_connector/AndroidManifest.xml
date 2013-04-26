@@ -15,8 +15,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="org.ros.android.MasterChooser" />
-
-        <service android:name="org.ros.android.NodeMainExecutorService" />
+        <activity android:name="org.ros.android.MasterChooser"></activity>
+        <service android:name="org.ros.android.NodeMainExecutorService"></service>
+        <activity android:name="NfcReaderActivity">
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
+                <data android:mimeType="application/com.exam.nfc"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

@@ -1,0 +1,13 @@
+# Invite the application manager to send (or cancel) the app manager control handles 
+# (/start_app etc) to a remote target. That target is usually the client's gateway name.
+
+string remote_target_name
+
+# Set up the default application namespace - there are typically three optinos here:
+#  - an absolute namespace
+#  - a relative namespace, in which case it will reside underneath the app manager namespace
+#  - unset, in which case it defaults to the relative namespace 'application'
+string application_namespace
+bool cancel
+---
+bool result

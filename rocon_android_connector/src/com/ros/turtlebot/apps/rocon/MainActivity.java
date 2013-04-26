@@ -7,17 +7,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.Toast;
 
-public class MainActivity extends RosActivity
+public class MainActivity extends RosBaseActivity
 {
-    /*protected MainActivity() {
-		super("Rocon Service", "Rocon Service");
-		// TODO Auto-generated constructor stub
-	}*/
-
-	protected MainActivity() {
-		super("Rocon Service", "Rocon Service");
-		// TODO Auto-generated constructor stub
-	}
 
 	/** Called when the activity is first created. */
     @Override
@@ -26,17 +17,5 @@ public class MainActivity extends RosActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
     }
-    
-    @Override
-    public void startMasterChooser() {
-    	// TODO Auto-generated method stub
-    	//super.startMasterChooser();
-    	Toast.makeText(this, "startMasterChooser", Toast.LENGTH_SHORT).show();
-    }
 
-	@Override
-	protected void init(NodeMainExecutor nodeMainExecutor) {
-		// TODO Auto-generated method stub
-		
-	}
 }

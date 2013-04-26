@@ -1,0 +1,16 @@
+# Reset the robot_name configured by the app manager, i.e. 
+# renamespace the app manager's connections. This is typically
+# not necessary as the app manager will just use whatever param
+# is passed in as the robot_name for the namespace. It does get
+# used by later frameworks (e.g. concert) which can pass the 
+# app manager a guaranteed unique name.
+#
+# I might be in favour of dropping this necessity in favour of 
+# more ugly, but less tedious to handle anonymous names. This
+# may in fact become necessary if we go multi-hub (DJS).
+#
+# Will return False if the app manager is busy (running an app)
+
+string name
+---
+bool result

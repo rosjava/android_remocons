@@ -1,0 +1,8 @@
+---
+# true if app stopped, false otherwise
+bool stopped
+# classifying start success/failure, see ErrorCodes.msg
+int32 error_code
+# human friendly string for debugging (usually upon error)
+string message
+
