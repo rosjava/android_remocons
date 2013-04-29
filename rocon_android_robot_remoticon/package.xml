@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<package>
+  <name>rocon_android_robot_remoticon</name>
+  <version>0.1.0</version>
+  <description>The rocon_android_robot_remoticon package</description>
+
+  <!-- One maintainer tag required, multiple allowed, one person per tag -->
+  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
+  <maintainer email="snorri@todo.todo">snorri</maintainer>
+
+
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>BSD</license>
+
+
+  <!-- Url tags are optional, but mutiple are allowed, one per tag -->
+  <url type="website">http://ros.org/wiki/rocon_android_robot_remoticon</url>
+  <!-- <url type="repository">https://github.com/ros-java/android_honeycomb</url> -->
+  <!-- <url type="bugtracker">https://github.com/ros-java/android_honeycomb/issues</url> -->
+
+
+  <!-- Author tags are optional, multiple are allowed, one per tag -->
+  <!-- Example: -->
+  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <author >Daniel Stonier</author>
+
+
+  <!-- The rosjava_tool depends is for cmake injection of catkin_android_setup -->
+  <!-- Other build_depend tags are used to specify android library dependencies -->
+  <!-- e.g. android_gingerbread, android_honeycomb -->
+  <!-- No run_depend tags are necessary since we download to the device -->
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rocon_android_application_management</build_depend>
+  <build_depend>rosjava_tools</build_depend>
+
+
+  <!-- The export tag specifies if this is a android project or android library project -->
+  <export>
+    <android type="project"/>
+
+  </export>
+</package>
