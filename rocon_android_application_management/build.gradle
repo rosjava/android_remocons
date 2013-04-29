@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Daniel Stonier
+ * Copyright (C) 2013 Daniel Stonier.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,5 +14,11 @@
  * the License.
  */
 
-include 'rocon_android_connector'
-include 'rocon_android_application_management'
+/*
+ * External android dependencies are handled by catkin
+ * and listed in project.properties. Only include here what
+ * it depends on from this repo.
+ */
+dependencies {
+  /* debug.dependsOn project(':android_apps_core_components').tasks.debug */
+}
