@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">RobotRemoticon</string>
+    <string name="app_name">Robot Remoticon</string>
     <string name="stop_app">Kill</string>
     <string name="default_robot">turtlebot</string>
 

@@ -64,7 +64,7 @@ public class RobotsContentProvider extends ContentProvider {
     }
   }
 
-  public static final Uri CONTENT_URI = Uri.parse("content://org.ros.android.apps.core_components");
+  public static final Uri CONTENT_URI = Uri.parse("content://org.rocon.android.apps.application_management");
   private static final int DATABASE_VERSION = 2;
   private static final String DATABASE_NAME = "robotlist_table";
   private static final String TABLE_NAME = "robotlist";

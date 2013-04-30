@@ -12,13 +12,28 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
+    <application android:label="@string/app_name" android:icon="@drawable/icon">
+        <provider
+            android:name="org.rocon.android.apps.application_management.RobotsContentProvider"
+            android:authorities="org.rocon.android.apps.application_management" 
+        />
         <activity android:name="RobotRemoticon"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:screenOrientation="portrait"
+                  >
+            <intent-filter>
+                <action android:name="org.rocon.android.apps.robot_remoticon.RobotRemoticon" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="org.rocon.android.apps.robot_remoticon.RobotMasterChooser" />
+        <activity android:name="org.ros.android.MasterChooser" />
+
+        <service android:name="AppLauncher" />
+        <service android:name="org.ros.android.NodeMainExecutorService" />
     </application>
 </manifest>

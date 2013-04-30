@@ -49,7 +49,7 @@ import app_manager.StopAppResponse;
  */
 public abstract class RosAppActivity extends RosActivity {
 
-	public static final String ROBOT_DESCRIPTION_EXTRA = "org.ros.android.apps.core_components.RobotDescription";
+	public static final String ROBOT_DESCRIPTION_EXTRA = "org.rocon.android.apps.application_management.RobotDescription";
 	private String robotAppName = null;
 	private String defaultAppName = null;
 	private String defaultRobotName = null;
