@@ -1,5 +1,6 @@
 package com.ros.turtlebot.apps.rocon;
 
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -9,9 +10,12 @@ import java.util.List;
 
 import org.ros.exception.RosRuntimeException;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.util.Log;
 
 import com.google.common.collect.Lists;
 
@@ -105,6 +109,26 @@ public class Util {
 		    }
 	    	
 	    	return null ;
+	    }
+	    
+	    @SuppressLint("NewApi")
+		public static String getAndroidVersionName() {
+	    	String name = "";
+	    	int version = -1 ;
+	    	for(Field field : Build.VERSION_CODES.class.getFields()) {
+	    		try {
+					version = field.getInt(new Object());
+				} catch (IllegalArgumentException e) { e.printStackTrace(); } 
+	    		catch (IllegalAccessException e) {	e.printStackTrace(); }
+	    		
+	    		if(version == Build.VERSION.SDK_INT) {
+	    			name = field.getName() ;
+	    			Log.d("Util", "Android Version Name = " + name);
+	    			return name ; 			
+	    		}
+	    	}
+	    	Log.d("Util", "Cannot find Android Version Name");
+	    	return name ;
 	    }
 		
 		

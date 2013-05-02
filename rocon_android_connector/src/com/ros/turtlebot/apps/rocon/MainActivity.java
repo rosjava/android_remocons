@@ -122,8 +122,6 @@ public class MainActivity extends Activity
 		super.onPause();
 		if(wifiFilter != null)
     		unregisterReceiver(wifiEventReceiver);
-		
-		finish();
 	}
 	
 	
@@ -148,6 +146,7 @@ public class MainActivity extends Activity
 	public void onClick(View v) {
 		switch(v.getId()) {
 			case R.id.start_rocon :
+			{
 				nfc_table = editTable.getText().toString() ;
 			    nfc_weblink = editWebLink.getText().toString() ;
 			    nfc_ssid = editSsid.getText().toString() ;
@@ -169,7 +168,10 @@ public class MainActivity extends Activity
 				
 				wifiConnect() ;
 				startActivity(rocon_intent);
-				break ;
+
+				finish();
+			}
+			break ;
 		}
 	}
 	

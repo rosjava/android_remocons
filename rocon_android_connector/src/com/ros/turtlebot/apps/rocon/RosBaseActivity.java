@@ -67,7 +67,6 @@ public abstract class RosBaseActivity extends RosActivity {
 	public RosBaseActivity() {
 		super("Rocon Service", "Rocon Service");
 		// TODO Auto-generated constructor stub
-		Log.d("RosBaseActivity", "RosBaseActivity");
 	}
 	
 	@SuppressLint("NewApi")
@@ -79,8 +78,8 @@ public abstract class RosBaseActivity extends RosActivity {
 		appName = "android" ;
 		platform = "android" ;
 		nodeName = appName + java.util.UUID.randomUUID().toString().replace("-", "") ; 
-		deviceName = android.os.Build.MODEL ;
-		versionName = android.os.Build.DISPLAY ;
+		deviceName = android.os.Build.MODEL.replace(" ", "_").replace(".", "_") ;
+		versionName = Util.getAndroidVersionName().replace(" ", "_").replace(".", "_");
 		appStatus = Constants.APP_STOPPED ;
 	}
 	
