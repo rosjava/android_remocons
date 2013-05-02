@@ -26,6 +26,8 @@ public class WiFiFunActivity extends Activity {
 	List<ScanResult> scanResults ;
 	List<WifiConfiguration> configs ;
 	
+	boolean connecting = false ;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,17 @@ public class WiFiFunActivity extends Activity {
         UpdateWifiStatus(wifiManager.getWifiState());
         
         getConfiguredNetworks() ;
+        
+        editSSID.setText("DesertStorm5");
+        editPassword.setText("yujinguest");
+        
+      //** Step 2. Enable wifi if it's disabled
+    	if(!wifiManager.isWifiEnabled())
+    		wifiManager.setWifiEnabled(true);
+    	
+    	//** Step 3. Get wifi configured networks and start scan access points.
+    	wifiManager.startScan();
+    	configs = wifiManager.getConfiguredNetworks();
     }
     
     public void onClick(View v){
@@ -126,6 +139,10 @@ public class WiFiFunActivity extends Activity {
 					Log.d("MyBroadcastReceiver", result.SSID);
 					editAPList.append(result.toString() + "\n\n");
 				}
+				if(connecting == false) {
+					connecting = true ;
+					wifiConnect() ;
+				}
 			}
 		}
 	};
@@ -193,7 +210,7 @@ public class WiFiFunActivity extends Activity {
 			if(wifiManager.enableNetwork(newId, true)) {
 				Log.e("connect", "NewID = " + newId + " Success enableNetwork()");
 				Toast.makeText(this, "Trying to connect to " + config.SSID, Toast.LENGTH_SHORT).show();
-				wifiManager.saveConfiguration();
+				//wifiManager.saveConfiguration();
 			}
 			else {
 				Log.e("connect", "Fail enableNetwork()");
