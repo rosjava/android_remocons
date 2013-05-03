@@ -62,10 +62,10 @@
     <LinearLayout 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_margin="5dp">
 	    <TextView 
-	        android:layout_width="wrap_content"
+	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:text="4. Master URI : "
 	        android:textColor="#000000"/>
@@ -80,10 +80,10 @@
     <LinearLayout 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_margin="5dp">
 	    <TextView 
-	        android:layout_width="wrap_content"
+	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
 	        android:text="5. Cafe Link : "
 	        android:textColor="#000000"/>

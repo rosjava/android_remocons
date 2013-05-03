@@ -22,6 +22,7 @@ import android.net.wifi.WifiManager;
 import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +33,7 @@ public class NfcReaderActivity extends Activity {
 	IntentFilter wifiFilter = null ;
 	List<ScanResult> scanResults ;
 	List<WifiConfiguration> configs ;
+	Vibrator vibrator = null ;
 	
 	boolean connecting = false ;
 	
@@ -51,6 +53,9 @@ public class NfcReaderActivity extends Activity {
 	    wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 	    wifiFilter = new IntentFilter();
 	    wifiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+
+		vibrator.vibrate(500);
         
 	    Intent intent = getIntent();
 	    String action = intent.getAction();

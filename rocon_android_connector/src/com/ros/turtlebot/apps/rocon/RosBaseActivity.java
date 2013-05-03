@@ -19,6 +19,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import rocon_app_manager_msgs.AppDescription;
 import rocon_app_manager_msgs.Constants;
@@ -41,6 +42,8 @@ public abstract class RosBaseActivity extends RosActivity {
 	private NodeConfiguration nodeConfiguration;
 	private NodeMainExecutor nodeMainExecutor;
 	
+	protected TextView txtInformation = null ;
+	
 	// ROS service Info.
 	protected String appName = "" ;
 	protected String nodeName = "" ;
@@ -58,6 +61,7 @@ public abstract class RosBaseActivity extends RosActivity {
 	protected String nfc_masteruri = "";
 	protected String nfc_weblink = "";
 
+	// ROS nodes
 	RoconAppManager platformInfo_manager = null ;
 	RoconAppManager appList_manager = null ;
 	RoconAppManager invite_manager = null ;
@@ -225,6 +229,8 @@ public abstract class RosBaseActivity extends RosActivity {
 	    		//Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://dorothyweb.businesscatalyst.com/main.html"));
 	    		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(app_uri));
 	    		startActivity(intent);
+	    		
+	    		txtInformation.setText("감사합니다.");
 	    		
 	    		//** Change application status
 	    		appStatus = Constants.APP_RUNNING ;

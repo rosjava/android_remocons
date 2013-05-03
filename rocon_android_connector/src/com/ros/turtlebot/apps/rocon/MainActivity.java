@@ -32,6 +32,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -64,6 +65,7 @@ public class MainActivity extends Activity
 	EditText editPassword = null ;
 	EditText editMasterUri = null ;
 	EditText editWebLink = null ;
+	
 
 	/** Called when the activity is first created. */
     @Override
@@ -134,7 +136,6 @@ public class MainActivity extends Activity
 			if(intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
 				//** Step 4.
 				scanResults = wifiManager.getScanResults();
-				
 				/*if(connecting == false) {
 					connecting = true ;
 					wifiConnect() ;
@@ -168,7 +169,7 @@ public class MainActivity extends Activity
 				
 				wifiConnect() ;
 				startActivity(rocon_intent);
-
+	
 				finish();
 			}
 			break ;

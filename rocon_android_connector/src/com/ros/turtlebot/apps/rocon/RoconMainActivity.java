@@ -4,13 +4,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class RoconMainActivity extends RosBaseActivity {
 
+	TextView txtVersion = null ;
+	PowerManager.WakeLock wakeLock = null ;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -18,8 +25,15 @@ public class RoconMainActivity extends RosBaseActivity {
 	    setContentView(R.layout.nfc_reader);
 	
 	    // TODO Auto-generated method stub
-	    Intent intent = getIntent();
+	    PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+	    wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK, "ROCON");
+	    wakeLock.acquire();
 	    
+	    txtInformation = (TextView) findViewById(R.id.INFORMATION);
+	    txtVersion = (TextView) findViewById(R.id.VERSION);
+	    
+	    txtVersion.setText("버전:" + R.string.Version + "/릴리즈:" + R.string.ReleaseDate);
+	    Intent intent = getIntent();
 	    nfc_table = intent.getStringExtra("table");
 	    nfc_weblink = intent.getStringExtra("weblink");
 	    nfc_masteruri = intent.getStringExtra("masteruri");
@@ -47,6 +61,13 @@ public class RoconMainActivity extends RosBaseActivity {
              return null;
            }
          }.execute();
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		wakeLock.release();
 	}
 
 }
