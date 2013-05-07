@@ -31,7 +31,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.rocon.android.apps.robot_remoticon;
+package org.rocon.android.apps.robot_remoticon.hydro;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
