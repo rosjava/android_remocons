@@ -24,7 +24,4 @@
   <build_depend>android_barcode_scanner</build_depend>
   <build_depend>android_gingerbread</build_depend>
 
-  <export>
-    <android type="project"/>
-  </export>
 </package>
