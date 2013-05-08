@@ -5,8 +5,6 @@ import org.ros.namespace.NameResolver;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 
-import android.util.Log;
-
 public class RobotNameResolver extends AbstractNodeMain {
 
 	private RobotDescription currentRobot;

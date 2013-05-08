@@ -37,7 +37,6 @@ import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
 import org.ros.node.Node;
 import org.ros.node.NodeMain;
-import org.ros.node.parameter.ParameterTree;
 
 import android.app.Activity;
 import android.content.Context;

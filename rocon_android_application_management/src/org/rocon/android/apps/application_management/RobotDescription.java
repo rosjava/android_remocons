@@ -34,6 +34,8 @@
 package org.rocon.android.apps.application_management;
 
 import java.util.Date;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class RobotDescription implements java.io.Serializable {
         public static final String CONNECTING = "connecting...";
@@ -82,6 +84,39 @@ public class RobotDescription implements java.io.Serializable {
         public String getRobotName() {
                 return robotName;
         }
+        /** Provide a human-friendly interpretation of the robot name
+         * 
+         * Often we use robot names with a uuid suffix to ensure the robot
+         * name in a multi-robot group is unique. This checks for the
+         * suffix and if found, strips it.
+         * 
+         * It also converts '_'s to spaces and first character of each word
+         * to uppercase.
+         * 
+         * @return human friendly string name
+         */
+        public String getRobotFriendlyName() {
+        	String friendlyName = robotName;
+        	// The uuid is a 16 byte hash in hex format = 32 characters
+        	if (robotName.length() > 32) {
+	        	String possibleUuidPart = robotName.substring(robotName.length() - 32);
+	        	Pattern p = Pattern.compile("[^a-f0-9]");
+	        	Matcher m = p.matcher(possibleUuidPart);
+	        	if (!m.find()) { 
+	        		friendlyName = robotName.substring(0, robotName.length() - 32);
+	        	}
+        	}
+        	friendlyName = friendlyName.replace('_',' ');
+        	final StringBuilder result = new StringBuilder(friendlyName.length());
+        	String[] words = friendlyName.split("\\s");
+        	for(int i=0, l=words.length; i<l; ++i) {
+        	  if(i > 0) result.append(" ");      
+        	  result.append(Character.toUpperCase(words[i].charAt(0)))
+        	        .append(words[i].substring(1));
+        	}
+      		return result.toString();
+        }
+
         public void setRobotName(String robotName) {
                 // TODO: GraphName validation was removed. What replaced it?
                 // if (!GraphName.validate(robotName)) {
