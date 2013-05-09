@@ -74,7 +74,7 @@ import org.rocon.android.apps.application_management.WifiChecker;
 
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
-import app_manager.ListAppsResponse;
+import rocon_app_manager_msgs.GetAppListResponse;
 import app_manager.StartAppResponse;
 import app_manager.StatusCodes;
 import app_manager.StopAppResponse;
@@ -548,18 +548,18 @@ public class RobotRemoticon extends RosAppActivity {
 						for (i = 0; i < availableAppsCache.size(); i++) {
 							App item = availableAppsCache.get(i);
 							ArrayList<String> clients = new ArrayList<String>();
-							for (int j = 0; j < item.getClientApps().size(); j++) {
+							for (int j = 0; j < item.getPairingApps().size(); j++) {
 
-								clients.add(item.getClientApps().get(j)
+								clients.add(item.getPairingApps().get(j)
 										.getClientType());
 							}
 
 							if (!clients.contains("android")
-									&& item.getClientApps().size() != 0) {
+									&& item.getPairingApps().size() != 0) {
 								availableAppsCache.remove(i);
 							}
 
-							if (item.getClientApps().size() == 0) {
+							if (item.getPairingApps().size() == 0) {
 								Log.i("RobotRemoticon",
 										"Item name: " + item.getName());
 								runningAppsNames.add(item.getName());
@@ -641,10 +641,9 @@ public class RobotRemoticon extends RosAppActivity {
 		Log.i("RosAndroid", "listing application");
 		AppManager appManager = new AppManager("", getRobotNameSpace());
 		appManager.setFunction("list");
-		appManager
-				.setListService(new ServiceResponseListener<ListAppsResponse>() {
+		appManager.setListService(new ServiceResponseListener<GetAppListResponse>() {
 					@Override
-					public void onSuccess(ListAppsResponse message) {
+					public void onSuccess(GetAppListResponse message) {
 						Log.i("RosAndroid", "App got lists successfully");
 						availableAppsCache = (ArrayList<App>) message
 								.getAvailableApps();
@@ -655,17 +654,17 @@ public class RobotRemoticon extends RosAppActivity {
 						for (i = 0; i < availableAppsCache.size(); i++) {
 							App item = availableAppsCache.get(i);
 							ArrayList<String> clients = new ArrayList<String>();
-							for (int j = 0; j < item.getClientApps().size(); j++) {
-								clients.add(item.getClientApps().get(j)
+							for (int j = 0; j < item.getPairingApps().size(); j++) {
+								clients.add(item.getPairingApps().get(j)
 										.getClientType());
 							}
 							if (!clients.contains("android")
-									&& item.getClientApps().size() != 0) {
+									&& item.getPairingApps().size() != 0) {
 								availableAppsCache.remove(i);
 								i--;
 							}
 
-							if (item.getClientApps().size() == 0) {
+							if (item.getPairingApps().size() == 0) {
 								Log.i("RobotRemoticon",
 										"Item name: " + item.getName());
 								runningAppsNames.add(item.getName());

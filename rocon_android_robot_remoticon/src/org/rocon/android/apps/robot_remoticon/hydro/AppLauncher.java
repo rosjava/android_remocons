@@ -49,7 +49,7 @@ import org.rocon.android.apps.application_management.RobotDescription;
 import org.rocon.android.apps.application_management.RosAppActivity;
 import org.ros.namespace.NameResolver;
 
-import app_manager.ClientApp;
+import rocon_app_manager_msgs.PairingApp;
 
 public class AppLauncher {
   static private final String CLIENT_TYPE = "android";
@@ -57,30 +57,30 @@ public class AppLauncher {
 
 
   /** Launch a client app for the given robot app. */
-  static public boolean launch(final RosAppActivity parentActivity, app_manager.App app, URI uri,RobotDescription currentRobot,boolean runningNodes) {
+  static public boolean launch(final RosAppActivity parentActivity, rocon_app_manager_msgs.App app, URI uri,RobotDescription currentRobot,boolean runningNodes) {
     ArrayList<ClientAppData> android_apps = new ArrayList<ClientAppData>();
 
     
     if (parentActivity instanceof RobotRemoticon) {
-      ((RobotRemoticon)parentActivity).onAppClicked(app, app.getClientApps().size() > 0);
+      ((RobotRemoticon)parentActivity).onAppClicked(app, app.getPairingApps().size() > 0);
     } else {
       Log.i("RosAndroid", "Could not launch becase parent is not an appchooser");
-      if (app.getClientApps().size() == 0) {
+      if (app.getPairingApps().size() == 0) {
         Log.e("RosAndroid", "Not launching application!!!");
         return false;
       }
     }
 
-    if (app.getClientApps().size() == 0) {
+    if (app.getPairingApps().size() == 0) {
       return false;
     }
     
-    Log.i("RosAndroid", "launching robot app " + app.getName() + ". Found " + app.getClientApps().size()
+    Log.i("RosAndroid", "launching robot app " + app.getName() + ". Found " + app.getPairingApps().size()
         + " client apps.");
 
     // Loop over all possible client apps to find the android ones.
-    for (int i = 0; i < app.getClientApps().size(); i++) {
-      ClientApp client_app = app.getClientApps().get(i);
+    for (int i = 0; i < app.getPairingApps().size(); i++) {
+      PairingApp client_app = app.getPairingApps().get(i);
       if (client_app.getClientType() != null && client_app.getClientType().equals(CLIENT_TYPE)) {
      ClientAppData data = new ClientAppData(client_app);
      android_apps.add(data);
