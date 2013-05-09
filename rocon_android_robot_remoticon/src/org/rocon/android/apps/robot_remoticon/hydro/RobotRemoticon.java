@@ -72,8 +72,8 @@ import org.rocon.android.apps.application_management.RosAppActivity;
 import org.rocon.android.apps.application_management.RobotDescription;
 import org.rocon.android.apps.application_management.WifiChecker;
 
-import app_manager.App;
-import app_manager.AppList;
+import rocon_app_manager_msgs.App;
+import rocon_app_manager_msgs.AppList;
 import app_manager.ListAppsResponse;
 import app_manager.StartAppResponse;
 import app_manager.StatusCodes;
@@ -541,10 +541,8 @@ public class RobotRemoticon extends RosAppActivity {
 				appManager.addAppListCallback(new MessageListener<AppList>() {
 					@Override
 					public void onNewMessage(AppList message) {
-						availableAppsCache = (ArrayList<App>) message
-								.getAvailableApps();
-						runningAppsCache = (ArrayList<App>) message
-								.getRunningApps();
+						availableAppsCache = (ArrayList<App>) message.getAvailableApps();
+						runningAppsCache = (ArrayList<App>) message.getRunningApps();
 						ArrayList<String> runningAppsNames = new ArrayList<String>();
 						int i = 0;
 						for (i = 0; i < availableAppsCache.size(); i++) {

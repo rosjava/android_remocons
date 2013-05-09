@@ -55,7 +55,7 @@ public class Dashboard implements NodeMain {
 		public void onShutdown(Node node);
 	}
 
-	private static final String turtlebotDashboardPath = "com.ros.turtlebot.apps.core_components.TurtlebotDashboard";
+	private static final String turtlebotDashboardPath = "org.ros.android.turtlebot.apps.core_components.TurtlebotDashboard";
 	private static final String pr2DashboardPath = "com.ros.pr2.apps.core_components.Pr2Dashboard";
 
 	private DashboardInterface dashboard;
@@ -96,8 +96,7 @@ public class Dashboard implements NodeMain {
 		args[0] = context;
 		try {
 			Class contextClass = Class.forName("android.content.Context");
-			result = (DashboardInterface) dashClass
-					.getConstructor(contextClass).newInstance(args);
+			result = (DashboardInterface) dashClass.getConstructor(contextClass).newInstance(args);
 		} catch (Exception ex) {
 			Log.e("Dashboard", "Error during dashboard instantiation:", ex);
 			result = null;

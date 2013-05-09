@@ -32,7 +32,7 @@ import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 
-import app_manager.AppList;
+import rocon_app_manager_msgs.AppList;
 import app_manager.ListApps;
 import app_manager.ListAppsRequest;
 import app_manager.ListAppsResponse;
