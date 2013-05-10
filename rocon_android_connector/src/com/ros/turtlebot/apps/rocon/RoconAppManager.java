@@ -29,6 +29,8 @@ public class RoconAppManager extends AbstractNodeMain {
 	private String actionName = "" ;
 	private String serviceName = "";
 	
+	private RosBaseActivity parent = null ;
+	
 
 	public RoconAppManager(String nodeName, String actionName) {
 		this.nodeName = nodeName ;
@@ -66,6 +68,7 @@ public class RoconAppManager extends AbstractNodeMain {
 			connectedNode.newServiceServer (serviceName, GetPlatformInfo._TYPE, platformInfoResponseBuilder) ;
 		else
 			Log.e("RoconAppManager", "onStartPlatformInfo()-connectedNode is null");
+		
 	}
 	
 	private void onStartAppList() {
@@ -75,6 +78,7 @@ public class RoconAppManager extends AbstractNodeMain {
 			connectedNode.newServiceServer(serviceName, GetAppList._TYPE, appListResponseBuilder) ;
 		else
 			Log.e("RoconAppManager", "onStartAppList()-connectedNode is null");
+		
 	}
 	
 	private void onStartStatus() {
@@ -84,6 +88,7 @@ public class RoconAppManager extends AbstractNodeMain {
 			connectedNode.newServiceServer(serviceName, Status._TYPE, statusResponseBuilder) ;
 		else
 			Log.e("RoconAppManager", "onStartStatus()-connectedNode is null");
+		
 	}
 	
 	private void onStartInvite() {
@@ -93,6 +98,7 @@ public class RoconAppManager extends AbstractNodeMain {
 			connectedNode.newServiceServer(serviceName, Invite._TYPE, inviteResponseBuilder) ;
 		else
 			Log.e("RoconAppManager", "onStartInvite()-connectedNode is null");
+		parent.onServerConnected(ACTION_INVITE);
 	}
 	
 	private void onStartApp() {
@@ -102,6 +108,7 @@ public class RoconAppManager extends AbstractNodeMain {
 			connectedNode.newServiceServer(serviceName, StartApp._TYPE, startAppResponseBuilder) ;
 		else
 			Log.e("RoconAppManager", "onStartApp()-connectedNode is null");
+		
 	}
 	
 	
@@ -146,5 +153,8 @@ public class RoconAppManager extends AbstractNodeMain {
 		return this.connectedNode ;
 	}
 	
+	public void setParent(RosBaseActivity parent) {
+		this.parent = parent ;
+	}
 
 }

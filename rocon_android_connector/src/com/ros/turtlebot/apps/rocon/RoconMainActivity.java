@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 public class RoconMainActivity extends RosBaseActivity {
 
-	TextView txtVersion = null ;
 	PowerManager.WakeLock wakeLock = null ;
 	
 	/** Called when the activity is first created. */
@@ -30,9 +29,7 @@ public class RoconMainActivity extends RosBaseActivity {
 	    wakeLock.acquire();
 	    
 	    txtInformation = (TextView) findViewById(R.id.INFORMATION);
-	    txtVersion = (TextView) findViewById(R.id.VERSION);
 	    
-	    txtVersion.setText("버전:" + R.string.Version + "/릴리즈:" + R.string.ReleaseDate);
 	    Intent intent = getIntent();
 	    nfc_table = intent.getStringExtra("table");
 	    nfc_weblink = intent.getStringExtra("weblink");
@@ -66,8 +63,8 @@ public class RoconMainActivity extends RosBaseActivity {
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-		super.onDestroy();
 		wakeLock.release();
+		super.onDestroy();
 	}
-
+	
 }

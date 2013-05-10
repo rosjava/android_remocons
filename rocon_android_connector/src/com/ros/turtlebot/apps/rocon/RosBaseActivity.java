@@ -1,5 +1,7 @@
 package com.ros.turtlebot.apps.rocon;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,8 +20,11 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import rocon_app_manager_msgs.AppDescription;
 import rocon_app_manager_msgs.Constants;
@@ -94,6 +99,40 @@ public abstract class RosBaseActivity extends RosActivity {
 		
 		appStatus = Constants.APP_STOPPED ;
 	}
+	
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		Log.d("RosBaseActivity", "onPause()");
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		Log.d("RosBaseActivity", "onDestroy()");
+		super.onDestroy();		
+		
+		// forcibly kill myself
+		System.runFinalizersOnExit(true);
+		System.exit(0);
+		
+	}
+	
+	public void onServerConnected(String action) {
+		Log.d("RosBaseActivity", "onServerConnected()-" + action) ;
+		if(action.equals(RoconAppManager.ACTION_INVITE)) {
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					txtInformation.setText("주문 페이지로 이동중입니다");	
+				}
+			}) ;
+		}
+	}
+	
 
 	@Override
 	protected void init(NodeMainExecutor nodeMainExecutor) {
@@ -104,16 +143,20 @@ public abstract class RosBaseActivity extends RosActivity {
 		this.nodeConfiguration = NodeConfiguration.newPublic(Util.getWifiAddress(wifiManager, 2000), getMasterUri());
 		
 		platformInfo_manager = new RoconAppManager(nodeName, RoconAppManager.ACTION_PLATFORMINFO);
+		platformInfo_manager.setParent(this);
 		init_PlatformInfo() ;
 		
 		appList_manager = new RoconAppManager(nodeName, RoconAppManager.ACTION_APPLIST) ;
+		appList_manager.setParent(this);
 		init_AppList() ;
-		
-		invite_manager = new RoconAppManager(nodeName, RoconAppManager.ACTION_INVITE) ;
-		init_Invite() ;
-		
+				
 		status_manager =  new RoconAppManager(nodeName, RoconAppManager.ACTION_STATUS) ;
+		status_manager.setParent(this);
 		init_Status() ;
+
+		invite_manager = new RoconAppManager(nodeName, RoconAppManager.ACTION_INVITE) ;
+		invite_manager.setParent(this);
+		init_Invite() ;
 		
 		//** Register 'start_app' service after receiving invite request
 		//startApp_manager = new RoconAppManager(nodeName, RoconAppManager.ACTION_STARTAPP) ;
@@ -214,26 +257,44 @@ public abstract class RosBaseActivity extends RosActivity {
 			public void build(StartAppRequest request, StartAppResponse response)
 					throws ServiceException {
 				// TODO Auto-generated method stub
-				
-				String application_name = request.getName() ;
-				List<rocon_app_manager_msgs.Remapping> list_remapping = request.getRemappings() ;
-				// -----
-				response.setAppNamespace(applicationNameSpace);
-				response.setMessage("message");
-				response.setStarted(true);
-				response.setErrorCode(ErrorCodes.SUCCESS);
-				
-				//** Execute application (in this case, internet browser and web-page)
-				String app_uri = nfc_weblink + "?tableid=" + nfc_table + "&ssid=" + nfc_ssid + "&password=" + nfc_password + "&concertaddress=" + getMasterUri().getHost() ;
-	    		
-	    		//Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://dorothyweb.businesscatalyst.com/main.html"));
-	    		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(app_uri));
-	    		startActivity(intent);
-	    		
-	    		txtInformation.setText("감사합니다.");
-	    		
-	    		//** Change application status
-	    		appStatus = Constants.APP_RUNNING ;
+				try {
+										
+					String application_name = request.getName() ;
+					List<rocon_app_manager_msgs.Remapping> list_remapping = request.getRemappings() ;
+					// -----
+					response.setAppNamespace(applicationNameSpace);
+					response.setMessage("message");
+					response.setStarted(true);
+					response.setErrorCode(ErrorCodes.SUCCESS);
+					
+					//** Execute application (in this case, internet browser and web-page)
+					String app_uri = nfc_weblink + "?tableid=" + nfc_table + "&ssid=" + nfc_ssid + "&password=" + nfc_password + "&concertaddress=" + getMasterUri().getHost() ;
+					
+		    		Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(app_uri));
+		    		startActivity(intent);
+		    		
+		    		runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							txtInformation.setText("감사합니다");
+						}
+					});
+		    		
+		    		//** Change application status
+		    		appStatus = Constants.APP_RUNNING ;
+
+				} catch(Exception e) {
+					e.printStackTrace();
+					runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							// TODO Auto-generated method stub
+							Toast.makeText(getApplicationContext(),"Exception occurred - StartApp", Toast.LENGTH_LONG).show();
+						}
+					});
+					
+				}
 			}
 		}) ;
 		

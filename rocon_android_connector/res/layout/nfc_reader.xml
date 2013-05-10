@@ -13,10 +13,11 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_centerHorizontal="true"
-	        android:layout_centerVertical="true"
-	        android:textSize="9pt"
-	        android:text="주문 페이지로 이동중입니다."
-	        android:textColor="#556655"
+	        android:layout_alignParentBottom="true"
+	        android:paddingBottom="30dp"
+	        android:textSize="8pt"
+	        android:text="서버 접속중입니다"
+	        android:textColor="#7d7a7b"
 	        android:textStyle="bold"/>
 	    
 	    <TextView 
@@ -24,8 +25,19 @@
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentBottom="true"
+	        android:layout_alignParentLeft="true"
+	        android:text="@string/Version"
+	        android:textColor="#000000"
+	        android:textSize="10sp"/>
+	    
+	    <TextView 
+	        android:id="@+id/RELEASE"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentBottom="true"
 	        android:layout_alignParentRight="true"
-	        android:text="Ver:1.0 / Release:2013.05.03"
+	        android:text="@string/ReleaseDate"
+	        android:textColor="#000000"
 	        android:textSize="10sp"/>
     </RelativeLayout>
 
