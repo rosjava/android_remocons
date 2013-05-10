@@ -123,7 +123,7 @@ public class MasterChecker {
         foundMasterCallback.receive(robotDescription);
         return;
       } catch (Throwable ex) {
-        Log.e("RosAndroid", "Exception while creating node in MasterChecker for master URI "
+        Log.w("RosAndroid", "Exception while creating node in MasterChecker for master URI "
               + masterUri, ex);
         failureCallback.handleFailure(ex.toString());
       }

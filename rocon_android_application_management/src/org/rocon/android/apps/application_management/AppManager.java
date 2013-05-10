@@ -32,10 +32,10 @@ import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 
-import app_manager.AppList;
-import app_manager.ListApps;
-import app_manager.ListAppsRequest;
-import app_manager.ListAppsResponse;
+import rocon_app_manager_msgs.AppList;
+import rocon_app_manager_msgs.GetAppList;
+import rocon_app_manager_msgs.GetAppListRequest;
+import rocon_app_manager_msgs.GetAppListResponse;
 import app_manager.StartApp;
 import app_manager.StartAppRequest;
 import app_manager.StartAppResponse;
@@ -57,7 +57,7 @@ public class AppManager extends AbstractNodeMain {
 	private NameResolver resolver;
 	private ServiceResponseListener<StartAppResponse> startServiceResponseListener;
 	private ServiceResponseListener<StopAppResponse> stopServiceResponseListener;
-	private ServiceResponseListener<ListAppsResponse> listServiceResponseListener;
+	private ServiceResponseListener<GetAppListResponse> listServiceResponseListener;
 	private ArrayList<Subscriber<AppList>> subscriptions;
 	private Subscriber<AppList> subscriber;
 	
@@ -102,7 +102,7 @@ public class AppManager extends AbstractNodeMain {
 	}
 
 	public void setListService(
-			ServiceResponseListener<ListAppsResponse> listServiceResponseListener) {
+			ServiceResponseListener<GetAppListResponse> listServiceResponseListener) {
 		this.listServiceResponseListener = listServiceResponseListener;
 	}
 
@@ -143,15 +143,15 @@ public class AppManager extends AbstractNodeMain {
 	public void listApps() {
 		String listTopic = resolver.resolve(this.listTopic).toString();
 		
-		ServiceClient<ListAppsRequest, ListAppsResponse> listAppsClient;
+		ServiceClient<GetAppListRequest, GetAppListResponse> listAppsClient;
 		try {
 			Log.i("RosAndroid", "List app service client created" + listTopic);
 			listAppsClient = connectedNode.newServiceClient(listTopic,
-					ListApps._TYPE);
+					GetAppList._TYPE);
 		} catch (ServiceNotFoundException e) {
 			throw new RosRuntimeException(e);
 		}
-		final ListAppsRequest request = listAppsClient.newMessage();
+		final GetAppListRequest request = listAppsClient.newMessage();
 		listAppsClient.call(request, listServiceResponseListener);
 		Log.i("RosAndroid", "Done call");
 	}

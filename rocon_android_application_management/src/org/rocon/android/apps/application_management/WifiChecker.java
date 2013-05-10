@@ -38,7 +38,6 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
-import android.content.Context;
 /**
  * Threaded WiFi checker. Checks and tests if the WiFi is configured properly and if not, connects to the correct network.
  *

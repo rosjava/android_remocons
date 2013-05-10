@@ -36,8 +36,6 @@ package org.rocon.android.apps.application_management;
 import android.util.Log;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URI;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;

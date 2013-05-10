@@ -23,8 +23,5 @@
   <build_depend>zeroconf_jmdns</build_depend>
   <build_depend>android_barcode_scanner</build_depend>
   <build_depend>android_gingerbread</build_depend>
-
-  <export>
-    <android type="project"/>
-  </export>
+  <build_depend>turtlebot_android_core_components</build_depend> <!-- Ugly dashboard dependency -->
 </package>

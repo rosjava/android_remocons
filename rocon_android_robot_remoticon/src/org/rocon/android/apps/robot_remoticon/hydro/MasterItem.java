@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.rocon.android.apps.robot_remoticon;
+package org.rocon.android.apps.robot_remoticon.hydro;
 
 import android.content.Context;
 import android.util.Log;
@@ -157,7 +157,7 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
     tv = (TextView) view.findViewById(R.id.uri);
     tv.setText(description.getRobotId().toString());
     tv = (TextView) view.findViewById(R.id.name);
-    tv.setText(description.getRobotName());
+    tv.setText(description.getRobotFriendlyName());
     tv = (TextView) view.findViewById(R.id.status);
     tv.setText(errorReason);
   }

@@ -31,7 +31,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.rocon.android.apps.robot_remoticon;
+package org.rocon.android.apps.robot_remoticon.hydro;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
@@ -42,7 +42,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
-import app_manager.App;
+import rocon_app_manager_msgs.App;
 import java.util.ArrayList;
 
 import org.jboss.netty.buffer.ChannelBuffer;

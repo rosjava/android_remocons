@@ -31,7 +31,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.rocon.android.apps.robot_remoticon;
+package org.rocon.android.apps.robot_remoticon.hydro;
 
 
 import android.content.Intent;
@@ -39,8 +39,8 @@ import android.content.Intent;
 import java.util.HashMap;
 import java.util.List;
 
-import app_manager.ClientApp;
-import app_manager.KeyValue;
+import rocon_app_manager_msgs.PairingApp;
+import rocon_app_manager_msgs.KeyValue;
 
 /**
 * Convenience class which populates HashMaps with manager_data and app_data
@@ -48,9 +48,9 @@ import app_manager.KeyValue;
 */
 public class ClientAppData {
   public HashMap<String, String> managerData;
-  public List<app_manager.KeyValue> appData;
+  public List<rocon_app_manager_msgs.KeyValue> appData;
 
-  public ClientAppData(app_manager.ClientApp clientApp) {
+  public ClientAppData(rocon_app_manager_msgs.PairingApp clientApp) {
     managerData = keyValueListToMap(clientApp.getManagerData());
     appData = clientApp.getAppData();
   }

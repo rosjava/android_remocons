@@ -30,7 +30,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.rocon.android.apps.robot_remoticon.R;
+import org.rocon.android.apps.robot_remoticon.hydro.R;
 
 
 public class DiscoveryAdapter extends ArrayAdapter<ServiceInfo> {
