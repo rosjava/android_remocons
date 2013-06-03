@@ -1,9 +1,0 @@
-<stack>
-  <description brief="rocon_android">
-    This stack contains android applications for rocon.
-  </description>
-  <author>Jorge Santos</author>
-  <license>BSD</license>
-  <review status="unreviewed" notes="" />
-  <url>http://ros.org/wiki/rocon_android</url>
-</stack>
