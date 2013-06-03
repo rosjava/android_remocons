@@ -32,7 +32,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.rocon.android.apps.robot_remoticon.hydro;
+package org.rocon.android.apps.robot_remoticon;
 
 import java.net.URI;
 import java.util.ArrayList;

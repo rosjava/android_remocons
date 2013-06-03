@@ -31,7 +31,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package org.rocon.android.apps.robot_remoticon.hydro;
+package org.rocon.android.apps.robot_remoticon;
 
 
 import android.content.Intent;

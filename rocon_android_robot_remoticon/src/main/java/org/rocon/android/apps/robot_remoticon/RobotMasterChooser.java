@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.rocon.android.apps.robot_remoticon.hydro;
+package org.rocon.android.apps.robot_remoticon;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +80,7 @@ import com.google.zxing.IntentResult;
 import org.rocon.android.apps.application_management.RobotDescription;
 import org.rocon.android.apps.application_management.RobotId;
 import org.rocon.android.apps.application_management.RobotsContentProvider;
-import org.ros.android.zeroconf.MasterSearcher;
+import org.rocon.android.apps.robot_remoticon.zeroconf.MasterSearcher;
 
 import org.yaml.snakeyaml.Yaml;
 

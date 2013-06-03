@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Daniel Stonier.
+ * Copyright (C) 2013 Yujin Robot.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,13 +14,15 @@
  * the License.
  */
 
-dependencies {
-  compile 'ros.android_core:android_gingerbread_mr1:0.0.0-SNAPSHOT'
-}
+package org.rocon.android.apps.robot_remoticon.zeroconf;
 
-apply plugin: 'android-library'
+import java.lang.String;
 
-android {
-    compileSdkVersion 10
-    buildToolsVersion androidBuildToolsVersion
+import com.github.rosjava.jmdns.ZeroconfLogger;
+
+public class Logger implements ZeroconfLogger {
+
+        public void println(String msg) {
+                android.util.Log.i("zeroconf", msg);
+        }
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>rocon_android</name>
+  <version>0.1.0</version>
+  <description>
+    Applications for rocon.
+  </description>
+  <url type="website">http://ros.org/wiki/rocon_android</url>
+  <url type="repository">https://github.com/robotics-in-concert/rocon_android</url>
+  <url type="bugtracker">https://github.com/robotics-in-concert/rocon_android/issues</url>
+  <maintainer email="d.stonier@gmail.com">Daniel Stonier</maintainer>
+  <author email="kattyokaccho3616@gmail.com">Kazuto Murase</author>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rosjava_tools</build_depend>
+  <build_depend>android_core</build_depend>
+  <build_depend>android_extras</build_depend>
+</package>

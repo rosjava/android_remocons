@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="org.rocon.android.apps.robot_remoticon.hydro"
+      package="org.rocon.android.apps.robot_remoticon"
       android:versionCode="1"
       android:versionName="1.0">
 
@@ -22,7 +22,7 @@
                   android:screenOrientation="portrait"
                   >
             <intent-filter>
-                <action android:name="org.rocon.android.apps.robot_remoticon.hydro.RobotRemoticon" />
+                <action android:name="org.rocon.android.apps.robot_remoticon.RobotRemoticon" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
@@ -30,10 +30,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="org.rocon.android.apps.robot_remoticon.hydro.RobotMasterChooser" />
+        <activity android:name="org.rocon.android.apps.robot_remoticon.RobotMasterChooser" />
         <activity android:name="org.ros.android.MasterChooser" />
 
         <service android:name="AppLauncher" />
-        <service android:name="org.ros.android.NodeMainExecutorService" />
+        <service android:name="org.ros.android.NodeMainExecutorService" >
+            <intent-filter>
+                <action android:name="org.ros.android.NodeMainExecutorService" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

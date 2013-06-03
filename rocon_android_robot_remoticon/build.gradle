@@ -15,19 +15,25 @@
  */
 
 /*
- * maven dependencies: 
+ * maven dependencies:
+ *
  *  - snakeyaml
  *
- * External android dependencies are handled by catkin
- * and listed in project.properties.
- */
-dependencies {
-  compile 'ros.rosjava_extras:zeroconf_jmdns:0.1.0'
-  compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
-  debug.dependsOn project(':rocon_android_application_management').tasks.debug
-}
-/*
-  can't use this one from maven central - it uses methods that davlik doesn't
-  like (generates Verify Errors on adb logcat).
-  compile 'org.yaml:snakeyaml:1.12'
+ * can't use this one from maven central - it uses methods that davlik doesn't
+ * like (generates Verify Errors on adb logcat).
 */
+
+dependencies {
+  compile 'ros.rosjava_jmdns_suite:rosjava_jmdns:0.1.0'
+  compile 'ros.android_extras:android_zxing:0.1.0'
+  compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
+  compile project(':rocon_android_application_management')
+}
+
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 10
+    buildToolsVersion androidBuildToolsVersion
+}
+
