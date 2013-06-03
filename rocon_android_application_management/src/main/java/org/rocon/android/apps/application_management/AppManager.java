@@ -36,12 +36,12 @@ import rocon_app_manager_msgs.AppList;
 import rocon_app_manager_msgs.GetAppList;
 import rocon_app_manager_msgs.GetAppListRequest;
 import rocon_app_manager_msgs.GetAppListResponse;
-import app_manager.StartApp;
-import app_manager.StartAppRequest;
-import app_manager.StartAppResponse;
-import app_manager.StopApp;
-import app_manager.StopAppRequest;
-import app_manager.StopAppResponse;
+import rocon_app_manager_msgs.StartApp;
+import rocon_app_manager_msgs.StartAppRequest;
+import rocon_app_manager_msgs.StartAppResponse;
+import rocon_app_manager_msgs.StopApp;
+import rocon_app_manager_msgs.StopAppRequest;
+import rocon_app_manager_msgs.StopAppResponse;
 
 /**
  * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)
@@ -79,7 +79,7 @@ public class AppManager extends AbstractNodeMain {
 
 	public void addAppListCallback(MessageListener<AppList> callback)
 			throws RosException {
-		subscriber = connectedNode.newSubscriber(resolver.resolve("app_list"),"app_manager/AppList");
+		subscriber = connectedNode.newSubscriber(resolver.resolve("app_list"),"rocon_app_manager_msgs/AppList");
 		subscriber.addMessageListener(callback);
 	}
 
@@ -135,7 +135,7 @@ public class AppManager extends AbstractNodeMain {
 			throw new RosRuntimeException(e);
 		}
 		final StopAppRequest request = stopAppClient.newMessage();
-		request.setName(appName);
+		// request.setName(appName); // stop app name unused for now
 		stopAppClient.call(request, stopServiceResponseListener);
 		Log.i("RosAndroid", "Done call");
 	}

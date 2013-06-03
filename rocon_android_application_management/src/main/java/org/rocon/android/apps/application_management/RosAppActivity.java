@@ -39,8 +39,8 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
-import app_manager.StartAppResponse;
-import app_manager.StopAppResponse;
+import rocon_app_manager_msgs.StartAppResponse;
+import rocon_app_manager_msgs.StopAppResponse;
 
 /**
  * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)

@@ -75,14 +75,14 @@ import org.rocon.android.apps.application_management.WifiChecker;
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
 import rocon_app_manager_msgs.GetAppListResponse;
-import app_manager.StartAppResponse;
-import app_manager.StatusCodes;
-import app_manager.StopAppResponse;
+import rocon_app_manager_msgs.StartAppResponse;
+import rocon_app_manager_msgs.ErrorCodes;
+import rocon_app_manager_msgs.StopAppResponse;
 
 public class RobotRemoticon extends RosAppActivity {
 
 	private static final int ROBOT_MASTER_CHOOSER_REQUEST_CODE = 1;
-	private static final int MULTI_APP_DISABLED = 1;
+	private static final int MULTI_RAPP_DISABLED = 1;
 	private static final int CLOSE_EXISTING = 0;
 
 	private NodeConfiguration nodeConfiguration;
@@ -609,11 +609,11 @@ public class RobotRemoticon extends RosAppActivity {
 								Log.i("RosAndroid", "App started successfully");
 								alreadyClicked = false;
 								// safeSetStatus("Started");
-							} else if (message.getErrorCode() == StatusCodes.MULTIAPP_NOT_SUPPORTED) {
+							} else if (message.getErrorCode() == ErrorCodes.MULTI_RAPP_NOT_SUPPORTED) {
 								runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
-										showDialog(MULTI_APP_DISABLED);
+										showDialog(MULTI_RAPP_DISABLED);
 									}
 								});
 
@@ -823,7 +823,7 @@ public class RobotRemoticon extends RosAppActivity {
 			// new DialogButtonClickHandler());
 			dialog = builder.create();
 			break;
-		case MULTI_APP_DISABLED:
+		case MULTI_RAPP_DISABLED:
 			builder.setTitle("Multi-App Disabled on Robot");
 			builder.setMessage("The mode for running multiple apps is disabled on the robot. If you would like to enable it then you can change the arguments that the App Manager gets in its launch file.");
 			// builder.setNeutralButton("Okay", new DialogButtonClickHandler());

@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.jmdns.ServiceInfo;
+import com.github.rosjava.jmdns.DiscoveredService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -426,7 +426,7 @@ public class RobotMasterChooser extends Activity {
 
 				for (int i = 0; i < positions.size(); i++) {
 					if (positions.valueAt(i)) {
-						enterRobotInfo((ServiceInfo) listView.getAdapter()
+						enterRobotInfo((DiscoveredService) listView.getAdapter()
 								.getItem(positions.keyAt(i)));
 					}
 				}
@@ -439,22 +439,31 @@ public class RobotMasterChooser extends Activity {
 		}
 	}
 
-	public void enterRobotInfo(ServiceInfo serviceInfo) {
-		String newMasterUri = "http:/" + serviceInfo.getAddress() + ":"
-				+ serviceInfo.getPort() + "/";
-		if (newMasterUri != null && newMasterUri.length() > 0) {
-			Map<String, Object> data = new HashMap<String, Object>();
-			data.put("URL", newMasterUri);
-			try {
-				addMaster(new RobotId(data));
-			} catch (Exception e) {
-				Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
-						Toast.LENGTH_SHORT).show();
-			}
-		} else {
-			Toast.makeText(RobotMasterChooser.this, "Must specify Master URI.",
-					Toast.LENGTH_SHORT).show();
-		}
+	public void enterRobotInfo(DiscoveredService discovered_service) {
+        /*
+          This could be better - it should actually contact and check off each
+          resolvable zeroconf address looking for the master. Instead, we just grab
+          the first ipv4 address and totally ignore the possibility of an ipv6 master.
+         */
+        String newMasterUri = null;
+        if ( discovered_service.ipv4_addresses.size() != 0 ) {
+            newMasterUri = "http://" + discovered_service.ipv4_addresses.get(0) + ":"
+                    + discovered_service.port + "/";
+        }
+        if (newMasterUri != null && newMasterUri.length() > 0) {
+            android.util.Log.i("RobotRemoticon", newMasterUri);
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("URL", newMasterUri);
+            try {
+                addMaster(new RobotId(data));
+            } catch (Exception e) {
+                Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(RobotMasterChooser.this, "No valid resolvable master URI.",
+                    Toast.LENGTH_SHORT).show();
+        }
 	}
 
 	public void enterRobotInfo(Dialog dialog) {
