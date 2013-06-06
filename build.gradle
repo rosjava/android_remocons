@@ -19,7 +19,7 @@ task wrapper(type: Wrapper) {
 }
 
 allprojects {
-  group 'ros.rocon_android'
+  group 'com.github.robotics_in_concert.rocon_android'
   version = '0.1.0'
 }
 
@@ -34,7 +34,9 @@ subprojects {
             classpath 'com.android.tools.build:gradle:0.4.1'
         }
     }
+
     apply plugin: 'maven'
+
     repositories {
         mavenLocal()
         maven {
@@ -46,10 +48,6 @@ subprojects {
         exclude group: 'xml-apis'
     }
 
-    /*
-       EXPERIMENTAL: Trick to get local maven installs until the plugin supports an
-       install step for aar's (coming soon).
-    */
     uploadArchives {
         repositories {
             mavenDeployer {
@@ -57,17 +55,12 @@ subprojects {
             }
         }
     }
-    task install() << {
+    task publishToMavenLocal() << {
         description = 'installs .aar files to the local maven repository.'
     }
     afterEvaluate { Project project ->
         if (plugins.findPlugin('android-library')) {
-            task doDebugArchives() << {
-                project.artifacts.add("default", bundleDebug)
-            }
-            doDebugArchives.dependsOn('bundleDebug')
-            uploadArchives.dependsOn('doDebugArchives')
-            install.dependsOn('uploadArchives')
+            publishToMavenLocal.dependsOn('uploadArchives')
         }
     }
 }
