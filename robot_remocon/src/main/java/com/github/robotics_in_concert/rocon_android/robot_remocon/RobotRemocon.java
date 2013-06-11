@@ -105,6 +105,7 @@ public class RobotRemocon extends RosAppActivity {
 	private long availableAppsCacheTime;
 
 	private void stopProgress() {
+        Log.i("RobotRemocon", "Stopping the spinner");
 		final ProgressDialog temp = progress;
 		progress = null;
 		if (temp != null) {
@@ -228,7 +229,7 @@ public class RobotRemocon extends RosAppActivity {
 	}
 
 	public RobotRemocon() {
-		super("robot remoticon", "robot remoticon");
+		super("RobotRemocon", "RobotRemocon");
 		availableAppsCacheTime = 0;
 		availableAppsCache = new ArrayList<App>();
 		runningAppsCache = new ArrayList<App>();
@@ -239,7 +240,7 @@ public class RobotRemocon extends RosAppActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		String defaultRobotName = getString(R.string.default_robot);
 		setDefaultRobotName(defaultRobotName);
-		setDefaultAppName(null);
+		setDefaultAppName(null);  // stops the rosappactivity from trying to contact the app manager on its own.
 		setDashboardResource(R.id.top_bar);
 		setMainWindowResource(R.layout.main);
 		super.onCreate(savedInstanceState);
@@ -537,6 +538,8 @@ public class RobotRemocon extends RosAppActivity {
 		if (!running && alreadyClicked == false) {
 			alreadyClicked = true;
 
+            // set up a subscriber to the applist topic so it can check
+            // for running apps and whether it's pair has shut down.
 			try {
 				appManager.addAppListCallback(new MessageListener<AppList>() {
 					@Override
@@ -548,25 +551,25 @@ public class RobotRemocon extends RosAppActivity {
 						for (i = 0; i < availableAppsCache.size(); i++) {
 							App item = availableAppsCache.get(i);
 							ArrayList<String> clients = new ArrayList<String>();
-							for (int j = 0; j < item.getPairingApps().size(); j++) {
+							for (int j = 0; j < item.getPairingClients().size(); j++) {
 
-								clients.add(item.getPairingApps().get(j)
+								clients.add(item.getPairingClients().get(j)
 										.getClientType());
 							}
 
 							if (!clients.contains("android")
-									&& item.getPairingApps().size() != 0) {
+									&& item.getPairingClients().size() != 0) {
 								availableAppsCache.remove(i);
 							}
 
-							if (item.getPairingApps().size() == 0) {
+							if (item.getPairingClients().size() == 0) {
 								Log.i("RobotRemocon",
 										"Item name: " + item.getName());
 								runningAppsNames.add(item.getName());
 							}
 
 						}
-						Log.i("RosAndroid", "ListApps.Response: "
+						Log.i("RobotRemocon", "AppList Publication: "
 								+ availableAppsCache.size() + " apps");
 						availableAppsCacheTime = System.currentTimeMillis();
 						runOnUiThread(new Runnable() {
@@ -577,7 +580,6 @@ public class RobotRemocon extends RosAppActivity {
 							}
 						});
 					}
-
 				});
 			} catch (RosException e) {
 				// TODO Auto-generated catch block
@@ -594,7 +596,7 @@ public class RobotRemocon extends RosAppActivity {
 				public void run() {
 					stopProgress();
 					progress = ProgressDialog.show(RobotRemocon.this,
-							"Starting Application",
+							"Starting Rapp",
 							"Starting " + app.getDisplayName() + "...", true,
 							false);
 					progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -606,7 +608,7 @@ public class RobotRemocon extends RosAppActivity {
 						@Override
 						public void onSuccess(StartAppResponse message) {
 							if (message.getStarted()) {
-								Log.i("RosAndroid", "App started successfully");
+								Log.i("RobotRemocon", "Rapp started successfully [" + app.getDisplayName() + "]");
 								alreadyClicked = false;
 								// safeSetStatus("Started");
 							} else if (message.getErrorCode() == ErrorCodes.MULTI_RAPP_NOT_SUPPORTED) {
@@ -618,7 +620,7 @@ public class RobotRemocon extends RosAppActivity {
 								});
 
 							} else {
-								Log.v("RosAndroid", message.getMessage());
+								Log.w("RobotRemocon", message.getMessage());
 								// safeSetStatus(message.getMessage());
 							}
 							stopProgress();
@@ -638,13 +640,13 @@ public class RobotRemocon extends RosAppActivity {
 	}
 
 	private void listApps() {
-		Log.i("RosAndroid", "listing application");
+		Log.i("RobotRemocon", "listing application");
 		AppManager appManager = new AppManager("", getRobotNameSpace());
 		appManager.setFunction("list");
 		appManager.setListService(new ServiceResponseListener<GetAppListResponse>() {
 					@Override
 					public void onSuccess(GetAppListResponse message) {
-						Log.i("RosAndroid", "App got lists successfully");
+						Log.i("RobotRemocon", "App got lists successfully");
 						availableAppsCache = (ArrayList<App>) message
 								.getAvailableApps();
 						runningAppsCache = (ArrayList<App>) message
@@ -654,23 +656,23 @@ public class RobotRemocon extends RosAppActivity {
 						for (i = 0; i < availableAppsCache.size(); i++) {
 							App item = availableAppsCache.get(i);
 							ArrayList<String> clients = new ArrayList<String>();
-							for (int j = 0; j < item.getPairingApps().size(); j++) {
-								clients.add(item.getPairingApps().get(j)
+							for (int j = 0; j < item.getPairingClients().size(); j++) {
+								clients.add(item.getPairingClients().get(j)
 										.getClientType());
 							}
 							if (!clients.contains("android")
-									&& item.getPairingApps().size() != 0) {
+									&& item.getPairingClients().size() != 0) {
 								availableAppsCache.remove(i);
 								i--;
 							}
 
-							if (item.getPairingApps().size() == 0) {
+							if (item.getPairingClients().size() == 0) {
 								Log.i("RobotRemocon",
 										"Item name: " + item.getName());
 								runningAppsNames.add(item.getName());
 							}
 						}
-						Log.i("RosAndroid", "ListApps.Response: "
+						Log.i("RobotRemocon", "ListApps.Response: "
 								+ availableAppsCache.size() + " apps");
 						runOnUiThread(new Runnable() {
 							@Override
@@ -684,7 +686,7 @@ public class RobotRemocon extends RosAppActivity {
 
 					@Override
 					public void onFailure(RemoteException e) {
-						Log.e("RosAndroid", "App failed to get lists!");
+						Log.e("RobotRemocon", "App failed to get lists!");
 					}
 				});
 		nodeMainExecutor.execute(appManager,
@@ -693,7 +695,7 @@ public class RobotRemocon extends RosAppActivity {
 
 	protected void updateAppList(final ArrayList<App> apps,
 			final ArrayList<App> runningApps) {
-		Log.i("RosAndroid", "updating gridview");
+		Log.i("RobotRemocon", "updating gridview");
 		GridView gridview = (GridView) findViewById(R.id.gridview);
 		AppAdapter appAdapter = new AppAdapter(RobotRemocon.this, apps,
 				runningApps);
@@ -728,7 +730,7 @@ public class RobotRemocon extends RosAppActivity {
 				stopApps.setVisibility(stopApps.GONE);
 			}
 		}
-		Log.i("RosAndroid", "gridview updated");
+		Log.i("RobotRemocon", "gridview updated");
 	}
 
 	public void chooseNewMasterClicked(View view) {

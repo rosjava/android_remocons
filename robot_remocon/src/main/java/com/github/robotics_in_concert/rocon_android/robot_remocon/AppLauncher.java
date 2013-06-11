@@ -49,7 +49,7 @@ import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.RosAppActivity;
 import org.ros.namespace.NameResolver;
 
-import rocon_app_manager_msgs.PairingApp;
+import rocon_app_manager_msgs.PairingClient;
 
 public class AppLauncher {
   static private final String CLIENT_TYPE = "android";
@@ -62,33 +62,33 @@ public class AppLauncher {
 
     
     if (parentActivity instanceof RobotRemocon) {
-      ((RobotRemocon)parentActivity).onAppClicked(app, app.getPairingApps().size() > 0);
+      ((RobotRemocon)parentActivity).onAppClicked(app, app.getPairingClients().size() > 0);
     } else {
-      Log.i("RosAndroid", "Could not launch becase parent is not an appchooser");
-      if (app.getPairingApps().size() == 0) {
-        Log.e("RosAndroid", "Not launching application!!!");
+      Log.i("RobotRemocon", "Could not launch because parent is not an appchooser");
+      if (app.getPairingClients().size() == 0) {
+        Log.e("RobotRemocon", "Not launching application!!!");
         return false;
       }
     }
 
-    if (app.getPairingApps().size() == 0) {
+    if (app.getPairingClients().size() == 0) {
       return false;
     }
     
-    Log.i("RosAndroid", "launching robot app " + app.getName() + ". Found " + app.getPairingApps().size()
+    Log.i("RobotRemocon", "launching robot app " + app.getName() + " -> found " + app.getPairingClients().size()
         + " client apps.");
 
     // Loop over all possible client apps to find the android ones.
-    for (int i = 0; i < app.getPairingApps().size(); i++) {
-      PairingApp client_app = app.getPairingApps().get(i);
+    for (int i = 0; i < app.getPairingClients().size(); i++) {
+      PairingClient client_app = app.getPairingClients().get(i);
       if (client_app.getClientType() != null && client_app.getClientType().equals(CLIENT_TYPE)) {
      ClientAppData data = new ClientAppData(client_app);
      android_apps.add(data);
       }
     }
 
-    Log.i("RosAndroid", "launching robot app " + app.getName() + ". Found " + android_apps.size()
-        + " android apps.");
+    Log.i("RobotRemocon", "launching robot app " + app.getName() + " -> found " + android_apps.size()
+        + " compatible android apps.");
 
     // TODO: filter out android apps which are not appropriate for
     // this device by looking at specific entries in the manager_data_
@@ -123,17 +123,17 @@ public class AppLauncher {
       intent.putExtra("runningNodes", runningNodes);
       try {
         className = intent.getAction();
-        Log.i("RosAndroid", "trying to startActivity( action: " + intent.getAction() + " )");
+        Log.i("RobotRemocon", "trying to startActivity( action: " + intent.getAction() + " )");
         parentActivity.startActivity(intent);
         return true;
       } catch (ActivityNotFoundException e) {
-        Log.i("RosAndroid", "activity not found for action: " + intent.getAction());
+        Log.i("RobotRemocon", "activity not found for action: " + intent.getAction());
       }
     }
 
     final String installPackage = className.substring(0, className.lastIndexOf("."));
 
-    Log.i("RosAndroid", "showing not-installed dialog.");
+    Log.i("RobotRemocon", "showing not-installed dialog.");
 
     // TODO:
     // Loop over all android apps, trying to install one. (??)

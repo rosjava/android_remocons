@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">RoconAndroidListener</string>
+    <string name="app_name">Listener</string>
+    <string name="paired_app_name">rocon_apps/talker</string>
+    <string name="default_robot">turtlebot</string>
+
+    <string name="stop_app">Kill</string>
 </resources>

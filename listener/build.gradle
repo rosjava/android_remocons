@@ -14,17 +14,11 @@
  * the License.
  */
 
-/* 
- Examples of 
-   1) dependencies from another project in this gradle stack.
-   2) dependency from a maven repository.
-*/
-/* 
 dependencies {
-  compile project(':android_apps_core_components')
   compile 'ros.android_core:android_gingerbread_mr1:0.0.0-SNAPSHOT'
+  compile 'ros.rosjava_core:rosjava:0.0.0-SNAPSHOT'
+  compile 'com.github.ros_java.android_apps:application_management:0.1.0'
 }
-*/
 
 apply plugin: 'android'
 
