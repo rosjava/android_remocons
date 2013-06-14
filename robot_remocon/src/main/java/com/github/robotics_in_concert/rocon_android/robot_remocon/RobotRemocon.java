@@ -81,7 +81,9 @@ import rocon_app_manager_msgs.StopAppResponse;
 
 public class RobotRemocon extends RosAppActivity {
 
+    /* startActivityForResult Request Codes */
 	private static final int ROBOT_MASTER_CHOOSER_REQUEST_CODE = 1;
+
 	private static final int MULTI_RAPP_DISABLED = 1;
 	private static final int CLOSE_EXISTING = 0;
 
@@ -90,9 +92,9 @@ public class RobotRemocon extends RosAppActivity {
 	private TextView robotNameView;
 	private ArrayList<App> availableAppsCache;
 	private ArrayList<App> runningAppsCache;
-	private AppManager appManager;
+	private AppManager robotAppManager;
 	private Button deactivate;
-	private Button stopApps;
+	private Button stopAppsButton;
 	private Button exchangeButton;
 	private ProgressDialog progress;
 	private ProgressDialogWrapper progressDialog;
@@ -248,8 +250,8 @@ public class RobotRemocon extends RosAppActivity {
 		robotNameView = (TextView) findViewById(R.id.robot_name_view);
 		deactivate = (Button) findViewById(R.id.deactivate_robot);
 		deactivate.setVisibility(deactivate.GONE);
-		stopApps = (Button) findViewById(R.id.stop_applications);
-		stopApps.setVisibility(stopApps.GONE);
+		stopAppsButton = (Button) findViewById(R.id.stop_applications);
+		stopAppsButton.setVisibility(stopAppsButton.GONE);
 		exchangeButton = (Button) findViewById(R.id.exchange_button);
 		exchangeButton.setVisibility(deactivate.GONE);
 	}
@@ -264,11 +266,17 @@ public class RobotRemocon extends RosAppActivity {
 
 		listApps();
 
-		appManager = new AppManager("", getRobotNameSpace());
-		appManager.setFunction("");
-		nodeMainExecutor.execute(appManager,
+		robotAppManager = new AppManager("", getRobotNameSpace());
+        robotAppManager.setFunction("");
+		nodeMainExecutor.execute(robotAppManager,
 				nodeConfiguration.setNodeName("manage_apps"));
-	}
+
+        if ( fromApplication ) {
+            Log.i("RobotRemocon", "re-initialised after resuming from an executing application");
+        } else {
+            Log.i("RobotRemocon", "initialised");
+        }
+    }
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -281,7 +289,6 @@ public class RobotRemocon extends RosAppActivity {
 				} else {
 					URI uri;
 					try {
-
 						robotDescription = (RobotDescription) data
 								.getSerializableExtra(RobotMasterChooser.ROBOT_DESCRIPTION_EXTRA);
 
@@ -312,7 +319,7 @@ public class RobotRemocon extends RosAppActivity {
 						return null;
 					}
 				}.execute();
-			} else {
+            } else {
 				// Without a master URI configured, we are in an unusable state.
 				nodeMainExecutorService.shutdown();
 				finish();
@@ -541,7 +548,7 @@ public class RobotRemocon extends RosAppActivity {
             // set up a subscriber to the applist topic so it can check
             // for running apps and whether it's pair has shut down.
 			try {
-				appManager.addAppListCallback(new MessageListener<AppList>() {
+				robotAppManager.addAppListCallback(new MessageListener<AppList>() {
 					@Override
 					public void onNewMessage(AppList message) {
 						availableAppsCache = (ArrayList<App>) message.getAvailableApps();
@@ -725,9 +732,9 @@ public class RobotRemocon extends RosAppActivity {
 		});
 		if (runningApps != null) {
 			if (runningApps.toArray().length != 0) {
-				stopApps.setVisibility(stopApps.VISIBLE);
+				stopAppsButton.setVisibility(stopAppsButton.VISIBLE);
 			} else {
-				stopApps.setVisibility(stopApps.GONE);
+				stopAppsButton.setVisibility(stopAppsButton.GONE);
 			}
 		}
 		Log.i("RobotRemocon", "gridview updated");
@@ -735,7 +742,7 @@ public class RobotRemocon extends RosAppActivity {
 
 	public void chooseNewMasterClicked(View view) {
 
-		nodeMainExecutor.shutdownNodeMain(appManager);
+		nodeMainExecutor.shutdownNodeMain(robotAppManager);
 		releaseRobotNameResolver();
 		releaseDashboardNode(); // TODO this work costs too many times
 		availableAppsCache.clear();
@@ -750,6 +757,45 @@ public class RobotRemocon extends RosAppActivity {
 	public void deactivateRobotClicked(View view) {
 	}
 
+    /**
+     * Currently stops all/any robot applications and is called
+     * when either the button to stop all applications has
+     * been pressed or the android application terminates itself.
+     */
+    public void stopRobotApplication() {
+        // Should find a way to stop the application without using *, i.e. keep
+        // the previously rapp-initialised AppManager around and stop that from here.
+        // Can we use just one AppManager?
+        AppManager appManager = new AppManager("*", getRobotNameSpace());
+        appManager.setFunction("stop");
+        appManager
+                .setStopService(new ServiceResponseListener<StopAppResponse>() {
+                    @Override
+                    public void onSuccess(StopAppResponse message) {
+                        Log.i("RobotRemocon", "app stopped successfully");
+                        availableAppsCache = new ArrayList<App>();
+                        runningAppsCache = new ArrayList<App>();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                updateAppList(availableAppsCache,
+                                        runningAppsCache);
+                            }
+                        });
+                        listApps();
+                        progressDialog.dismiss();
+
+                    }
+
+                    @Override
+                    public void onFailure(RemoteException e) {
+                        Log.e("RobotRemocon", "app failed to stop!");
+                    }
+                });
+        nodeMainExecutor.execute(appManager,
+                nodeConfiguration.setNodeName("stop_app"));
+    }
+
 	public void stopApplicationsClicked(View view) {
 
 		for (App i : runningAppsCache) {
@@ -761,35 +807,7 @@ public class RobotRemocon extends RosAppActivity {
 		progressDialog = new ProgressDialogWrapper(this);
 		progressDialog.show("Stopping Applications",
 				"Stopping all applications...");
-
-		AppManager appManager = new AppManager("*", getRobotNameSpace());
-		appManager.setFunction("stop");
-		appManager
-				.setStopService(new ServiceResponseListener<StopAppResponse>() {
-					@Override
-					public void onSuccess(StopAppResponse message) {
-						Log.i("RobotRemocon", "App stopped successfully");
-						availableAppsCache = new ArrayList<App>();
-						runningAppsCache = new ArrayList<App>();
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								updateAppList(availableAppsCache,
-										runningAppsCache);
-							}
-						});
-						listApps();
-						progressDialog.dismiss();
-
-					}
-
-					@Override
-					public void onFailure(RemoteException e) {
-						Log.e("RobotRemocon", "App failed to stop!");
-					}
-				});
-		nodeMainExecutor.execute(appManager,
-				nodeConfiguration.setNodeName("stop_app"));
+        stopRobotApplication();
 	}
 
 	@Override
