@@ -273,7 +273,7 @@ public class RobotRemocon extends RosAppActivity {
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_CANCELED) {
-			onDestroy();
+			finish();
 		} else if (resultCode == RESULT_OK) {
 			if (requestCode == ROBOT_MASTER_CHOOSER_REQUEST_CODE) {
 				if (data == null) {
@@ -718,7 +718,7 @@ public class RobotRemocon extends RosAppActivity {
 					if (progress != null) {
 						progress.dismiss();
 					}
-					onDestroy();
+					finish();
 				} else
 					onAppClicked(app, true);
 			}
@@ -753,7 +753,7 @@ public class RobotRemocon extends RosAppActivity {
 	public void stopApplicationsClicked(View view) {
 
 		for (App i : runningAppsCache) {
-			Log.i("AppLauncher", "Sending intent.");
+			Log.i("RobotRemocon", "sending intent to stop app to the app launcher [" + i.getName() + "]");
 			AppLauncher
 					.launch(this, i, getMasterUri(), robotDescription, false);
 		}
@@ -768,7 +768,7 @@ public class RobotRemocon extends RosAppActivity {
 				.setStopService(new ServiceResponseListener<StopAppResponse>() {
 					@Override
 					public void onSuccess(StopAppResponse message) {
-						Log.i("RosAndroid", "App stopped successfully");
+						Log.i("RobotRemocon", "App stopped successfully");
 						availableAppsCache = new ArrayList<App>();
 						runningAppsCache = new ArrayList<App>();
 						runOnUiThread(new Runnable() {
@@ -785,7 +785,7 @@ public class RobotRemocon extends RosAppActivity {
 
 					@Override
 					public void onFailure(RemoteException e) {
-						Log.e("RosAndroid", "App failed to stop!");
+						Log.e("RobotRemocon", "App failed to stop!");
 					}
 				});
 		nodeMainExecutor.execute(appManager,
@@ -803,7 +803,7 @@ public class RobotRemocon extends RosAppActivity {
 		super.onOptionsItemSelected(item);
 		switch (item.getItemId()) {
 		case 0:
-			onDestroy();
+			finish();
 			break;
 		}
 		return true;

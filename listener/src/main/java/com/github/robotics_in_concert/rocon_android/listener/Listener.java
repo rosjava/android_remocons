@@ -4,6 +4,7 @@ import java.net.URI;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -76,7 +77,7 @@ public class Listener extends RosAppActivity
         super.onOptionsItemSelected(item);
         switch (item.getItemId()){
             case 0:
-                onDestroy();
+                finish();
                 break;
         }
         return true;
