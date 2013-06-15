@@ -15,4 +15,3 @@
  */
 
 include 'robot_remocon'
-include 'listener'
