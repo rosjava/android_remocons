@@ -796,13 +796,24 @@ public class RobotRemocon extends RosAppActivity {
                 nodeConfiguration.setNodeName("stop_app"));
     }
 
+    /**
+     * Callback for the button that appears in the app list view
+     * when a paired robot app is running and either there is no
+     * local android app, or for some reason, the local android app
+     * closed without terminating the paired robot app.
+     *
+     * @param view
+     */
 	public void stopApplicationsClicked(View view) {
 
+        /* Why trying to launch again? */
+		/*
 		for (App i : runningAppsCache) {
 			Log.i("RobotRemocon", "sending intent to stop app to the app launcher [" + i.getName() + "]");
 			AppLauncher
 					.launch(this, i, getMasterUri(), robotDescription, false);
 		}
+        */
 
 		progressDialog = new ProgressDialogWrapper(this);
 		progressDialog.show("Stopping Applications",
@@ -812,7 +823,7 @@ public class RobotRemocon extends RosAppActivity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, 0, 0, R.string.stop_app);
+		menu.add(0, 0, 0, R.string.exit);
 		return super.onCreateOptionsMenu(menu);
 	}
 
