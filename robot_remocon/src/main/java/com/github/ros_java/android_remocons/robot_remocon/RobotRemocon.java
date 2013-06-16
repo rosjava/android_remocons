@@ -313,7 +313,7 @@ public class RobotRemocon extends RobotActivity {
                 });
             }
         });
-        robotAppManager.setFunction("manage");
+        robotAppManager.setFunction("list_apps");
         nodeMainExecutor.execute(robotAppManager,
                 nodeConfiguration.setNodeName("manage_apps"));
     }

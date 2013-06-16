@@ -162,7 +162,8 @@ public abstract class RobotActivity extends RosActivity {
 		nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
 				.newNonLoopback().getHostAddress(), getMasterUri());
 
-        // ROBOT_DESCRIPTION_EXTRA is ever only set by the remocons.
+        // TODO - name resolution below is a mess and hard to debug, clean it up (DJS)
+        // only set by the remocons -- do we need this here?
 		if (getIntent().hasExtra(ROBOT_DESCRIPTION_EXTRA)) {
 			robotDescription = (RobotDescription) getIntent()
 					.getSerializableExtra(ROBOT_DESCRIPTION_EXTRA);
@@ -176,21 +177,17 @@ public abstract class RobotActivity extends RosActivity {
 		}
 		nodeMainExecutor.execute(robotNameResolver,
 				nodeConfiguration.setNodeName("robotNameResolver"));
-		while (getAppNameSpace() == null) {
-			try {
-				Thread.sleep(100);
-			} catch (Exception e) {
-			}
-		}
+        robotNameResolver.waitForResolver();
+
+        // Dashboard
         if (robotDescription == null) {
             dashboard.setRobotName(getRobotNameSpace().getNamespace()
                 .toString());
         }
-
         nodeMainExecutor.execute(dashboard,
 				nodeConfiguration.setNodeName("dashboard"));
 
-        // Child android application closure handling
+        // Child application post-handling
         if (fromApplication) {
             stopApp();
         }
