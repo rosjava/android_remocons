@@ -32,7 +32,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.github.robotics_in_concert.rocon_android.robot_remocon;
+package com.github.ros_java.android_remocons.robot_remocon;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -46,8 +46,6 @@ import android.util.Log;
 
 import com.github.ros_java.android_apps.application_management.AppManager;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
-import com.github.robotics_in_concert.rocon_android.remocon_management.RemoconActivity;
-import org.ros.namespace.NameResolver;
 
 import rocon_app_manager_msgs.PairingClient;
 
@@ -57,7 +55,7 @@ public class AppLauncher {
 
 
   /** Launch a client app for the given robot app. */
-  static public boolean launch(final RemoconActivity parentActivity, rocon_app_manager_msgs.App app, URI uri,RobotDescription currentRobot,boolean runningNodes) {
+  static public boolean launch(final RobotActivity parentActivity, rocon_app_manager_msgs.App app, URI uri,RobotDescription currentRobot,boolean runningNodes) {
     ArrayList<ClientAppData> android_apps = new ArrayList<ClientAppData>();
 
     

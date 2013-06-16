@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.robotics_in_concert.rocon_android.robot_remocon;
+package com.github.ros_java.android_remocons.robot_remocon;
 
 import android.content.Context;
 import android.util.Log;

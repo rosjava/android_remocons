@@ -14,14 +14,11 @@
  * the License.
  */
 
-package com.github.robotics_in_concert.rocon_android.remocon_management;
+package com.github.ros_java.android_remocons.robot_remocon;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,7 +41,6 @@ import com.github.ros_java.android_apps.application_management.Dashboard;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.RobotNameResolver;
 
-import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.StopAppResponse;
 
 /**
@@ -69,7 +65,7 @@ import rocon_app_manager_msgs.StopAppResponse;
  * Out:
  *  - Dashboard
  */
-public abstract class RemoconActivity extends RosActivity {
+public abstract class RobotActivity extends RosActivity {
 
 	public static final String ROBOT_DESCRIPTION_EXTRA = "com.github.ros_java.android_apps.application_management.RobotDescription";
 	private String robotAppName = null;
@@ -110,7 +106,7 @@ public abstract class RemoconActivity extends RosActivity {
 		dashboard.setCustomDashboardPath(path);
 	}
 
-	protected RemoconActivity(String notificationTicker, String notificationTitle) {
+	protected RobotActivity(String notificationTicker, String notificationTitle) {
 		super(notificationTicker, notificationTitle);
 	}
 
@@ -120,12 +116,12 @@ public abstract class RemoconActivity extends RosActivity {
 
 		if (mainWindowId == 0) {
 			Log.e("RemoconManagement",
-					"You must set the dashboard resource ID in your RemoconActivity");
+					"You must set the dashboard resource ID in your RobotActivity");
 			return;
 		}
 		if (dashboardResourceId == 0) {
 			Log.e("RemoconManagement",
-					"You must set the dashboard resource ID in your RemoconActivity");
+					"You must set the dashboard resource ID in your RobotActivity");
 			return;
 		}
 
@@ -224,7 +220,7 @@ public abstract class RemoconActivity extends RosActivity {
             new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... params) {
-                    RemoconActivity.this.init(nodeMainExecutorService);
+                    RobotActivity.this.init(nodeMainExecutorService);
                     return null;
                 }
             }.execute();

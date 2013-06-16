@@ -15,4 +15,4 @@
  */
 
 include 'robot_remocon'
-include 'remocon_management'
+/* include 'remocon_management' */

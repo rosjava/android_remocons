@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.robotics_in_concert.rocon_android.robot_remocon;
+package com.github.ros_java.android_remocons.robot_remocon;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +80,7 @@ import com.google.zxing.IntentResult;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.RobotId;
 import com.github.ros_java.android_apps.application_management.RobotsContentProvider;
-import com.github.robotics_in_concert.rocon_android.robot_remocon.zeroconf.MasterSearcher;
+import com.github.ros_java.android_remocons.robot_remocon.zeroconf.MasterSearcher;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -373,7 +373,7 @@ public class RobotMasterChooser extends Activity {
 			break;
 		case ADD_SEARCH_ROBOT_DIALOG_ID:
 			builder = new AlertDialog.Builder(this);
-			builder.setTitle("Search for local network...");
+			builder.setTitle("Scanning on the local network...");
 			LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			listView = (ListView) layoutInflater.inflate(
 					R.layout.zeroconf_master_list, null);

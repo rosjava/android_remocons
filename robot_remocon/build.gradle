@@ -24,7 +24,7 @@
 */
 
 dependencies {
-  compile project(':remocon_management')
+  /* compile project(':remocon_management') */
   compile 'ros.rosjava_core:rosjava:0.0.0-SNAPSHOT'
   compile 'com.github.ros_java.zeroconf_jmdns_suite:jmdns:0.1.0'
   compile 'ros.android_core:android_gingerbread_mr1:0.0.0-SNAPSHOT'

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.github.robotics_in_concert.rocon_android.robot_remocon.zeroconf;
+package com.github.ros_java.android_remocons.robot_remocon.zeroconf;
 
 import java.util.ArrayList;
 
@@ -30,7 +30,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.github.ros_java.zeroconf_jmdns_suite.jmdns.DiscoveredService;
-import com.github.robotics_in_concert.rocon_android.robot_remocon.R;
+import com.github.ros_java.android_remocons.robot_remocon.R;
 
 
 public class DiscoveryAdapter extends ArrayAdapter<DiscoveredService> {

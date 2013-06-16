@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.robotics_in_concert.rocon_android.robot_remocon;
+package com.github.ros_java.android_remocons.robot_remocon;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -70,15 +70,13 @@ import com.github.ros_java.android_apps.application_management.RobotId;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.WifiChecker;
 
-import com.github.robotics_in_concert.rocon_android.remocon_management.RemoconActivity;
-
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
 import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.ErrorCodes;
 import rocon_app_manager_msgs.StopAppResponse;
 
-public class RobotRemocon extends RemoconActivity {
+public class RobotRemocon extends RobotActivity {
 
     /* startActivityForResult Request Codes */
 	private static final int ROBOT_MASTER_CHOOSER_REQUEST_CODE = 1;
@@ -124,9 +122,9 @@ public class RobotRemocon extends RemoconActivity {
 	private class AlertDialogWrapper {
 		private int state;
 		private AlertDialog dialog;
-		private RemoconActivity context;
+		private RobotActivity context;
 
-		public AlertDialogWrapper(RemoconActivity context,
+		public AlertDialogWrapper(RobotActivity context,
 				AlertDialog.Builder builder, String yesButton, String noButton) {
 			state = 0;
 			this.context = context;
@@ -147,7 +145,7 @@ public class RobotRemocon extends RemoconActivity {
 							}).create();
 		}
 
-		public AlertDialogWrapper(RemoconActivity context,
+		public AlertDialogWrapper(RobotActivity context,
 				AlertDialog.Builder builder, String okButton) {
 			state = 0;
 			this.context = context;
@@ -204,9 +202,9 @@ public class RobotRemocon extends RemoconActivity {
 	 */
 	private class ProgressDialogWrapper {
 		private ProgressDialog progressDialog;
-		private RemoconActivity activity;
+		private RobotActivity activity;
 
-		public ProgressDialogWrapper(RemoconActivity activity) {
+		public ProgressDialogWrapper(RobotActivity activity) {
 			this.activity = activity;
 			progressDialog = null;
 		}

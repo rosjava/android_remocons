@@ -31,7 +31,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.github.robotics_in_concert.rocon_android.robot_remocon;
+package com.github.ros_java.android_remocons.robot_remocon;
 
 
 import android.content.Intent;
@@ -39,7 +39,6 @@ import android.content.Intent;
 import java.util.HashMap;
 import java.util.List;
 
-import rocon_app_manager_msgs.PairingClient;
 import rocon_app_manager_msgs.KeyValue;
 
 /**
