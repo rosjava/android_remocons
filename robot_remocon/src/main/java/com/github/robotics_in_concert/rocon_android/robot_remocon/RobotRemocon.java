@@ -68,9 +68,10 @@ import com.github.ros_java.android_apps.application_management.AppManager;
 import com.github.ros_java.android_apps.application_management.ControlChecker;
 import com.github.ros_java.android_apps.application_management.MasterChecker;
 import com.github.ros_java.android_apps.application_management.RobotId;
-import com.github.ros_java.android_apps.application_management.RosAppActivity;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.WifiChecker;
+
+import com.github.robotics_in_concert.rocon_android.remocon_management.RemoconActivity;
 
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
@@ -79,7 +80,7 @@ import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.ErrorCodes;
 import rocon_app_manager_msgs.StopAppResponse;
 
-public class RobotRemocon extends RosAppActivity {
+public class RobotRemocon extends RemoconActivity {
 
     /* startActivityForResult Request Codes */
 	private static final int ROBOT_MASTER_CHOOSER_REQUEST_CODE = 1;
@@ -125,9 +126,9 @@ public class RobotRemocon extends RosAppActivity {
 	private class AlertDialogWrapper {
 		private int state;
 		private AlertDialog dialog;
-		private RosAppActivity context;
+		private RemoconActivity context;
 
-		public AlertDialogWrapper(RosAppActivity context,
+		public AlertDialogWrapper(RemoconActivity context,
 				AlertDialog.Builder builder, String yesButton, String noButton) {
 			state = 0;
 			this.context = context;
@@ -148,7 +149,7 @@ public class RobotRemocon extends RosAppActivity {
 							}).create();
 		}
 
-		public AlertDialogWrapper(RosAppActivity context,
+		public AlertDialogWrapper(RemoconActivity context,
 				AlertDialog.Builder builder, String okButton) {
 			state = 0;
 			this.context = context;
@@ -205,9 +206,9 @@ public class RobotRemocon extends RosAppActivity {
 	 */
 	private class ProgressDialogWrapper {
 		private ProgressDialog progressDialog;
-		private RosAppActivity activity;
+		private RemoconActivity activity;
 
-		public ProgressDialogWrapper(RosAppActivity activity) {
+		public ProgressDialogWrapper(RemoconActivity activity) {
 			this.activity = activity;
 			progressDialog = null;
 		}
@@ -270,12 +271,6 @@ public class RobotRemocon extends RosAppActivity {
         robotAppManager.setFunction("");
 		nodeMainExecutor.execute(robotAppManager,
 				nodeConfiguration.setNodeName("manage_apps"));
-
-        if ( fromApplication ) {
-            Log.i("RobotRemocon", "re-initialised after resuming from an executing application");
-        } else {
-            Log.i("RobotRemocon", "initialised");
-        }
     }
 
 	@Override
@@ -702,7 +697,7 @@ public class RobotRemocon extends RosAppActivity {
 
 	protected void updateAppList(final ArrayList<App> apps,
 			final ArrayList<App> runningApps) {
-		Log.i("RobotRemocon", "updating gridview");
+		Log.d("RobotRemocon", "updating app list gridview");
 		GridView gridview = (GridView) findViewById(R.id.gridview);
 		AppAdapter appAdapter = new AppAdapter(RobotRemocon.this, apps,
 				runningApps);
@@ -737,7 +732,7 @@ public class RobotRemocon extends RosAppActivity {
 				stopAppsButton.setVisibility(stopAppsButton.GONE);
 			}
 		}
-		Log.i("RobotRemocon", "gridview updated");
+		Log.d("RobotRemocon", "app list gridview updated");
 	}
 
 	public void chooseNewMasterClicked(View view) {
@@ -867,4 +862,19 @@ public class RobotRemocon extends RosAppActivity {
 		return dialog;
 	}
 
+//    @Override
+//    protected void onDestroy() {
+//        Log.i("RobotRemocon", "onDestroy()");
+//        super.onDestroy();
+//    }
+
+//    /**
+//     * Before you go into a robot, which activity has control over this function?
+//     * It doesn't get called from here.
+//     */
+//    @Override
+//    public void onBackPressed() {
+//        Log.i("RobotRemocon", "onBackpressed()");
+//        super.onBackPressed();
+//    }
 }

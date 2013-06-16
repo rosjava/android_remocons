@@ -14,26 +14,13 @@
  * the License.
  */
 
-/*
- * maven dependencies:
- *
- *  - snakeyaml
- *
- * can't use this one from maven central - it uses methods that davlik doesn't
- * like (generates Verify Errors on adb logcat).
-*/
-
 dependencies {
-  compile project(':remocon_management')
-  compile 'ros.rosjava_core:rosjava:0.0.0-SNAPSHOT'
-  compile 'com.github.ros_java.zeroconf_jmdns_suite:jmdns:0.1.0'
   compile 'ros.android_core:android_gingerbread_mr1:0.0.0-SNAPSHOT'
-  compile 'com.github.ros_java.android_extras:zxing:0.1.0'
+  compile 'ros.rosjava_core:rosjava:0.0.0-SNAPSHOT'
   compile 'com.github.ros_java.android_apps:application_management:0.1.0'
-  compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
 }
 
-apply plugin: 'android'
+apply plugin: 'android-library'
 
 android {
     compileSdkVersion 10
