@@ -58,7 +58,6 @@ import android.widget.TextView;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.exception.RemoteException;
-import org.ros.exception.RosException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.message.MessageListener;
 import org.ros.node.NodeConfiguration;
@@ -75,7 +74,6 @@ import com.github.robotics_in_concert.rocon_android.remocon_management.RemoconAc
 
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
-import rocon_app_manager_msgs.GetAppListResponse;
 import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.ErrorCodes;
 import rocon_app_manager_msgs.StopAppResponse;
@@ -257,6 +255,18 @@ public class RobotRemocon extends RemoconActivity {
 		exchangeButton.setVisibility(deactivate.GONE);
 	}
 
+    /**
+     * This gets processed as soon as the application returns it
+     * with a uri - this is either as a result of the master chooser
+     * or as in the case when it has been relaunched by an application,
+     * from intents set by the application.
+     *
+     * Here we configure the remocon environment for a particular robot,
+     * listing apps and providing the required triggers for interacting
+     * with that robot.
+     *
+     * @param nodeMainExecutor
+     */
 	@Override
 	protected void init(NodeMainExecutor nodeMainExecutor) {
 
@@ -265,12 +275,49 @@ public class RobotRemocon extends RemoconActivity {
 		nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
 				.newNonLoopback().getHostAddress(), getMasterUri());
 
-		listApps();
-
 		robotAppManager = new AppManager("", getRobotNameSpace());
-        robotAppManager.setFunction("");
-		nodeMainExecutor.execute(robotAppManager,
-				nodeConfiguration.setNodeName("manage_apps"));
+
+        // set up a subscriber to the applist topic so it can check
+        // status of available and running apps.
+        robotAppManager.setAppListSubscriber(new MessageListener<AppList>() {
+            @Override
+            public void onNewMessage(AppList message) {
+                availableAppsCache = (ArrayList<App>) message.getAvailableApps();
+                runningAppsCache = (ArrayList<App>) message.getRunningApps();
+                ArrayList<String> runningAppsNames = new ArrayList<String>();
+                int i = 0;
+                for (i = 0; i < availableAppsCache.size(); i++) {
+                    App item = availableAppsCache.get(i);
+                    ArrayList<String> clients = new ArrayList<String>();
+                    for (int j = 0; j < item.getPairingClients().size(); j++) {
+                        clients.add(item.getPairingClients().get(j)
+                                .getClientType());
+                    }
+                    if (!clients.contains("android")
+                            && item.getPairingClients().size() != 0) {
+                        availableAppsCache.remove(i);
+                    }
+                    if (item.getPairingClients().size() == 0) {
+                        Log.i("RobotRemocon",
+                                "Item name: " + item.getName());
+                        runningAppsNames.add(item.getName());
+                    }
+                }
+                Log.i("RobotRemocon", "AppList Publication: "
+                        + availableAppsCache.size() + " apps");
+                availableAppsCacheTime = System.currentTimeMillis();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateAppList(availableAppsCache,
+                                runningAppsCache);
+                    }
+                });
+            }
+        });
+        robotAppManager.setFunction("manage");
+        nodeMainExecutor.execute(robotAppManager,
+                nodeConfiguration.setNodeName("manage_apps"));
     }
 
 	@Override
@@ -540,54 +587,6 @@ public class RobotRemocon extends RemoconActivity {
 		if (!running && alreadyClicked == false) {
 			alreadyClicked = true;
 
-            // set up a subscriber to the applist topic so it can check
-            // for running apps and whether it's pair has shut down.
-			try {
-				robotAppManager.addAppListCallback(new MessageListener<AppList>() {
-					@Override
-					public void onNewMessage(AppList message) {
-						availableAppsCache = (ArrayList<App>) message.getAvailableApps();
-						runningAppsCache = (ArrayList<App>) message.getRunningApps();
-						ArrayList<String> runningAppsNames = new ArrayList<String>();
-						int i = 0;
-						for (i = 0; i < availableAppsCache.size(); i++) {
-							App item = availableAppsCache.get(i);
-							ArrayList<String> clients = new ArrayList<String>();
-							for (int j = 0; j < item.getPairingClients().size(); j++) {
-
-								clients.add(item.getPairingClients().get(j)
-										.getClientType());
-							}
-
-							if (!clients.contains("android")
-									&& item.getPairingClients().size() != 0) {
-								availableAppsCache.remove(i);
-							}
-
-							if (item.getPairingClients().size() == 0) {
-								Log.i("RobotRemocon",
-										"Item name: " + item.getName());
-								runningAppsNames.add(item.getName());
-							}
-
-						}
-						Log.i("RobotRemocon", "AppList Publication: "
-								+ availableAppsCache.size() + " apps");
-						availableAppsCacheTime = System.currentTimeMillis();
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								updateAppList(availableAppsCache,
-										runningAppsCache);
-							}
-						});
-					}
-				});
-			} catch (RosException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 			AppManager appManager = new AppManager(app.getName(),
 					getRobotNameSpace());
 			appManager.setFunction("start");
@@ -639,60 +638,6 @@ public class RobotRemocon extends RemoconActivity {
 					nodeConfiguration.setNodeName("start_app"));
 
 		}
-	}
-
-	private void listApps() {
-		Log.i("RobotRemocon", "listing application");
-		AppManager appManager = new AppManager("", getRobotNameSpace());
-		appManager.setFunction("list");
-		appManager.setListService(new ServiceResponseListener<GetAppListResponse>() {
-					@Override
-					public void onSuccess(GetAppListResponse message) {
-						Log.i("RobotRemocon", "App got lists successfully");
-						availableAppsCache = (ArrayList<App>) message
-								.getAvailableApps();
-						runningAppsCache = (ArrayList<App>) message
-								.getRunningApps();
-						ArrayList<String> runningAppsNames = new ArrayList<String>();
-						int i = 0;
-						for (i = 0; i < availableAppsCache.size(); i++) {
-							App item = availableAppsCache.get(i);
-							ArrayList<String> clients = new ArrayList<String>();
-							for (int j = 0; j < item.getPairingClients().size(); j++) {
-								clients.add(item.getPairingClients().get(j)
-										.getClientType());
-							}
-							if (!clients.contains("android")
-									&& item.getPairingClients().size() != 0) {
-								availableAppsCache.remove(i);
-								i--;
-							}
-
-							if (item.getPairingClients().size() == 0) {
-								Log.i("RobotRemocon",
-										"Item name: " + item.getName());
-								runningAppsNames.add(item.getName());
-							}
-						}
-						Log.i("RobotRemocon", "ListApps.Response: "
-								+ availableAppsCache.size() + " apps");
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								updateAppList(availableAppsCache,
-										runningAppsCache);
-							}
-						});
-
-					}
-
-					@Override
-					public void onFailure(RemoteException e) {
-						Log.e("RobotRemocon", "App failed to get lists!");
-					}
-				});
-		nodeMainExecutor.execute(appManager,
-				nodeConfiguration.setNodeName("list_app"));
 	}
 
 	protected void updateAppList(final ArrayList<App> apps,
@@ -777,7 +722,6 @@ public class RobotRemocon extends RemoconActivity {
                                         runningAppsCache);
                             }
                         });
-                        listApps();
                         progressDialog.dismiss();
 
                     }

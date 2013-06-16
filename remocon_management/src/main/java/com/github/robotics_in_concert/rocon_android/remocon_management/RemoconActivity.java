@@ -47,6 +47,28 @@ import com.github.ros_java.android_apps.application_management.RobotNameResolver
 import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.StopAppResponse;
 
+/**
+ * Design goal of this activity should be to handle everything
+ * necessary for interaction with a robot/rocon app manager. This
+ * involves direct interactions on services and topics, and also
+ * necessary data transfer required for correct display of the
+ * 'robot' screen in the RobotRemocon.
+ *
+ * Primary differences between this and the RosAppActivity
+ *
+ * - No start app, that is handled by the remocons themselves.
+ * - Far less 'what am i?' logic.
+ * - No backpress processing
+ *
+ * There is some work that needs to be done in order to work out what
+ * is shared between the remocons. Not even sure it will really be
+ * possible.
+ *
+ * Perhaps:
+ *  - shared connector/master chooser.
+ * Out:
+ *  - Dashboard
+ */
 public abstract class RemoconActivity extends RosActivity {
 
 	public static final String ROBOT_DESCRIPTION_EXTRA = "com.github.ros_java.android_apps.application_management.RobotDescription";
@@ -223,15 +245,15 @@ public abstract class RemoconActivity extends RosActivity {
 					@Override
 					public void onSuccess(StopAppResponse message) {
                         if ( message.getStopped() ) {
-						    Log.i("RemoconManagement", "App stopped successfully");
+						    Log.i("RemoconManagement", "rapp stopped successfully");
                         } else {
-                            Log.i("RemoconManagement", "Stop app request rejected [" + message.getMessage() + "]");
+                            Log.i("RemoconManagement", "stop rapp request rejected [" + message.getMessage() + "]");
                         }
 					}
 
 					@Override
 					public void onFailure(RemoteException e) {
-						Log.e("RemoconManagement", "App failed to stop when requested!");
+						Log.e("RemoconManagement", "rapp failed to stop when requested!");
 					}
 				});
 		nodeMainExecutor.execute(appManager,
@@ -249,15 +271,6 @@ public abstract class RemoconActivity extends RosActivity {
 	@Override
 	protected void onDestroy() {
         Log.d("RemoconManagement", "onDestroy()");
-        // check first if we've logged into a robot.
-        //
-        // Also should actually check if there is an app that is running
-        // 1) for niceness when closing, but also 2) this onDestroy() is called
-        // as the android app launches, I don't know if there's any determinism
-        // ensuring stop goes through before start does.
-//        if ( getRobotNameSpace() != null ) {
-//			stopApp();
-//		}
 		super.onDestroy();
 	}
 
