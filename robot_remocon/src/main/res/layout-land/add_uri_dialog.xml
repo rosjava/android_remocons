@@ -84,14 +84,14 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/text_or"
             android:drawableLeft="@drawable/qrcode"
-            android:text="Scan a QR-code URI"
+            android:text="QR-Code"
             android:weightSum="1" />
 
         <Button
             android:id="@+id/search_master_button"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-            android:text="Search for local network" />
+            android:text="Scan the local network" />
 
         <Button
             android:id="@+id/cancel_button"

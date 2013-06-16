@@ -84,12 +84,9 @@ public class RobotRemocon extends RobotActivity {
 	private static final int MULTI_RAPP_DISABLED = 1;
 	private static final int CLOSE_EXISTING = 0;
 
-	private NodeConfiguration nodeConfiguration;
-	private NodeMainExecutor nodeMainExecutor;
 	private TextView robotNameView;
 	private ArrayList<App> availableAppsCache;
 	private ArrayList<App> runningAppsCache;
-	private AppManager robotAppManager;
 	private Button deactivate;
 	private Button stopAppsButton;
 	private Button exchangeButton;
@@ -98,6 +95,7 @@ public class RobotRemocon extends RobotActivity {
 	private AlertDialogWrapper wifiDialog;
 	private AlertDialogWrapper evictDialog;
 	private AlertDialogWrapper errorDialog;
+    protected AppManager listAppsSubscriber;
 	private boolean alreadyClicked = false;
 	private boolean validatedRobot;
 	private boolean runningNodes = false;
@@ -237,9 +235,6 @@ public class RobotRemocon extends RobotActivity {
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		String defaultRobotName = getString(R.string.default_robot);
-		setDefaultRobotName(defaultRobotName);
-		setDefaultAppName(null);  // stops the rosappactivity from trying to contact the app manager on its own.
 		setDashboardResource(R.id.top_bar);
 		setMainWindowResource(R.layout.main);
 		super.onCreate(savedInstanceState);
@@ -269,15 +264,11 @@ public class RobotRemocon extends RobotActivity {
 	protected void init(NodeMainExecutor nodeMainExecutor) {
 
 		super.init(nodeMainExecutor);
-		this.nodeMainExecutor = nodeMainExecutor;
-		nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
-				.newNonLoopback().getHostAddress(), getMasterUri());
-
-		robotAppManager = new AppManager("", getRobotNameSpace());
 
         // set up a subscriber to the applist topic so it can check
         // status of available and running apps.
-        robotAppManager.setAppListSubscriber(new MessageListener<AppList>() {
+        listAppsSubscriber = new AppManager("", getRobotNameSpace());
+        listAppsSubscriber.setAppListSubscriber(new MessageListener<AppList>() {
             @Override
             public void onNewMessage(AppList message) {
                 availableAppsCache = (ArrayList<App>) message.getAvailableApps();
@@ -313,9 +304,9 @@ public class RobotRemocon extends RobotActivity {
                 });
             }
         });
-        robotAppManager.setFunction("list_apps");
-        nodeMainExecutor.execute(robotAppManager,
-                nodeConfiguration.setNodeName("manage_apps"));
+        listAppsSubscriber.setFunction("list_apps");
+        nodeMainExecutor.execute(listAppsSubscriber,
+                nodeConfiguration.setNodeName("list_apps_subscriber_node"));
     }
 
 	@Override
@@ -680,7 +671,7 @@ public class RobotRemocon extends RobotActivity {
 
 	public void chooseNewMasterClicked(View view) {
 
-		nodeMainExecutor.shutdownNodeMain(robotAppManager);
+		nodeMainExecutor.shutdownNodeMain(listAppsSubscriber);
 		releaseRobotNameResolver();
 		releaseDashboardNode(); // TODO this work costs too many times
 		availableAppsCache.clear();

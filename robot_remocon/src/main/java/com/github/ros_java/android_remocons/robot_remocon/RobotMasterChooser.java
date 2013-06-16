@@ -102,7 +102,6 @@ public class RobotMasterChooser extends Activity {
 
 	public RobotMasterChooser() {
 		robots = new ArrayList<RobotDescription>();
-
 	}
 
 	private void readRobotList() {
@@ -111,14 +110,14 @@ public class RobotMasterChooser extends Activity {
 				RobotsContentProvider.CONTENT_URI, null, null, null, null);
 		if (c == null) {
 			robots = new ArrayList<RobotDescription>();
-			Log.e("MasterChooserActivity", "Content provider failed!!!");
+			Log.e("RobotRemocon", "robot master chooser provider failed!!!");
 			return;
 		}
 		if (c.getCount() > 0) {
 			c.moveToFirst();
 			str = c.getString(c
 					.getColumnIndex(RobotsContentProvider.TABLE_COLUMN));
-			Log.i("MasterChooserActivity", "Found: " + str);
+			Log.i("RobotRemocon", "robot master chooser found a robot: " + str);
 		}
 		if (str != null) {
 			Yaml yaml = new Yaml();
@@ -129,7 +128,7 @@ public class RobotMasterChooser extends Activity {
 	}
 
 	public void writeRobotList() {
-		Log.i("MasterChooserActivity", "Saving robot...");
+		Log.i("RobotRemocon", "robot master chooser saving robot...");
 		Yaml yaml = new Yaml();
 		String txt = null;
 		final List<RobotDescription> robot = robots; // Avoid race conditions
@@ -141,7 +140,7 @@ public class RobotMasterChooser extends Activity {
 		Uri newEmp = getContentResolver().insert(
 				RobotsContentProvider.CONTENT_URI, cv);
 		if (newEmp != RobotsContentProvider.CONTENT_URI) {
-			Log.e("MasterChooserActivity", "Could not save, non-equal URI's");
+			Log.e("RobotRemocon", "robot master chooser could not save robot, non-equal URI's");
 		}
 	}
 
@@ -246,7 +245,7 @@ public class RobotMasterChooser extends Activity {
 			RobotDescription robot = iter.next();
 			if (robot == null || robot.getConnectionStatus() == null
 					|| robot.getConnectionStatus().equals(robot.ERROR)) {
-				Log.i("RosAndroid", "Removing robot with connection status '"
+				Log.i("RobotRemocon", "robot master chooser removing robot with connection status '"
 						+ robot.getConnectionStatus() + "'");
 				iter.remove();
 			}
@@ -270,7 +269,7 @@ public class RobotMasterChooser extends Activity {
 			Yaml yaml = new Yaml();
 			Map<String, Object> data = (Map<String, Object>) yaml
 					.load(scanResult.getContents().toString());
-			Log.i("MasterChooserActivity", "OBJECT: " + data.toString());
+			Log.d("RobotRemocon", "RobotMasterChooser OBJECT: " + data.toString());
 			try {
 				addMaster(new RobotId(data), false);
 			} catch (Exception e) {

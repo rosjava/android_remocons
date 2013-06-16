@@ -3,6 +3,5 @@
 
     <string name="app_name">Robot Remocon</string>
     <string name="exit">Exit</string>
-    <string name="default_robot">turtlebot</string>
 
 </resources>
