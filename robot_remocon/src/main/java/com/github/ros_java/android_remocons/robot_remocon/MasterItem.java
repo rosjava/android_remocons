@@ -34,6 +34,8 @@
 package com.github.ros_java.android_remocons.robot_remocon;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +48,9 @@ import com.github.ros_java.android_apps.application_management.ControlChecker;
 import com.github.ros_java.android_apps.application_management.MasterChecker;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import android.net.wifi.WifiManager;
+
+import org.jboss.netty.buffer.ChannelBuffer;
+
 /**
  * Data class behind view of one item in the list of ROS Masters. Gets created
  * with a master URI and a local host name, then starts a {@link MasterChecker}
@@ -148,8 +153,19 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
       iv.setImageResource(R.drawable.wifi_question_mark);
     } else if (description.getRobotType().equals("pr2")) {
       iv.setImageResource(R.drawable.pr2);
-    } else if (description.getRobotType().equals("turtlebot")) {
-      iv.setImageResource(R.drawable.turtlebot);
+//    } else if (description.getRobotType().equals("turtlebot")) {
+//      iv.setImageResource(R.drawable.turtlebot);
+    } else if ( description.getRobotIconData() == null ) {
+        iv.setImageResource(R.drawable.question_mark);
+    } else if( description.getRobotIconData().array().length > 0 && description.getRobotIconFormat() != null &&
+            (description.getRobotIconFormat().equals("jpeg") || description.getRobotIconFormat().equals("png")) ) {
+      ChannelBuffer buffer = description.getRobotIconData();
+      Bitmap iconBitmap = BitmapFactory.decodeByteArray(buffer.array(), buffer.arrayOffset(), buffer.readableBytes());
+      if( iconBitmap != null ) {
+        iv.setImageBitmap(iconBitmap);
+      } else {
+          iv.setImageResource(R.drawable.question_mark);
+      }
     } else {
       iv.setImageResource(R.drawable.question_mark);
     }

@@ -37,7 +37,6 @@ import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
 import com.github.ros_java.android_apps.application_management.AppManager;
-import com.github.ros_java.android_apps.application_management.rapp_manager.PlatformInfoServiceClient;
 import com.github.ros_java.android_apps.application_management.Dashboard;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.RobotNameResolver;
@@ -184,10 +183,10 @@ public abstract class RobotActivity extends RosActivity {
 				nodeConfiguration.setNodeName("dashboard"));
 
         // Platform Information
-        PlatformInfoServiceClient client = new PlatformInfoServiceClient(getRobotNameSpace());
-        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("platform_info_node"));
-        this.platformInfo = client.waitForResponse();
-        nodeMainExecutorService.shutdownNodeMain(client);
+//        PlatformInfoServiceClient client = new PlatformInfoServiceClient(getRobotNameSpace());
+//        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("platform_info_node"));
+//        client.waitForResponse();
+//        nodeMainExecutorService.shutdownNodeMain(client);
 
         // Child application post-handling
         if (fromApplication) {
