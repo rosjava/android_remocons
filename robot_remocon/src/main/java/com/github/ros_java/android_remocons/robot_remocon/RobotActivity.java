@@ -37,11 +37,11 @@ import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
 import com.github.ros_java.android_apps.application_management.AppManager;
+import com.github.ros_java.android_apps.application_management.rapp_manager.PlatformInfoServiceClient;
 import com.github.ros_java.android_apps.application_management.Dashboard;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.RobotNameResolver;
 
-import rocon_app_manager_msgs.GetPlatformInfoResponse;
 import rocon_app_manager_msgs.PlatformInfo;
 import rocon_app_manager_msgs.StopAppResponse;
 
@@ -69,7 +69,6 @@ public abstract class RobotActivity extends RosActivity {
       it can be launched by the one of its children applications.
      */
     protected boolean fromApplication = false;  // true if it is a remocon activity getting control from a closing application
-    private PlatformInfo platformInfo;
 
 	private int dashboardResourceId = 0;
 	private int mainWindowId = 0;
@@ -79,6 +78,7 @@ public abstract class RobotActivity extends RosActivity {
 	private URI uri;
 	protected RobotNameResolver robotNameResolver;
 	protected RobotDescription robotDescription;
+    private PlatformInfo platformInfo;
 
 	protected void setDashboardResource(int resource) {
 		dashboardResourceId = resource;
@@ -177,13 +177,17 @@ public abstract class RobotActivity extends RosActivity {
 
         // Dashboard
         if (robotDescription == null) {
-            dashboard.setRobotName(getRobotNameSpace().getNamespace()
+            dashboard.setRobotName(getRobotNameSpaceResolver().getNamespace()
                 .toString());
         }
         nodeMainExecutor.execute(dashboard,
 				nodeConfiguration.setNodeName("dashboard"));
 
-        platformInfo = getPlatformInfo();
+        // Platform Information
+        PlatformInfoServiceClient client = new PlatformInfoServiceClient(getRobotNameSpace());
+        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("platform_info_node"));
+        this.platformInfo = client.waitForResponse();
+        nodeMainExecutorService.shutdownNodeMain(client);
 
         // Child application post-handling
         if (fromApplication) {
@@ -195,45 +199,13 @@ public abstract class RobotActivity extends RosActivity {
 		return robotNameResolver.getAppNameSpace();
 	}
 
-	protected NameResolver getRobotNameSpace() {
+	protected NameResolver getRobotNameSpaceResolver() {
 		return robotNameResolver.getRobotNameSpace();
 	}
 
-    /**
-     * Convenience function for platform info requests.
-     * This (re)sets the private platformInfo variable.
-     *
-     * This is a blocking call!
-     *
-     * @return PlatformInfo : the resulting platform info in msg format
-     */
-    public PlatformInfo getPlatformInfo() {
-        platformInfo = null;
-        AppManager platformInfoService = new AppManager("", getRobotNameSpace());
-        platformInfoService.setPlatformInfoService(new ServiceResponseListener<GetPlatformInfoResponse>() {
-            @Override
-            public void onSuccess(GetPlatformInfoResponse message) {
-                Log.i("RobotRemocon", "platform info retrieved successfully");
-                platformInfo = message.getPlatformInfo();
-            }
-
-            @Override
-            public void onFailure(RemoteException e) {
-                Log.e("RobotRemocon", "failed to get platform information!");
-            }
-        });
-        platformInfoService.setFunction("platform_info");
-        nodeMainExecutor.execute(platformInfoService, nodeConfiguration.setNodeName("platform_info_service_node"));
-        while (platformInfo == null) {
-            try {
-                Thread.sleep(100);
-            } catch (Exception e) {
-            }
-        }
-        nodeMainExecutor.shutdownNodeMain(platformInfoService);
-        return platformInfo;
+    protected String getRobotNameSpace() {
+        return robotNameResolver.getRobotNameSpace().getNamespace().toString();
     }
-
 
     @Override
 	public void startMasterChooser() {
@@ -264,7 +236,7 @@ public abstract class RobotActivity extends RosActivity {
 	protected void stopApp() {
 		Log.i("RobotRemocon", "android application stopping a rapp [" + robotAppName + "]");
 		AppManager appManager = new AppManager(robotAppName,
-				getRobotNameSpace());
+				getRobotNameSpaceResolver());
 		appManager.setFunction("stop");
 
 		appManager

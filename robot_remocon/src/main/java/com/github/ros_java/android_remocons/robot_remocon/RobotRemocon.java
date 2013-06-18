@@ -56,11 +56,9 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
 
-import org.ros.address.InetAddressFactory;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.message.MessageListener;
-import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.ros_java.android_apps.application_management.AppManager;
@@ -267,7 +265,7 @@ public class RobotRemocon extends RobotActivity {
 
         // set up a subscriber to the applist topic so it can check
         // status of available and running apps.
-        listAppsSubscriber = new AppManager("", getRobotNameSpace());
+        listAppsSubscriber = new AppManager("", getRobotNameSpaceResolver());
         listAppsSubscriber.setAppListSubscriber(new MessageListener<AppList>() {
             @Override
             public void onNewMessage(AppList message) {
@@ -577,7 +575,7 @@ public class RobotRemocon extends RobotActivity {
 			alreadyClicked = true;
 
 			AppManager appManager = new AppManager(app.getName(),
-					getRobotNameSpace());
+					getRobotNameSpaceResolver());
 			appManager.setFunction("start");
 
 			stopProgress();
@@ -695,7 +693,7 @@ public class RobotRemocon extends RobotActivity {
         // Should find a way to stop the application without using *, i.e. keep
         // the previously rapp-initialised AppManager around and stop that from here.
         // Can we use just one AppManager?
-        AppManager appManager = new AppManager("*", getRobotNameSpace());
+        AppManager appManager = new AppManager("*", getRobotNameSpaceResolver());
         appManager.setFunction("stop");
         appManager
                 .setStopService(new ServiceResponseListener<StopAppResponse>() {
