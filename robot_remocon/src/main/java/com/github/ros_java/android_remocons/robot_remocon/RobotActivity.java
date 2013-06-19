@@ -156,13 +156,8 @@ public abstract class RobotActivity extends RosActivity {
 				.newNonLoopback().getHostAddress(), getMasterUri());
 
         // TODO - name resolution below is a mess and hard to debug, clean it up (DJS)
-        // only set by the remocons -- do we need this here?
-		if (getIntent().hasExtra(ROBOT_DESCRIPTION_EXTRA)) {
-            // logging is only to discover if this is actually getting called (maybe from RobotMasterChooser)
-            Log.w("RobotRemocon", "ROBOT_DESCRIPTION_EXTRA set");
-			robotDescription = (RobotDescription) getIntent()
-					.getSerializableExtra(ROBOT_DESCRIPTION_EXTRA);
-		}
+        // robotDescription will get set by the robot master chooser as it exits
+        // (see onActivityResult in RobotRemocon.java). Check for that here.
 		if (robotDescription != null) {
             robotNameResolver.setRobot(robotDescription);
 			dashboard.setRobotName(robotDescription.getRobotType());
