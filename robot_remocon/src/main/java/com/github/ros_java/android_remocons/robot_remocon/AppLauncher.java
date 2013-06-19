@@ -119,6 +119,7 @@ public class AppLauncher {
       intent.putExtra(ROBOT_DESCRIPTION_EXTRA, currentRobot);
       intent.putExtra("ChooserURI", uri.toString());
       intent.putExtra("runningNodes", runningNodes);
+      intent.putExtra("PairedManagerActivity", "com.github.robotics_in_concert.rocon_android.robot_remocon.RobotRemocon");
       try {
         className = intent.getAction();
         Log.i("RobotRemocon", "trying to startActivity( action: " + intent.getAction() + " )");

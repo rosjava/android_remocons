@@ -265,10 +265,4 @@ public abstract class RobotActivity extends RosActivity {
         Log.d("RobotRemocon", "onDestroy()");
 		super.onDestroy();
 	}
-
-//	@Override
-//	public void onBackPressed() {
-//        Log.d("RobotRemocon", "onBackPress()");
-//        finish();
-//	}
 }
