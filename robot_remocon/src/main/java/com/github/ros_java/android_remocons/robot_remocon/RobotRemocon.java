@@ -803,6 +803,8 @@ public class RobotRemocon extends RobotActivity {
 
     @Override
     public void onBackPressed() {
-        returnToRobotMasterChooser();
+        // this takes too long to complete and gets in the way of quickly shutting down.
+        // returnToRobotMasterChooser();
+        finish();
     }
 }

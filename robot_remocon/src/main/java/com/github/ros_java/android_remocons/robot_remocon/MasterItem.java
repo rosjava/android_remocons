@@ -36,6 +36,8 @@ package com.github.ros_java.android_remocons.robot_remocon;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -102,7 +104,6 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
   @Override
   public void receive(RobotDescription robotDescription) {
     description.copyFrom(robotDescription);
-    description.setConnectionStatus(RobotDescription.OK);
     safePopulateView();
   }
   @Override
@@ -136,6 +137,7 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
   private void populateView() {
     Log.i("MasterItem", "connection status = " + description.getConnectionStatus());
     boolean isOk = description.getConnectionStatus().equals(RobotDescription.OK);
+    boolean isUnavailable = description.getConnectionStatus().equals(RobotDescription.UNAVAILABLE);
     boolean isControl = description.getConnectionStatus().equals(RobotDescription.CONTROL);
     boolean isWifi = description.getConnectionStatus().equals(RobotDescription.WIFI);
     boolean isError = description.getConnectionStatus().equals(RobotDescription.ERROR);
@@ -144,17 +146,13 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
     progress.setIndeterminate(true);
     progress.setVisibility(isConnecting ? View.VISIBLE : View.GONE );
     ImageView errorImage = (ImageView) view.findViewById(R.id.error_icon);
-    errorImage.setVisibility(isError ? View.VISIBLE : View.GONE );
+    errorImage.setVisibility( isError ? View.VISIBLE : View.GONE );
     ImageView iv = (ImageView) view.findViewById(R.id.robot_icon);
-    iv.setVisibility((isOk || isWifi || isControl) ? View.VISIBLE : View.GONE);
+    iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
     if (description.getRobotType() == null) {
       iv.setImageResource(R.drawable.question_mark);
     } else if (isWifi) {
       iv.setImageResource(R.drawable.wifi_question_mark);
-    } else if (description.getRobotType().equals("pr2")) {
-      iv.setImageResource(R.drawable.pr2);
-//    } else if (description.getRobotType().equals("turtlebot")) {
-//      iv.setImageResource(R.drawable.turtlebot);
     } else if ( description.getRobotIconData() == null ) {
         iv.setImageResource(R.drawable.question_mark);
     } else if( description.getRobotIconData().array().length > 0 && description.getRobotIconFormat() != null &&
@@ -168,6 +166,13 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
       }
     } else {
       iv.setImageResource(R.drawable.question_mark);
+    }
+    if ( isUnavailable ) {
+      // Be nice to do alpha here, but that is api 16 and we are targeting 10.
+      ColorMatrix matrix = new ColorMatrix();
+      matrix.setSaturation(0); //0 means grayscale
+      ColorMatrixColorFilter cf = new ColorMatrixColorFilter(matrix);
+      iv.setColorFilter(cf);
     }
     TextView tv;
     tv = (TextView) view.findViewById(R.id.uri);
