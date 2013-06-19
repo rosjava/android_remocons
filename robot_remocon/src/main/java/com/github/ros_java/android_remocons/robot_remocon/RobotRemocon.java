@@ -668,15 +668,23 @@ public class RobotRemocon extends RobotActivity {
 	}
 
 	public void chooseNewMasterClicked(View view) {
-
-		nodeMainExecutor.shutdownNodeMain(listAppsSubscriber);
-		releaseRobotNameResolver();
-		releaseDashboardNode(); // TODO this work costs too many times
-		availableAppsCache.clear();
-		runningAppsCache.clear();
-		startActivityForResult(new Intent(this, RobotMasterChooser.class),
-				ROBOT_MASTER_CHOOSER_REQUEST_CODE);
+        returnToRobotMasterChooser();
 	}
+
+    /**
+     * This returns the activity to the robot master chooser
+     * activity. It will get triggered via either a backpress
+     * or the button provided in the RobotRemocon activity.
+     */
+    private void returnToRobotMasterChooser() {
+        nodeMainExecutor.shutdownNodeMain(listAppsSubscriber);
+        releaseRobotNameResolver();
+        releaseDashboardNode(); // TODO this work costs too many times
+        availableAppsCache.clear();
+        runningAppsCache.clear();
+        startActivityForResult(new Intent(this, RobotMasterChooser.class),
+                ROBOT_MASTER_CHOOSER_REQUEST_CODE);
+    }
 
 	public void exchangeButtonClicked(View view) {
 	}
@@ -793,19 +801,8 @@ public class RobotRemocon extends RobotActivity {
 		return dialog;
 	}
 
-//    @Override
-//    protected void onDestroy() {
-//        Log.i("RobotRemocon", "onDestroy()");
-//        super.onDestroy();
-//    }
-
-//    /**
-//     * Before you go into a robot, which activity has control over this function?
-//     * It doesn't get called from here.
-//     */
-//    @Override
-//    public void onBackPressed() {
-//        Log.i("RobotRemocon", "onBackpressed()");
-//        super.onBackPressed();
-//    }
+    @Override
+    public void onBackPressed() {
+        returnToRobotMasterChooser();
+    }
 }

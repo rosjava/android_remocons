@@ -182,12 +182,6 @@ public abstract class RobotActivity extends RosActivity {
         nodeMainExecutor.execute(dashboard,
 				nodeConfiguration.setNodeName("dashboard"));
 
-        // Platform Information
-//        PlatformInfoServiceClient client = new PlatformInfoServiceClient(getRobotNameSpace());
-//        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("platform_info_node"));
-//        client.waitForResponse();
-//        nodeMainExecutorService.shutdownNodeMain(client);
-
         // Child application post-handling
         if (fromApplication) {
             stopApp();
@@ -272,9 +266,9 @@ public abstract class RobotActivity extends RosActivity {
 		super.onDestroy();
 	}
 
-	@Override
-	public void onBackPressed() {
-        Log.d("RobotRemocon", "onBackPress()");
-        finish();
-	}
+//	@Override
+//	public void onBackPressed() {
+//        Log.d("RobotRemocon", "onBackPress()");
+//        finish();
+//	}
 }
