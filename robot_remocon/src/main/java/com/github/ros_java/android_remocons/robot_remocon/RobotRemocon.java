@@ -307,6 +307,15 @@ public class RobotRemocon extends RobotActivity {
                 nodeConfiguration.setNodeName("list_apps_subscriber_node"));
     }
 
+    /**
+     * The main result gathered here is that from the robot master chooser
+     * which is started on top of the initial RobotRemocon Activity.
+     * This proceeds to then set the uri and trigger the init() calls.
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == RESULT_CANCELED) {

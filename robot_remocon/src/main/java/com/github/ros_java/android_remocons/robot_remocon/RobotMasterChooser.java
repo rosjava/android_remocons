@@ -164,6 +164,14 @@ public class RobotMasterChooser extends Activity {
 		});
 	}
 
+    /**
+     * Called when the user clicks on one of the robots in master chooser
+     * view. Should probably check the connection status before
+     * proceeding here, but perhaps we can just rely on the user clicking
+     * refresh so this process stays without any lag delay.
+     *
+     * @param position
+     */
 	private void choose(int position) {
 		RobotDescription robot = robots.get(position);
 		if (robot == null || robot.getConnectionStatus() == null
@@ -179,7 +187,19 @@ public class RobotMasterChooser extends Activity {
 								}
 							}).create();
 			d.show();
-		} else {
+        } else if ( robot.getConnectionStatus().equals(robot.UNAVAILABLE) ) {
+            AlertDialog d = new AlertDialog.Builder(RobotMasterChooser.this)
+                    .setTitle("Robot Unavailable!")
+                    .setCancelable(false)
+                    .setMessage("Currently busy serving another.")
+                    .setNeutralButton("OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,
+                                                    int which) {
+                                }
+                            }).create();
+            d.show();
+        } else {
 			Intent resultIntent = new Intent();
 			resultIntent
 					.putExtra(ROBOT_DESCRIPTION_EXTRA, robots.get(position));
