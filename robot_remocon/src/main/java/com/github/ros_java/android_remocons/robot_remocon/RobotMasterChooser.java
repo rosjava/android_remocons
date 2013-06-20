@@ -213,7 +213,7 @@ public class RobotMasterChooser extends Activity {
 	}
 
 	private void addMaster(RobotId robotId, boolean connectToDuplicates) {
-		Log.i("MasterChooserActivity", "addMaster [" + robotId.toString() + "]");
+		Log.i("MasterChooserActivity", "adding master to the robot master chooser [" + robotId.toString() + "]");
 		if (robotId == null || robotId.getMasterUri() == null) {
 		} else {
 			for (int i = 0; i < robots.toArray().length; i++) {

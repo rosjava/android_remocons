@@ -402,7 +402,14 @@ public class RobotRemocon extends RobotActivity {
 								}
 							}
 						});
-						validatedRobot = true;
+                        // Check that it's not busy
+                        if ( robotDescription.getConnectionStatus() == RobotDescription.UNAVAILABLE ) {
+                            errorDialog.show("Robot is unavailable : busy serving another remote controller.");
+                            errorDialog.dismiss();
+                            startMasterChooser();
+                        } else {
+                            validatedRobot = true;
+                        }
 					}
 				}, new MasterChecker.FailureHandler() {
 					public void handleFailure(String reason) {
