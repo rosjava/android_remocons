@@ -41,7 +41,6 @@ import com.github.ros_java.android_apps.application_management.Dashboard;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.RobotNameResolver;
 
-import rocon_app_manager_msgs.PlatformInfo;
 import rocon_app_manager_msgs.StopAppResponse;
 
 /**
@@ -77,7 +76,6 @@ public abstract class RobotActivity extends RosActivity {
 	private URI uri;
 	protected RobotNameResolver robotNameResolver;
 	protected RobotDescription robotDescription;
-    private PlatformInfo platformInfo;
 
 	protected void setDashboardResource(int resource) {
 		dashboardResourceId = resource;

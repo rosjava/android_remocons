@@ -56,9 +56,12 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
 
+import org.ros.address.InetAddressFactory;
+import org.ros.android.NodeMainExecutorService;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.message.MessageListener;
+import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.ros_java.android_apps.application_management.AppManager;
@@ -67,6 +70,7 @@ import com.github.ros_java.android_apps.application_management.MasterChecker;
 import com.github.ros_java.android_apps.application_management.RobotId;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.WifiChecker;
+import com.github.ros_java.android_apps.application_management.rapp_manager.InvitationServiceClient;
 
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
@@ -408,7 +412,31 @@ public class RobotRemocon extends RobotActivity {
                             errorDialog.dismiss();
                             startMasterChooser();
                         } else {
-                            validatedRobot = true;
+                            // Invitation checker - should reconstruct the control/master/invitation checkers
+                            // Note the control checker is doing user control checking, not used by turtlebots, but by pr2?
+                            NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
+                            NodeConfiguration nodeConfiguration;
+                            try {
+                                URI uri = new URI(robotDescription.getMasterUri());
+                                nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
+                            } catch (URISyntaxException e) {
+                                return; // should handle this
+                            }
+                            InvitationServiceClient client = new InvitationServiceClient(robotDescription.getRobotName());
+                            nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
+                            Boolean result = client.waitForResponse();
+                            nodeMainExecutorService.shutdownNodeMain(client);
+                            if ( !result ) {
+                                errorDialog.show("Timed out trying to invite the robot for pairing mode.");
+                                errorDialog.dismiss();
+                                startMasterChooser();
+                            } else {
+                                if ( client.getInvitationResult().equals(Boolean.TRUE) ) {
+                                    validatedRobot = true;
+                                } else {
+                                    startMasterChooser();
+                                }
+                            }
                         }
 					}
 				}, new MasterChecker.FailureHandler() {
