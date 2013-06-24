@@ -134,7 +134,7 @@ public abstract class RobotActivity extends RosActivity {
             Log.i("RobotRemocon", "reinitialising from a closing remocon application");
             fromApplication = true;
 		} else {
-			// do we need anything here? I think the first two cases cover everything
+			// DJS: do we need anything here? I think the first two cases cover everything
 		}
 
 		if (dashboard == null) {
@@ -146,31 +146,31 @@ public abstract class RobotActivity extends RosActivity {
 		}
 	}
 
+    /**
+     * Start cooking! Init is run once either the master chooser has
+     * finished and detected all the robot information it needs, or
+     * it has returned from a remocon application. Either way, both
+     * are guaranteed to return with a master uri and robot description.
+     *
+     * We use them here to kickstart everything else.
+     *
+     * @param nodeMainExecutor
+     */
 	@Override
 	protected void init(NodeMainExecutor nodeMainExecutor) {
 		this.nodeMainExecutor = nodeMainExecutor;
 		nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
 				.newNonLoopback().getHostAddress(), getMasterUri());
 
-        // TODO - name resolution below is a mess and hard to debug, clean it up (DJS)
         // robotDescription will get set by the robot master chooser as it exits
-        // (see onActivityResult in RobotRemocon.java). Check for that here.
-		if (robotDescription != null) {
-            robotNameResolver.setRobot(robotDescription);
-			dashboard.setRobotName(robotDescription.getRobotType());
-		} else if (fromApplication) {
-            robotNameResolver.setRobotName(getIntent().getStringExtra("RobotName"));
-            dashboard.setRobotName(getIntent().getStringExtra("RobotType"));
-		}
+        // or passed back as an intent from a closing remocon application.
+        // It should never be null!
+        robotNameResolver.setRobot(robotDescription);
+        dashboard.setRobotName(robotDescription.getRobotType());
 		nodeMainExecutor.execute(robotNameResolver,
 				nodeConfiguration.setNodeName("robotNameResolver"));
         robotNameResolver.waitForResolver();
 
-        // Dashboard
-        if (robotDescription == null) {
-            dashboard.setRobotName(getRobotNameSpaceResolver().getNamespace()
-                .toString());
-        }
         nodeMainExecutor.execute(dashboard,
 				nodeConfiguration.setNodeName("dashboard"));
 
@@ -192,9 +192,19 @@ public abstract class RobotActivity extends RosActivity {
         return robotNameResolver.getRobotNameSpace().getNamespace().toString();
     }
 
+    /**
+     * This is an override which diverts the usual startup of the master
+     * chooser if the robot activity is getting restarted after the closure
+     * of one of its child apps (in which case it doesn't have to go choosing
+     * a robot). In that fork, gather the information you'd usually get
+     * (uri and robot description) from the master chooser via
+     * intents from the application.
+     */
     @Override
 	public void startMasterChooser() {
 		if (fromApplication) {
+            // DJS: actually need this intent for putting the app chooser?
+            // should already be accessible with getIntent().
             Intent intent = new Intent();
             intent.putExtra(AppManager.PACKAGE + ".robot_app_name",
                     "AppChooser");
@@ -203,7 +213,13 @@ public abstract class RobotActivity extends RosActivity {
             } catch (URISyntaxException e) {
                 throw new RosRuntimeException(e);
             }
-
+            if (getIntent().hasExtra(RobotDescription.UNIQUE_KEY)) {
+                robotDescription = (RobotDescription) getIntent()
+                        .getSerializableExtra(RobotDescription.UNIQUE_KEY);
+                Log.i("RobotRemocon", "closing remocon application successfully return the robot description via intents.");
+            } else {
+                Log.e("RobotRemocon", "closing remocon application didn't return the robot description - *spank*.");
+            }
             nodeMainExecutorService.setMasterUri(uri);
             new AsyncTask<Void, Void, Void>() {
                 @Override
