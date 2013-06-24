@@ -332,7 +332,7 @@ public class RobotRemocon extends RobotActivity {
 					URI uri;
 					try {
 						robotDescription = (RobotDescription) data
-								.getSerializableExtra(RobotMasterChooser.ROBOT_DESCRIPTION_EXTRA);
+								.getSerializableExtra(RobotDescription.UNIQUE_KEY);
 
 						robotNameResolver.setRobotName(robotDescription
 								.getRobotName());

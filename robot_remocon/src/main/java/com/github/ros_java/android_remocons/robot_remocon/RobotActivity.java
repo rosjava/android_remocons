@@ -58,13 +58,12 @@ import rocon_app_manager_msgs.StopAppResponse;
  */
 public abstract class RobotActivity extends RosActivity {
 
-	public static final String ROBOT_DESCRIPTION_EXTRA = "com.github.ros_java.android_apps.application_management.RobotDescription";
 	private String robotAppName = null;
 	private String defaultRobotAppName = null;
 	private String defaultRobotName = null;
     /*
       By default we assume the remocon has just launched independantly, however
-      it can be launched by the one of its children applications.
+      it can be launched upon the closure of one of its children applications.
      */
     protected boolean fromApplication = false;  // true if it is a remocon activity getting control from a closing application
 

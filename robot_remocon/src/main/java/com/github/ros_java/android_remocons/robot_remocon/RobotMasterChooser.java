@@ -93,7 +93,6 @@ public class RobotMasterChooser extends Activity {
 	private static final int ADD_URI_DIALOG_ID = 0;
 	private static final int ADD_DELETION_DIALOG_ID = 1;
 	private static final int ADD_SEARCH_ROBOT_DIALOG_ID = 2;
-	public static final String ROBOT_DESCRIPTION_EXTRA = "com.github.ros_java.android_apps.application_management.RobotDescription";
 
 	private List<RobotDescription> robots;
 	private boolean[] selections;
@@ -202,7 +201,7 @@ public class RobotMasterChooser extends Activity {
         } else {
 			Intent resultIntent = new Intent();
 			resultIntent
-					.putExtra(ROBOT_DESCRIPTION_EXTRA, robots.get(position));
+					.putExtra(RobotDescription.UNIQUE_KEY, robots.get(position));
 			setResult(RESULT_OK, resultIntent);
 			finish();
 		}

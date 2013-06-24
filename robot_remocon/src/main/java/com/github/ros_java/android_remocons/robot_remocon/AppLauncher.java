@@ -51,7 +51,6 @@ import rocon_app_manager_msgs.PairingClient;
 
 public class AppLauncher {
   static private final String CLIENT_TYPE = "android";
-	public static final String ROBOT_DESCRIPTION_EXTRA = "com.github.ros_java.android_apps.application_management.RobotDescription";
 
 
   /** Launch a client app for the given robot app. */
@@ -116,7 +115,7 @@ public class AppLauncher {
       ClientAppData appData = appropriateAndroidApps.get(i);
       Intent intent = appData.createIntent();
       intent.putExtra(AppManager.PACKAGE + ".robot_app_name", app.getName());
-      intent.putExtra(ROBOT_DESCRIPTION_EXTRA, currentRobot);
+      intent.putExtra(RobotDescription.UNIQUE_KEY, currentRobot);
       intent.putExtra("ChooserURI", uri.toString());
       intent.putExtra("runningNodes", runningNodes);
       intent.putExtra("PairedManagerActivity", "com.github.robotics_in_concert.rocon_android.robot_remocon.RobotRemocon");
