@@ -41,6 +41,8 @@ import com.github.ros_java.android_apps.application_management.Dashboard;
 import com.github.ros_java.android_apps.application_management.RobotDescription;
 import com.github.ros_java.android_apps.application_management.RobotNameResolver;
 
+import com.github.ros_java.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
+
 import rocon_app_manager_msgs.StopAppResponse;
 
 /**
@@ -75,6 +77,7 @@ public abstract class RobotActivity extends RosActivity {
 	private URI uri;
 	protected RobotNameResolver robotNameResolver;
 	protected RobotDescription robotDescription;
+    private PairingApplicationNamePublisher pairingApplicationNamePublisher;
 
 	protected void setDashboardResource(int resource) {
 		dashboardResourceId = resource;
@@ -136,6 +139,7 @@ public abstract class RobotActivity extends RosActivity {
 		} else {
 			// DJS: do we need anything here? I think the first two cases cover everything
 		}
+        pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Robot Remocon");
 
 		if (dashboard == null) {
 			dashboard = new Dashboard(this);
@@ -167,10 +171,12 @@ public abstract class RobotActivity extends RosActivity {
         // It should never be null!
         robotNameResolver.setRobot(robotDescription);
         dashboard.setRobotName(robotDescription.getRobotType());
+
+        nodeMainExecutor.execute(pairingApplicationNamePublisher,
+                nodeConfiguration.setNodeName("pairingApplicationNamePublisher"));
 		nodeMainExecutor.execute(robotNameResolver,
 				nodeConfiguration.setNodeName("robotNameResolver"));
         robotNameResolver.waitForResolver();
-
         nodeMainExecutor.execute(dashboard,
 				nodeConfiguration.setNodeName("dashboard"));
 
