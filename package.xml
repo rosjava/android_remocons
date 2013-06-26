@@ -17,6 +17,7 @@
   <build_depend>rosjava_core</build_depend>
   <build_depend>android_core</build_depend>
   <build_depend>android_extras</build_depend>
+  <build_depend>android_apps</build_depend>
   <build_depend>rocon_msgs</build_depend>
   <build_depend>turtlebot_android</build_depend>
 </package>
