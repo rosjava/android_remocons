@@ -3,7 +3,7 @@
   <name>android_remocons</name>
   <version>0.1.0</version>
   <description>
-    Applications for rocon.
+    Remote controllers for rocon appable robots.
   </description>
   <url type="website">http://ros.org/wiki/android_remocons</url>
   <url type="repository">https://github.com/ros-java/android_remocons</url>
