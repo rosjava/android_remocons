@@ -3,12 +3,13 @@
   <name>android_remocons</name>
   <version>0.1.0</version>
   <description>
-    Applications for rocon.
+    Remote controllers for rocon appable robots.
   </description>
   <url type="website">http://ros.org/wiki/android_remocons</url>
   <url type="repository">https://github.com/ros-java/android_remocons</url>
   <url type="bugtracker">https://github.com/ros-java/android_remocons/issues</url>
   <maintainer email="d.stonier@gmail.com">Daniel Stonier</maintainer>
+  <author email="d.stonier@gmail.com">Daniel Stonier</author>
   <author email="kattyokaccho3616@gmail.com">Kazuto Murase</author>
   <license>Apache 2.0</license>
 
