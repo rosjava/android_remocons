@@ -369,14 +369,48 @@ public class RobotRemocon extends RobotActivity {
 		}
 	}
 
+    /**
+     * This is an override which diverts the usual startup of the master
+     * chooser if the robot activity is getting restarted after the closure
+     * of one of its child apps (in which case it doesn't have to go choosing
+     * a robot). In that fork, gather the information you'd usually get
+     * (uri and robot description) from the master chooser via
+     * intents from the application.
+     */
 	@Override
 	public void startMasterChooser() {
 		if (!fromApplication) {
 			super.startActivityForResult(new Intent(this,
 					RobotMasterChooser.class),
 					ROBOT_MASTER_CHOOSER_REQUEST_CODE);
-		} else
-			super.startMasterChooser();
+		} else {
+            // DJS: actually need this intent for putting the app chooser?
+            // should already be accessible with getIntent().
+            Intent intent = new Intent();
+            intent.putExtra(AppManager.PACKAGE + ".robot_app_name",
+                    "AppChooser");
+            URI uri;
+            try {
+                uri = new URI(getIntent().getStringExtra("ChooserURI"));
+            } catch (URISyntaxException e) {
+                throw new RosRuntimeException(e);
+            }
+            if (getIntent().hasExtra(RobotDescription.UNIQUE_KEY)) {
+                robotDescription = (RobotDescription) getIntent()
+                        .getSerializableExtra(RobotDescription.UNIQUE_KEY);
+                Log.i("RobotRemocon", "closing remocon application and successfully retrieved the robot description via intents.");
+            } else {
+                Log.e("RobotRemocon", "closing remocon application didn't return the robot description - *spank*.");
+            }
+            nodeMainExecutorService.setMasterUri(uri);
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    RobotRemocon.this.init(nodeMainExecutorService);
+                    return null;
+                }
+            }.execute();
+        }
 	}
 
 	public void validateRobot(final RobotId id) {

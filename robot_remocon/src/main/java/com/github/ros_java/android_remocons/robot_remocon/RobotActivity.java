@@ -133,7 +133,7 @@ public abstract class RobotActivity extends RosActivity {
 				AppManager.PACKAGE + ".robot_app_name");
 		if (robotAppName == null) {
 			robotAppName = defaultRobotAppName;
-        } else if (robotAppName.equals("AppChooser")) {
+        } else if (robotAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
             Log.i("RobotRemocon", "reinitialising from a closing remocon application");
             fromApplication = true;
 		} else {
@@ -163,23 +163,21 @@ public abstract class RobotActivity extends RosActivity {
 	@Override
 	protected void init(NodeMainExecutor nodeMainExecutor) {
 		this.nodeMainExecutor = nodeMainExecutor;
-		nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
-				.newNonLoopback().getHostAddress(), getMasterUri());
+        nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
+                .newNonLoopback().getHostAddress(), getMasterUri());
 
         // robotDescription will get set by the robot master chooser as it exits
         // or passed back as an intent from a closing remocon application.
         // It should never be null!
         robotNameResolver.setRobot(robotDescription);
         dashboard.setRobotName(robotDescription.getRobotType());
-
         nodeMainExecutor.execute(pairingApplicationNamePublisher,
                 nodeConfiguration.setNodeName("pairingApplicationNamePublisher"));
-		nodeMainExecutor.execute(robotNameResolver,
-				nodeConfiguration.setNodeName("robotNameResolver"));
+        nodeMainExecutor.execute(robotNameResolver,
+                nodeConfiguration.setNodeName("robotNameResolver"));
         robotNameResolver.waitForResolver();
         nodeMainExecutor.execute(dashboard,
-				nodeConfiguration.setNodeName("dashboard"));
-
+                nodeConfiguration.setNodeName("dashboard"));
         // Child application post-handling
         if (fromApplication) {
             stopApp();
@@ -197,48 +195,6 @@ public abstract class RobotActivity extends RosActivity {
     protected String getRobotNameSpace() {
         return robotNameResolver.getRobotNameSpace().getNamespace().toString();
     }
-
-    /**
-     * This is an override which diverts the usual startup of the master
-     * chooser if the robot activity is getting restarted after the closure
-     * of one of its child apps (in which case it doesn't have to go choosing
-     * a robot). In that fork, gather the information you'd usually get
-     * (uri and robot description) from the master chooser via
-     * intents from the application.
-     */
-    @Override
-	public void startMasterChooser() {
-		if (fromApplication) {
-            // DJS: actually need this intent for putting the app chooser?
-            // should already be accessible with getIntent().
-            Intent intent = new Intent();
-            intent.putExtra(AppManager.PACKAGE + ".robot_app_name",
-                    "AppChooser");
-            try {
-                uri = new URI(getIntent().getStringExtra("ChooserURI"));
-            } catch (URISyntaxException e) {
-                throw new RosRuntimeException(e);
-            }
-            if (getIntent().hasExtra(RobotDescription.UNIQUE_KEY)) {
-                robotDescription = (RobotDescription) getIntent()
-                        .getSerializableExtra(RobotDescription.UNIQUE_KEY);
-                Log.i("RobotRemocon", "closing remocon application successfully return the robot description via intents.");
-            } else {
-                Log.e("RobotRemocon", "closing remocon application didn't return the robot description - *spank*.");
-            }
-            nodeMainExecutorService.setMasterUri(uri);
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-                    RobotActivity.this.init(nodeMainExecutorService);
-                    return null;
-                }
-            }.execute();
-		} else {
-            super.startMasterChooser();
-		}
-
-	}
 
 	protected void stopApp() {
 		Log.i("RobotRemocon", "android application stopping a rapp [" + robotAppName + "]");
