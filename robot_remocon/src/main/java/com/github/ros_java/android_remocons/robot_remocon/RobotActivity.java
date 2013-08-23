@@ -74,7 +74,6 @@ public abstract class RobotActivity extends RosActivity {
 	private Dashboard dashboard = null;
 	protected NodeConfiguration nodeConfiguration;
     protected NodeMainExecutor nodeMainExecutor;
-	private URI uri;
 	protected RobotNameResolver robotNameResolver;
 	protected RobotDescription robotDescription;
     private PairingApplicationNamePublisher pairingApplicationNamePublisher;
