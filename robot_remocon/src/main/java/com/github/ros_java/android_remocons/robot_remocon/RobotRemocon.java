@@ -101,7 +101,6 @@ public class RobotRemocon extends RobotActivity {
 	private boolean alreadyClicked = false;
 	private boolean validatedRobot;
 	private boolean runningNodes = false;
-    private boolean abortInitialisation = false;
 	private long availableAppsCacheTime;
 
 	private void stopProgress() {
@@ -352,14 +351,10 @@ public class RobotRemocon extends RobotActivity {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                while (!validatedRobot && !abortInitialisation) {
+                while (!validatedRobot) {
                     // should use a sleep here to avoid burnout
                 }
-                if ( !abortInitialisation ) {
-                    RobotRemocon.this.init(nodeMainExecutorService);
-                } else {
-                    returnToRobotMasterChooser();
-                }
+                RobotRemocon.this.init(nodeMainExecutorService);
                 return null;
             }
         }.execute();
@@ -493,8 +488,8 @@ public class RobotRemocon extends RobotActivity {
 						errorDialog.show("Cannot contact ROS master: "
 								+ reason2);
 						errorDialog.dismiss();
-                        abortInitialisation = true;
-                        // finish();
+                        // TODO : gracefully abort back to the robot master chooser instead.
+                        finish();
 					}
 				});
 
