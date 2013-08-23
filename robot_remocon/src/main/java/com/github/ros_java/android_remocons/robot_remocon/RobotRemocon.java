@@ -312,6 +312,54 @@ public class RobotRemocon extends RobotActivity {
     }
 
     /**
+     * Initialise from an intent triggered by either the returning robot
+     * chooser or a robot app.
+     *
+     * Validation will occur slightly differently in both cases - when
+     * returning from the app, it will assume its already
+     * in control and skip the invitation step (see validateRobot).
+     *
+     * This eventually passes control back to the generic init function
+     * (TODO: can probably incorporate this into that function).
+     *
+     * @param intent
+     */
+    void init(Intent intent) {
+        URI uri;
+        try {
+            robotDescription = (RobotDescription) intent
+                    .getSerializableExtra(RobotDescription.UNIQUE_KEY);
+
+            robotNameResolver.setRobotName(robotDescription
+                    .getRobotName());
+
+            validatedRobot = false;
+            validateRobot(robotDescription.getRobotId());
+
+            uri = new URI(robotDescription.getRobotId()
+                    .getMasterUri());
+        } catch (URISyntaxException e) {
+            throw new RosRuntimeException(e);
+        }
+        nodeMainExecutorService.setMasterUri(uri);
+        // Run init() in a new thread as a convenience since it often
+        // requires network access. This would be more robust if it
+        // had a failure handler for uncontactable errors (override
+        // onPostExecute) that occurred when calling init. In reality
+        // this shouldn't happen often - only when the connection
+        // is unavailable inbetween validating and init'ing.
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                while (!validatedRobot) {
+                    // should use a sleep here to avoid burnout
+                }
+                RobotRemocon.this.init(nodeMainExecutorService);
+                return null;
+            }
+        }.execute();
+    }
+    /**
      * The main result gathered here is that from the robot master chooser
      * which is started on top of the initial RobotRemocon Activity.
      * This proceeds to then set the uri and trigger the init() calls.
@@ -326,41 +374,7 @@ public class RobotRemocon extends RobotActivity {
 			finish();
 		} else if (resultCode == RESULT_OK) {
 			if (requestCode == ROBOT_MASTER_CHOOSER_REQUEST_CODE) {
-				if (data == null) {
-					nodeMainExecutorService.startMaster();
-				} else {
-					URI uri;
-					try {
-						robotDescription = (RobotDescription) data
-								.getSerializableExtra(RobotDescription.UNIQUE_KEY);
-
-						robotNameResolver.setRobotName(robotDescription
-								.getRobotName());
-
-						validatedRobot = false;
-						validateRobot(robotDescription.getRobotId());
-
-						uri = new URI(robotDescription.getRobotId()
-								.getMasterUri());
-					} catch (URISyntaxException e) {
-						throw new RosRuntimeException(e);
-					}
-					nodeMainExecutorService.setMasterUri(uri);
-				}
-
-				// Run init() in a new thread as a convenience since it often
-				// requires
-				// network access.
-				new AsyncTask<Void, Void, Void>() {
-					@Override
-					protected Void doInBackground(Void... params) {
-						while (!validatedRobot) {
-						}
-
-						RobotRemocon.this.init(nodeMainExecutorService);
-						return null;
-					}
-				}.execute();
+                init(data);
             } else {
 				// Without a master URI configured, we are in an unusable state.
 				nodeMainExecutorService.shutdown();
@@ -370,12 +384,11 @@ public class RobotRemocon extends RobotActivity {
 	}
 
     /**
-     * This is an override which diverts the usual startup of the master
-     * chooser if the robot activity is getting restarted after the closure
-     * of one of its child apps (in which case it doesn't have to go choosing
-     * a robot). In that fork, gather the information you'd usually get
-     * (uri and robot description) from the master chooser via
-     * intents from the application.
+     * This is an override which diverts the usual startup once a node is
+     * connected. Typically this would go to the master chooser, however
+     * here we are sometimes returning from one of its child apps (in which
+     * case it doesn't have to go choosing a robot). In that case, send
+     * it directly to the robot validation and initialisation steps.
      */
 	@Override
 	public void startMasterChooser() {
@@ -384,32 +397,12 @@ public class RobotRemocon extends RobotActivity {
 					RobotMasterChooser.class),
 					ROBOT_MASTER_CHOOSER_REQUEST_CODE);
 		} else {
-            // DJS: actually need this intent for putting the app chooser?
-            // should already be accessible with getIntent().
-            Intent intent = new Intent();
-            intent.putExtra(AppManager.PACKAGE + ".robot_app_name",
-                    "AppChooser");
-            URI uri;
-            try {
-                uri = new URI(getIntent().getStringExtra("ChooserURI"));
-            } catch (URISyntaxException e) {
-                throw new RosRuntimeException(e);
-            }
             if (getIntent().hasExtra(RobotDescription.UNIQUE_KEY)) {
-                robotDescription = (RobotDescription) getIntent()
-                        .getSerializableExtra(RobotDescription.UNIQUE_KEY);
+                init(getIntent());
                 Log.i("RobotRemocon", "closing remocon application and successfully retrieved the robot description via intents.");
             } else {
                 Log.e("RobotRemocon", "closing remocon application didn't return the robot description - *spank*.");
             }
-            nodeMainExecutorService.setMasterUri(uri);
-            new AsyncTask<Void, Void, Void>() {
-                @Override
-                protected Void doInBackground(Void... params) {
-                    RobotRemocon.this.init(nodeMainExecutorService);
-                    return null;
-                }
-            }.execute();
         }
 	}
 
@@ -440,37 +433,44 @@ public class RobotRemocon extends RobotActivity {
 								}
 							}
 						});
-                        // Check that it's not busy
-                        if ( robotDescription.getConnectionStatus() == RobotDescription.UNAVAILABLE ) {
-                            errorDialog.show("Robot is unavailable : busy serving another remote controller.");
-                            errorDialog.dismiss();
-                            startMasterChooser();
-                        } else {
-                            // Invitation checker - should reconstruct the control/master/invitation checkers
-                            // Note the control checker is doing user control checking, not used by turtlebots, but by pr2?
-                            NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
-                            NodeConfiguration nodeConfiguration;
-                            try {
-                                URI uri = new URI(robotDescription.getMasterUri());
-                                nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
-                            } catch (URISyntaxException e) {
-                                return; // should handle this
-                            }
-                            InvitationServiceClient client = new InvitationServiceClient(robotDescription.getRobotName());
-                            nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
-                            Boolean result = client.waitForResponse();
-                            nodeMainExecutorService.shutdownNodeMain(client);
-                            if ( !result ) {
-                                errorDialog.show("Timed out trying to invite the robot for pairing mode.");
+                        if(!fromApplication) {
+                            // Check that it's not busy
+                            if ( robotDescription.getConnectionStatus() == RobotDescription.UNAVAILABLE ) {
+                                errorDialog.show("Robot is unavailable : busy serving another remote controller.");
                                 errorDialog.dismiss();
                                 startMasterChooser();
                             } else {
-                                if ( client.getInvitationResult().equals(Boolean.TRUE) ) {
-                                    validatedRobot = true;
-                                } else {
+                                // Invitation checker - should reconstruct the control/master/invitation checkers
+                                // Note the control checker is doing user control checking, not used by turtlebots, but by pr2?
+                                NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
+                                NodeConfiguration nodeConfiguration;
+                                try {
+                                    URI uri = new URI(robotDescription.getMasterUri());
+                                    nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
+                                } catch (URISyntaxException e) {
+                                    return; // should handle this
+                                }
+                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getRobotName());
+                                nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
+                                Boolean result = client.waitForResponse();
+                                nodeMainExecutorService.shutdownNodeMain(client);
+                                if ( !result ) {
+                                    errorDialog.show("Timed out trying to invite the robot for pairing mode.");
+                                    errorDialog.dismiss();
                                     startMasterChooser();
+                                } else {
+                                    if ( client.getInvitationResult().equals(Boolean.TRUE) ) {
+                                        validatedRobot = true;
+                                    } else {
+                                        startMasterChooser();
+                                    }
                                 }
                             }
+                        } else { // fromApplication
+                            // Working on the lovely assumption that we're already controlling the rapp manager
+                            // since we come from a running app. Note that this code is run after platform info
+                            // checks have been made (see MasterChecker).
+                            validatedRobot = true;
                         }
 					}
 				}, new MasterChecker.FailureHandler() {
@@ -488,7 +488,6 @@ public class RobotRemocon extends RobotActivity {
 								+ reason2);
 						errorDialog.dismiss();
 						finish();
-
 					}
 				});
 
