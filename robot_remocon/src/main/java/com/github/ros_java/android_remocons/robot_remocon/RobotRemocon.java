@@ -97,10 +97,11 @@ public class RobotRemocon extends RobotActivity {
 	private AlertDialogWrapper wifiDialog;
 	private AlertDialogWrapper evictDialog;
 	private AlertDialogWrapper errorDialog;
-    protected AppManager listAppsSubscriber;
+    protected AppManager listAppsSubscriber = null;
 	private boolean alreadyClicked = false;
 	private boolean validatedRobot;
 	private boolean runningNodes = false;
+    private boolean abortInitialisation = false;
 	private long availableAppsCacheTime;
 
 	private void stopProgress() {
@@ -351,10 +352,14 @@ public class RobotRemocon extends RobotActivity {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                while (!validatedRobot) {
+                while (!validatedRobot && !abortInitialisation) {
                     // should use a sleep here to avoid burnout
                 }
-                RobotRemocon.this.init(nodeMainExecutorService);
+                if ( !abortInitialisation ) {
+                    RobotRemocon.this.init(nodeMainExecutorService);
+                } else {
+                    returnToRobotMasterChooser();
+                }
                 return null;
             }
         }.execute();
@@ -476,6 +481,7 @@ public class RobotRemocon extends RobotActivity {
 				}, new MasterChecker.FailureHandler() {
 					public void handleFailure(String reason) {
 						final String reason2 = reason;
+                        // Kill the connecting to ros master dialog.
 						runOnUiThread(new Runnable() {
 							public void run() {
 								final ProgressDialogWrapper p = progressDialog;
@@ -487,7 +493,8 @@ public class RobotRemocon extends RobotActivity {
 						errorDialog.show("Cannot contact ROS master: "
 								+ reason2);
 						errorDialog.dismiss();
-						finish();
+                        abortInitialisation = true;
+                        // finish();
 					}
 				});
 
@@ -745,6 +752,15 @@ public class RobotRemocon extends RobotActivity {
 	}
 
 	public void chooseNewMasterClicked(View view) {
+        // uninvite ourselves
+        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getRobotName(), Boolean.TRUE);
+        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
+        Boolean result = client.waitForResponse();
+        nodeMainExecutorService.shutdownNodeMain(client);
+        if ( !result ) {
+            errorDialog.show("Timed out trying to invite the robot for pairing mode.");
+            errorDialog.dismiss();
+        }
         returnToRobotMasterChooser();
 	}
 
@@ -754,7 +770,12 @@ public class RobotRemocon extends RobotActivity {
      * or the button provided in the RobotRemocon activity.
      */
     private void returnToRobotMasterChooser() {
-        nodeMainExecutor.shutdownNodeMain(listAppsSubscriber);
+        if (pairingApplicationNamePublisher != null) {
+            nodeMainExecutor.shutdownNodeMain(pairingApplicationNamePublisher);
+        }
+        if (listAppsSubscriber != null) {
+            nodeMainExecutor.shutdownNodeMain(listAppsSubscriber);
+        }
         releaseRobotNameResolver();
         releaseDashboardNode(); // TODO this work costs too many times
         availableAppsCache.clear();

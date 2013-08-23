@@ -76,7 +76,7 @@ public abstract class RobotActivity extends RosActivity {
     protected NodeMainExecutor nodeMainExecutor;
 	protected RobotNameResolver robotNameResolver;
 	protected RobotDescription robotDescription;
-    private PairingApplicationNamePublisher pairingApplicationNamePublisher;
+    protected PairingApplicationNamePublisher pairingApplicationNamePublisher = null;
 
 	protected void setDashboardResource(int resource) {
 		dashboardResourceId = resource;
@@ -138,7 +138,6 @@ public abstract class RobotActivity extends RosActivity {
 		} else {
 			// DJS: do we need anything here? I think the first two cases cover everything
 		}
-        pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Robot Remocon");
 
 		if (dashboard == null) {
 			dashboard = new Dashboard(this);
@@ -170,6 +169,7 @@ public abstract class RobotActivity extends RosActivity {
         // It should never be null!
         robotNameResolver.setRobot(robotDescription);
         dashboard.setRobotName(robotDescription.getRobotType());
+        pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Robot Remocon");
         nodeMainExecutor.execute(pairingApplicationNamePublisher,
                 nodeConfiguration.setNodeName("pairingApplicationNamePublisher"));
         nodeMainExecutor.execute(robotNameResolver,

@@ -42,6 +42,6 @@ android:id="@+id/deactivate_robot"/>
 android:id="@+id/exchange_button"/>
   <Button android:layout_width="fill_parent"
           android:layout_height="wrap_content"
-          android:text="Choose New Master"
+          android:text="Release Robot"
           android:onClick="chooseNewMasterClicked"/>
 </LinearLayout>
