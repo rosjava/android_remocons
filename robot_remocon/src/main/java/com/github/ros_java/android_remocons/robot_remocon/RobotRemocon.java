@@ -450,7 +450,7 @@ public class RobotRemocon extends RobotActivity {
                                 } catch (URISyntaxException e) {
                                     return; // should handle this
                                 }
-                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getRobotName());
+                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName());
                                 nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
                                 Boolean result = client.waitForResponse();
                                 nodeMainExecutorService.shutdownNodeMain(client);
@@ -748,7 +748,7 @@ public class RobotRemocon extends RobotActivity {
 
 	public void chooseNewMasterClicked(View view) {
         // uninvite ourselves
-        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getRobotName(), Boolean.TRUE);
+        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName(), Boolean.TRUE);
         nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
         Boolean result = client.waitForResponse();
         nodeMainExecutorService.shutdownNodeMain(client);
