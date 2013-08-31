@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon;
+package com.github.rosjava.android_remocons.robot_remocon;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.github.ros_java.zeroconf_jmdns_suite.jmdns.DiscoveredService;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -77,10 +77,10 @@ import android.widget.Toast;
 import com.google.zxing.IntentIntegrator;
 import com.google.zxing.IntentResult;
 
-import com.github.ros_java.android_apps.application_management.RobotDescription;
-import com.github.ros_java.android_apps.application_management.RobotId;
-import com.github.ros_java.android_apps.application_management.RobotsContentProvider;
-import com.github.ros_java.android_remocons.robot_remocon.zeroconf.MasterSearcher;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.RobotId;
+import com.github.rosjava.android_apps.application_management.RobotsContentProvider;
+import com.github.rosjava.android_remocons.robot_remocon.zeroconf.MasterSearcher;
 
 import org.yaml.snakeyaml.Yaml;
 
