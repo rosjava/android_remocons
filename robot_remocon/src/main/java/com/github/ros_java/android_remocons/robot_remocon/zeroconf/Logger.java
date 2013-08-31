@@ -14,11 +14,11 @@
  * the License.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon.zeroconf;
+package com.github.rosjava.android_remocons.robot_remocon.zeroconf;
 
 import java.lang.String;
 
-import com.github.ros_java.zeroconf_jmdns_suite.jmdns.ZeroconfLogger;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.ZeroconfLogger;
 
 public class Logger implements ZeroconfLogger {
 
