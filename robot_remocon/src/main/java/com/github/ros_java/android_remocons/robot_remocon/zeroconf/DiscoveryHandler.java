@@ -14,15 +14,15 @@
  * the License.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon.zeroconf;
+package com.github.rosjava.android_remocons.robot_remocon.zeroconf;
 
 import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
-import com.github.ros_java.zeroconf_jmdns_suite.jmdns.DiscoveredService;
-import com.github.ros_java.zeroconf_jmdns_suite.jmdns.ZeroconfDiscoveryHandler;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.ZeroconfDiscoveryHandler;
 
 /**
  * This class is the callback handler for services being listened for

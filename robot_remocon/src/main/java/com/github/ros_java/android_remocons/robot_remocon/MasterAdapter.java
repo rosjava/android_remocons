@@ -31,13 +31,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon;
+package com.github.rosjava.android_remocons.robot_remocon;
 
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import com.github.ros_java.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
 import java.util.ArrayList;
 import java.util.List;
 /**

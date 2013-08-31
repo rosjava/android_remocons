@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon.zeroconf;
+package com.github.rosjava.android_remocons.robot_remocon.zeroconf;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.widget.ListView;
 
-import com.github.ros_java.zeroconf_jmdns_suite.jmdns.DiscoveredService;
-import com.github.ros_java.zeroconf_jmdns_suite.jmdns.Zeroconf;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.Zeroconf;
 
 
 

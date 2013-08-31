@@ -32,7 +32,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.github.ros_java.android_remocons.robot_remocon;
+package com.github.rosjava.android_remocons.robot_remocon;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -44,8 +44,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
-import com.github.ros_java.android_apps.application_management.AppManager;
-import com.github.ros_java.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
 
 import rocon_app_manager_msgs.PairingClient;
 

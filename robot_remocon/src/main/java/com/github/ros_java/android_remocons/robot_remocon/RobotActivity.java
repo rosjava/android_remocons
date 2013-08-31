@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon;
+package com.github.rosjava.android_remocons.robot_remocon;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,12 +36,12 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
-import com.github.ros_java.android_apps.application_management.AppManager;
-import com.github.ros_java.android_apps.application_management.Dashboard;
-import com.github.ros_java.android_apps.application_management.RobotDescription;
-import com.github.ros_java.android_apps.application_management.RobotNameResolver;
+import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.Dashboard;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.RobotNameResolver;
 
-import com.github.ros_java.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
+import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
 
 import rocon_app_manager_msgs.StopAppResponse;
 

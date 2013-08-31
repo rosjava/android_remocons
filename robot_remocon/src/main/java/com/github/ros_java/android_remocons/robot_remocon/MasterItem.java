@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon;
+package com.github.rosjava.android_remocons.robot_remocon;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -45,10 +45,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import com.github.ros_java.android_apps.application_management.WifiChecker;
-import com.github.ros_java.android_apps.application_management.ControlChecker;
-import com.github.ros_java.android_apps.application_management.MasterChecker;
-import com.github.ros_java.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
+import com.github.rosjava.android_apps.application_management.ControlChecker;
+import com.github.rosjava.android_apps.application_management.MasterChecker;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
 import android.net.wifi.WifiManager;
 
 import org.jboss.netty.buffer.ChannelBuffer;

@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon;
+package com.github.rosjava.android_remocons.robot_remocon;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -64,13 +64,13 @@ import org.ros.message.MessageListener;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
-import com.github.ros_java.android_apps.application_management.AppManager;
-import com.github.ros_java.android_apps.application_management.ControlChecker;
-import com.github.ros_java.android_apps.application_management.MasterChecker;
-import com.github.ros_java.android_apps.application_management.RobotId;
-import com.github.ros_java.android_apps.application_management.RobotDescription;
-import com.github.ros_java.android_apps.application_management.WifiChecker;
-import com.github.ros_java.android_apps.application_management.rapp_manager.InvitationServiceClient;
+import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.ControlChecker;
+import com.github.rosjava.android_apps.application_management.MasterChecker;
+import com.github.rosjava.android_apps.application_management.RobotId;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
+import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
 
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;

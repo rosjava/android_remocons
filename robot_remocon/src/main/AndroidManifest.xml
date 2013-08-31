@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.github.ros_java.android_remocons.robot_remocon"
+      package="com.github.rosjava.android_remocons.robot_remocon"
       android:versionCode="1"
       android:versionName="1.0">
 
@@ -14,8 +14,8 @@
 
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
         <provider
-            android:name="com.github.ros_java.android_apps.application_management.RobotsContentProvider"
-            android:authorities="com.github.ros_java.android_apps.application_management"
+            android:name="com.github.rosjava.android_apps.application_management.RobotsContentProvider"
+            android:authorities="com.github.rosjava.android_apps.application_management"
         />
         <activity android:name=".RobotRemocon"
                   android:label="@string/app_name"
@@ -30,7 +30,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.github.ros_java.android_remocons.robot_remocon.RobotMasterChooser" />
+        <activity android:name="com.github.rosjava.android_remocons.robot_remocon.RobotMasterChooser" />
         <activity android:name="org.ros.android.MasterChooser" />
 
         <service android:name="AppLauncher" />

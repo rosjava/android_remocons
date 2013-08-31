@@ -31,7 +31,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.github.ros_java.android_remocons.robot_remocon;
+package com.github.rosjava.android_remocons.robot_remocon;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;

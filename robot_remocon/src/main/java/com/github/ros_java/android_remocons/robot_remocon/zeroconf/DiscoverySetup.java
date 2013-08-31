@@ -14,13 +14,13 @@
  * the License.
  */
 
-package com.github.ros_java.android_remocons.robot_remocon.zeroconf;
+package com.github.rosjava.android_remocons.robot_remocon.zeroconf;
 
 import android.content.Context;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 
-import com.github.ros_java.zeroconf_jmdns_suite.jmdns.Zeroconf;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.Zeroconf;
 
 
 /**
