@@ -4,7 +4,8 @@
     android:layout_height="wrap_content">
 <HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
                       android:layout_width="wrap_content" 
-                      android:layout_height="fill_parent">
+                      android:layout_height="fill_parent"
+    android:fillViewport="true">
 <TableLayout android:orientation="vertical"
              android:padding="10dp"
              android:id="@+id/table_layout"
@@ -78,28 +79,47 @@
 
     <TableRow>
 
-        <Button
-            android:id="@+id/scan_robot_button"
-            android:layout_width="wrap_content"
+        <Button android:text="  QR-Code"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/text_or"
             android:drawableLeft="@drawable/qrcode"
-            android:text="QR-Code"
-            android:weightSum="1" />
+            android:id="@+id/qr_code_button"
+            android:layout_weight="0.5" />
 
-        <Button
-            android:id="@+id/search_master_button"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:text="Scan the local network" />
+        <Button android:text="  NFC tag"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/nfc_tag"
+            android:id="@+id/nfc_tag_button"
+            android:layout_weight="0.5" />
+    </TableRow>
 
-        <Button
-            android:id="@+id/cancel_button"
-            android:layout_width="wrap_content"
+    <TableRow>
+
+        <LinearLayout
+            android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:text="Cancel" />
+            android:layout_column="0"
+            android:layout_span="2">
+
+            <Button
+                android:id="@+id/search_master_button"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:text="Scan the local network"
+                android:layout_span="2"
+                android:layout_weight="0.3" />
+
+            <Button
+                android:id="@+id/cancel_button"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:text="Cancel"
+                android:layout_weight="0.7" />
+        </LinearLayout>
+
     </TableRow>
 
 </TableLayout>

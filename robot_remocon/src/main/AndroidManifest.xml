@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.NFC" />
 
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
         <provider
@@ -32,6 +33,22 @@
         </activity>
         <activity android:name="com.github.rosjava.android_remocons.robot_remocon.RobotMasterChooser" />
         <activity android:name="org.ros.android.MasterChooser" />
+        <activity android:name="com.github.rosjava.android_remocons.robot_remocon.nfc.ForegroundDispatch"
+            android:label="NFC tag scan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Add a technology filter -->
+            <intent-filter>
+                <action android:name="android.nfc.action.TECH_DISCOVERED" />
+            </intent-filter>
+
+            <meta-data android:name="android.nfc.action.TECH_DISCOVERED"
+                android:resource="@xml/filter_nfc_tech"
+            />
+        </activity>
 
         <service android:name="AppLauncher" />
         <service android:name="org.ros.android.NodeMainExecutorService" >
