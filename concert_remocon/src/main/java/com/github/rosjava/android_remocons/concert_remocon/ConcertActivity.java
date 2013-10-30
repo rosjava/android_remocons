@@ -32,10 +32,10 @@ import org.ros.node.service.ServiceResponseListener;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
 import com.github.rosjava.android_apps.application_management.Dashboard;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.RobotNameResolver;
 
 import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertNameResolver;
 
 import rocon_app_manager_msgs.StopAppResponse;
 
@@ -68,8 +68,8 @@ public abstract class ConcertActivity extends RosActivity {
 	private Dashboard dashboard = null;
 	protected NodeConfiguration nodeConfiguration;
     protected NodeMainExecutor nodeMainExecutor;
-	protected RobotNameResolver robotNameResolver;
-	protected RobotDescription robotDescription;
+	protected ConcertNameResolver robotNameResolver;
+	protected ConcertDescription robotDescription;
     protected PairingApplicationNamePublisher pairingApplicationNamePublisher = null;
 
 	protected void setDashboardResource(int resource) {
@@ -116,10 +116,10 @@ public abstract class ConcertActivity extends RosActivity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(mainWindowId);
 
-		robotNameResolver = new RobotNameResolver();
+		robotNameResolver = new ConcertNameResolver();
 
 		if (defaultRobotName != null) {
-			robotNameResolver.setRobotName(defaultRobotName);
+			robotNameResolver.setConcertName(defaultRobotName);
 		}
 
 		robotAppName = getIntent().getStringExtra(
@@ -161,9 +161,9 @@ public abstract class ConcertActivity extends RosActivity {
         // robotDescription will get set by the robot master chooser as it exits
         // or passed back as an intent from a closing remocon application.
         // It should never be null!
-        robotNameResolver.setRobot(robotDescription);
-        dashboard.setRobotName(robotDescription.getRobotType());
-        pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Robot Remocon");
+        robotNameResolver.setConcert(robotDescription);
+        dashboard.setRobotName(robotDescription.getConcertType());
+        pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Concert Remocon");
         nodeMainExecutor.execute(pairingApplicationNamePublisher,
                 nodeConfiguration.setNodeName("pairingApplicationNamePublisher"));
         nodeMainExecutor.execute(robotNameResolver,
@@ -182,11 +182,11 @@ public abstract class ConcertActivity extends RosActivity {
 	}
 
 	protected NameResolver getRobotNameSpaceResolver() {
-		return robotNameResolver.getRobotNameSpace();
+		return robotNameResolver.getConcertNameSpace();
 	}
 
     protected String getRobotNameSpace() {
-        return robotNameResolver.getRobotNameSpace().getNamespace().toString();
+        return robotNameResolver.getConcertNameSpace().getNamespace().toString();
     }
 
 	protected void stopApp() {

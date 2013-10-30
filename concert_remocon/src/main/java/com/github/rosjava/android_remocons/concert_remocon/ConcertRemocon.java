@@ -3,6 +3,8 @@
  *
  * Copyright (c) 2011, Willow Garage, Inc.
  * Copyright (c) 2013, OSRF.
+ * Copyright (c) 2013, Yujin Robot.
+ *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -65,12 +67,12 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.ControlChecker;
-import com.github.rosjava.android_apps.application_management.MasterChecker;
-import com.github.rosjava.android_apps.application_management.RobotId;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertId;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker;
 
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
@@ -327,16 +329,18 @@ public class ConcertRemocon extends ConcertActivity {
     void init(Intent intent) {
         URI uri;
         try {
-            robotDescription = (RobotDescription) intent
-                    .getSerializableExtra(RobotDescription.UNIQUE_KEY);
+            String role = (String)intent.getSerializableExtra("UserRole");
 
-            robotNameResolver.setRobotName(robotDescription
-                    .getRobotName());
+            robotDescription = (ConcertDescription) intent
+                    .getSerializableExtra(ConcertDescription.UNIQUE_KEY);
+
+            robotNameResolver.setConcertName(robotDescription
+                    .getConcertName());
 
             validatedRobot = false;
-            validateRobot(robotDescription.getRobotId());
+            validateRobot(robotDescription.getConcertId());
 
-            uri = new URI(robotDescription.getRobotId()
+            uri = new URI(robotDescription.getConcertId()
                     .getMasterUri());
         } catch (URISyntaxException e) {
             throw new RosRuntimeException(e);
@@ -397,7 +401,7 @@ public class ConcertRemocon extends ConcertActivity {
 					ConcertChooser.class),
 					ROBOT_MASTER_CHOOSER_REQUEST_CODE);
 		} else {
-            if (getIntent().hasExtra(RobotDescription.UNIQUE_KEY)) {
+            if (getIntent().hasExtra(ConcertDescription.UNIQUE_KEY)) {
                 init(getIntent());
                 Log.i("ConcertRemocon", "closing remocon application and successfully retrieved the robot description via intents.");
             } else {
@@ -406,7 +410,7 @@ public class ConcertRemocon extends ConcertActivity {
         }
 	}
 
-	public void validateRobot(final RobotId id) {
+	public void validateRobot(final ConcertId id) {
 		wifiDialog = new AlertDialogWrapper(this, new AlertDialog.Builder(this)
 				.setTitle("Change Wifi?").setCancelable(false), "Yes", "No");
 		evictDialog = new AlertDialogWrapper(this,
@@ -423,8 +427,8 @@ public class ConcertRemocon extends ConcertActivity {
 		// Run a set of checkers in series.
 		// The last step - ensure the master is up.
 		final MasterChecker mc = new MasterChecker(
-				new MasterChecker.RobotDescriptionReceiver() {
-					public void receive(RobotDescription robotDescription) {
+				new MasterChecker.ConcertDescriptionReceiver() {
+					public void receive(ConcertDescription robotDescription) {
 						runOnUiThread(new Runnable() {
 							public void run() {
 								final ProgressDialogWrapper p = progressDialog;
@@ -435,8 +439,8 @@ public class ConcertRemocon extends ConcertActivity {
 						});
                         if(!fromApplication) {
                             // Check that it's not busy
-                            if ( robotDescription.getConnectionStatus() == RobotDescription.UNAVAILABLE ) {
-                                errorDialog.show("Robot is unavailable : busy serving another remote controller.");
+                            if ( robotDescription.getConnectionStatus() == ConcertDescription.UNAVAILABLE ) {
+                                errorDialog.show("Concert is unavailable : busy serving another remote controller.");
                                 errorDialog.dismiss();
                                 startMasterChooser();
                             } else {
@@ -450,7 +454,7 @@ public class ConcertRemocon extends ConcertActivity {
                                 } catch (URISyntaxException e) {
                                     return; // should handle this
                                 }
-                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName());
+                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getConcertName());
                                 nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
                                 Boolean result = client.waitForResponse();
                                 nodeMainExecutorService.shutdownNodeMain(client);
@@ -748,7 +752,7 @@ public class ConcertRemocon extends ConcertActivity {
 
 	public void chooseNewMasterClicked(View view) {
         // uninvite ourselves
-        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName(), Boolean.TRUE);
+        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getConcertName(), Boolean.TRUE);
         nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
         Boolean result = client.waitForResponse();
         nodeMainExecutorService.shutdownNodeMain(client);

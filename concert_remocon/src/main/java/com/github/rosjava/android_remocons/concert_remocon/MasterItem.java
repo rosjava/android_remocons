@@ -45,71 +45,72 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
-import com.github.rosjava.android_apps.application_management.ControlChecker;
-import com.github.rosjava.android_apps.application_management.MasterChecker;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
 import android.net.wifi.WifiManager;
+
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
  * Data class behind view of one item in the list of ROS Masters. Gets created
- * with a master URI and a local host name, then starts a {@link MasterChecker}
+ * with a master URI and a local host name, then starts a {@link com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker}
  * to look up robot name and type.
  *
  * @author hersh@willowgarage.com
  */
-public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
+public class MasterItem implements MasterChecker.ConcertDescriptionReceiver,
                                    MasterChecker.FailureHandler,
                                    ControlChecker.SuccessHandler,
                                    ControlChecker.FailureHandler {
   private ControlChecker controlChecker;
   private MasterChecker checker;
   private View view;
-  private RobotDescription description;
+  private ConcertDescription description;
   private ConcertChooser parentMca;
   private String errorReason;
   private boolean control;
-  public MasterItem(RobotDescription robotDescription, ConcertChooser parentMca) {
+  public MasterItem(ConcertDescription robotDescription, ConcertChooser parentMca) {
     errorReason = "";
     this.parentMca = parentMca;
     this.description = robotDescription;
-    this.description.setConnectionStatus(RobotDescription.CONNECTING);
-    if (WifiChecker.wifiValid(this.description.getRobotId(), 
-                        (WifiManager)parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
+    this.description.setConnectionStatus(ConcertDescription.CONNECTING);
+    if (WifiChecker.wifiValid(this.description.getConcertId(),
+            (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
       checker = new MasterChecker(this, this);
-      if (this.description.getRobotId().getControlUri() != null) {
+      if (this.description.getConcertId().getControlUri() != null) {
         control = true;
         controlChecker = new ControlChecker(this, this);
-        controlChecker.beginChecking(this.description.getRobotId());
+        controlChecker.beginChecking(this.description.getConcertId());
       } else {
         control = false;
-        checker.beginChecking(this.description.getRobotId());
+        checker.beginChecking(this.description.getConcertId());
       }
     } else {
       errorReason = "Wrong WiFi Network";
-      description.setConnectionStatus(RobotDescription.WIFI);
+      description.setConnectionStatus(ConcertDescription.WIFI);
       safePopulateView();
     }
   }
   public boolean isOk() {
-    return this.description.getConnectionStatus().equals(RobotDescription.OK);
+    return this.description.getConnectionStatus().equals(ConcertDescription.OK);
   }
   @Override
   public void handleSuccess() {
     control = false;
-    checker.beginChecking(this.description.getRobotId());
+    checker.beginChecking(this.description.getConcertId());
   }
   @Override
-  public void receive(RobotDescription robotDescription) {
+  public void receive(ConcertDescription robotDescription) {
     description.copyFrom(robotDescription);
     safePopulateView();
   }
   @Override
   public void handleFailure(String reason) {
     errorReason = reason;
-    description.setConnectionStatus(control ? RobotDescription.CONTROL : RobotDescription.ERROR);
+    description.setConnectionStatus(control ? ConcertDescription.CONTROL : ConcertDescription.ERROR);
     safePopulateView();
   }
   public View getView(Context context, View convert_view, ViewGroup parent) {
@@ -128,7 +129,7 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
         @Override
         public void run() {
           populateView();
-          mca.writeRobotList();
+          mca.writeConcertList();
         }
       });
     }
@@ -136,12 +137,12 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
   
   private void populateView() {
     Log.i("MasterItem", "connection status = " + description.getConnectionStatus());
-    boolean isOk = description.getConnectionStatus().equals(RobotDescription.OK);
-    boolean isUnavailable = description.getConnectionStatus().equals(RobotDescription.UNAVAILABLE);
-    boolean isControl = description.getConnectionStatus().equals(RobotDescription.CONTROL);
-    boolean isWifi = description.getConnectionStatus().equals(RobotDescription.WIFI);
-    boolean isError = description.getConnectionStatus().equals(RobotDescription.ERROR);
-    boolean isConnecting = description.getConnectionStatus().equals(RobotDescription.CONNECTING);
+    boolean isOk = description.getConnectionStatus().equals(ConcertDescription.OK);
+    boolean isUnavailable = description.getConnectionStatus().equals(ConcertDescription.UNAVAILABLE);
+    boolean isControl = description.getConnectionStatus().equals(ConcertDescription.CONTROL);
+    boolean isWifi = description.getConnectionStatus().equals(ConcertDescription.WIFI);
+    boolean isError = description.getConnectionStatus().equals(ConcertDescription.ERROR);
+    boolean isConnecting = description.getConnectionStatus().equals(ConcertDescription.CONNECTING);
     ProgressBar progress = (ProgressBar) view.findViewById(R.id.progress_circle);
     progress.setIndeterminate(true);
     progress.setVisibility(isConnecting ? View.VISIBLE : View.GONE );
@@ -149,15 +150,15 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
     errorImage.setVisibility( isError ? View.VISIBLE : View.GONE );
     ImageView iv = (ImageView) view.findViewById(R.id.robot_icon);
     iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
-    if (description.getRobotType() == null) {
+    if (description.getConcertType() == null) {
       iv.setImageResource(R.drawable.question_mark);
     } else if (isWifi) {
       iv.setImageResource(R.drawable.wifi_question_mark);
-    } else if ( description.getRobotIconData() == null ) {
+    } else if ( description.getConcertIconData() == null ) {
         iv.setImageResource(R.drawable.question_mark);
-    } else if( description.getRobotIconData().array().length > 0 && description.getRobotIconFormat() != null &&
-            (description.getRobotIconFormat().equals("jpeg") || description.getRobotIconFormat().equals("png")) ) {
-      ChannelBuffer buffer = description.getRobotIconData();
+    } else if( description.getConcertIconData().array().length > 0 && description.getConcertIconFormat() != null &&
+            (description.getConcertIconFormat().equals("jpeg") || description.getConcertIconFormat().equals("png")) ) {
+      ChannelBuffer buffer = description.getConcertIconData();
       Bitmap iconBitmap = BitmapFactory.decodeByteArray(buffer.array(), buffer.arrayOffset(), buffer.readableBytes());
       if( iconBitmap != null ) {
         iv.setImageBitmap(iconBitmap);
@@ -176,9 +177,9 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
     }
     TextView tv;
     tv = (TextView) view.findViewById(R.id.uri);
-    tv.setText(description.getRobotId().toString());
+    tv.setText(description.getConcertId().toString());
     tv = (TextView) view.findViewById(R.id.name);
-    tv.setText(description.getRobotFriendlyName());
+    tv.setText(description.getConcertFriendlyName());
     tv = (TextView) view.findViewById(R.id.status);
     tv.setText(errorReason);
   }

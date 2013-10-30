@@ -45,7 +45,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 
 import rocon_app_manager_msgs.PairingClient;
 
@@ -54,7 +54,7 @@ public class AppLauncher {
 
 
   /** Launch a client app for the given robot app. */
-  static public boolean launch(final ConcertActivity parentActivity, rocon_app_manager_msgs.App app, URI uri,RobotDescription currentRobot,boolean runningNodes) {
+  static public boolean launch(final ConcertActivity parentActivity, rocon_app_manager_msgs.App app, URI uri,ConcertDescription currentRobot,boolean runningNodes) {
     ArrayList<ClientAppData> android_apps = new ArrayList<ClientAppData>();
 
     
@@ -115,7 +115,7 @@ public class AppLauncher {
       ClientAppData appData = appropriateAndroidApps.get(i);
       Intent intent = appData.createIntent();
       intent.putExtra(AppManager.PACKAGE + ".robot_app_name", app.getName());
-      intent.putExtra(RobotDescription.UNIQUE_KEY, currentRobot);
+      intent.putExtra(ConcertDescription.UNIQUE_KEY, currentRobot);
       intent.putExtra("ChooserURI", uri.toString());
       intent.putExtra("runningNodes", runningNodes);
       intent.putExtra("PairedManagerActivity", "com.github.robotics_in_concert.rocon_android.concert_remocon.ConcertRemocon");

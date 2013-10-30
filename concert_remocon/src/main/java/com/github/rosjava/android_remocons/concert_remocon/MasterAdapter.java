@@ -37,7 +37,9 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
+
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
+
 import java.util.ArrayList;
 import java.util.List;
 /**
@@ -46,7 +48,7 @@ import java.util.List;
 public class MasterAdapter extends BaseAdapter {
   private Context context;
   private List<MasterItem> masterItems;
-  public MasterAdapter(ConcertChooser rmc, List<RobotDescription> robots) {
+  public MasterAdapter(ConcertChooser rmc, List<ConcertDescription> robots) {
     context = rmc;
     masterItems = new ArrayList<MasterItem>();
     if (robots != null) {

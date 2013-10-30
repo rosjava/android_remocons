@@ -15,15 +15,15 @@
 
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
         <provider
-            android:name="com.github.rosjava.android_apps.application_management.RobotsContentProvider"
-            android:authorities="com.github.rosjava.android_apps.application_management"
+            android:name="com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertsContentProvider"
+            android:authorities="com.github.rosjava.android_remocons.concert_remocon"
         />
         <activity android:name=".ConcertRemocon"
                   android:label="@string/app_name"
                   android:screenOrientation="portrait"
                   >
             <intent-filter>
-                <action android:name="com.github.robotics_in_concert.rocon_android.concert_remocon.RobotRemocon" />
+                <action android:name="com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
@@ -32,7 +32,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ConcertChooser" />
-        <activity android:name="org.ros.android.MasterChooser" />
+        <!--<activity android:name="org.ros.android.MasterChooser" />-->
         <activity android:name="com.github.rosjava.android_remocons.concert_remocon.nfc.ForegroundDispatch"
             android:label="NFC tag scan">
             <intent-filter>
@@ -41,7 +41,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.github.rosjava.android_remocons.concert_remocon.AppLauncher" />
+        <!--<service android:name="AppLauncher" />-->
         <service android:name="org.ros.android.NodeMainExecutorService" >
             <intent-filter>
                 <action android:name="org.ros.android.NodeMainExecutorService" />
