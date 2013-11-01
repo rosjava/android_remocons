@@ -9,7 +9,7 @@
 android:id="@+id/top_bar" >
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
               android:layout_weight="1"
-              android:id="@+id/robot_name_view"
+              android:id="@+id/concert_name_view"
               android:textSize="30sp" />
   </LinearLayout>
   <GridView android:id="@+id/gridview"
@@ -32,9 +32,9 @@ android:id="@+id/top_bar" >
 android:id="@+id/stop_applications"/>
   <Button android:layout_width="fill_parent"
           android:layout_height="wrap_content"
-          android:text="Deactivate Robot"
-          android:onClick="deactivateRobotClicked"
-android:id="@+id/deactivate_robot"/>
+          android:text="Deactivate Concert"
+          android:onClick="deactivateConcertClicked"
+android:id="@+id/deactivate_concert"/>
   <Button android:layout_width="fill_parent"
           android:layout_height="wrap_content"
           android:text="App Manager"
@@ -42,6 +42,6 @@ android:id="@+id/deactivate_robot"/>
 android:id="@+id/exchange_button"/>
   <Button android:layout_width="fill_parent"
           android:layout_height="wrap_content"
-          android:text="Release Robot"
+          android:text="Leave Concert"
           android:onClick="chooseNewMasterClicked"/>
 </LinearLayout>

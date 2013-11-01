@@ -44,7 +44,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
-import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 
 import rocon_app_manager_msgs.PairingClient;
@@ -53,11 +53,11 @@ public class AppLauncher {
   static private final String CLIENT_TYPE = "android";
 
 
-  /** Launch a client app for the given robot app. */
-  static public boolean launch(final ConcertActivity parentActivity, rocon_app_manager_msgs.App app, URI uri,ConcertDescription currentRobot,boolean runningNodes) {
-    ArrayList<ClientAppData> android_apps = new ArrayList<ClientAppData>();
+  /** Launch a client app for the given concert app. */
+  static public boolean launch(final ConcertActivity parentActivity, concert_msgs.RemoconApp app, URI uri,ConcertDescription currentConcert,boolean runningNodes) {
+//    ArrayList<ClientAppData> android_apps = new ArrayList<ClientAppData>();
 
-    
+    /*
     if (parentActivity instanceof ConcertRemocon) {
       ((ConcertRemocon)parentActivity).onAppClicked(app, app.getPairingClients().size() > 0);
     } else {
@@ -72,7 +72,7 @@ public class AppLauncher {
       return false;
     }
     
-    Log.i("ConcertRemocon", "launching robot app " + app.getName() + " -> found " + app.getPairingClients().size()
+    Log.i("ConcertRemocon", "launching concert app " + app.getName() + " -> found " + app.getPairingClients().size()
         + " client apps.");
 
     // Loop over all possible client apps to find the android ones.
@@ -84,7 +84,7 @@ public class AppLauncher {
       }
     }
 
-    Log.i("ConcertRemocon", "launching robot app " + app.getName() + " -> found " + android_apps.size()
+    Log.i("ConcertRemocon", "launching concert app " + app.getName() + " -> found " + android_apps.size()
         + " compatible android apps.");
 
     // TODO: filter out android apps which are not appropriate for
@@ -114,11 +114,11 @@ public class AppLauncher {
     for (int i = 0; i < appropriateAndroidApps.size(); i++) {
       ClientAppData appData = appropriateAndroidApps.get(i);
       Intent intent = appData.createIntent();
-      intent.putExtra(AppManager.PACKAGE + ".robot_app_name", app.getName());
-      intent.putExtra(ConcertDescription.UNIQUE_KEY, currentRobot);
+      intent.putExtra(ConcertAppsManager.PACKAGE + ".concert_app_name", app.getName());
+      intent.putExtra(ConcertDescription.UNIQUE_KEY, currentConcert);
       intent.putExtra("ChooserURI", uri.toString());
       intent.putExtra("runningNodes", runningNodes);
-      intent.putExtra("PairedManagerActivity", "com.github.robotics_in_concert.rocon_android.concert_remocon.ConcertRemocon");
+      intent.putExtra("PairedManagerActivity", "com.github.concertics_in_concert.rocon_android.concert_remocon.ConcertRemocon");
       try {
         className = intent.getAction();
         Log.i("ConcertRemocon", "trying to startActivity( action: " + intent.getAction() + " )");
@@ -139,7 +139,7 @@ public class AppLauncher {
     AlertDialog.Builder dialog = new AlertDialog.Builder(parentActivity);
     dialog.setTitle("Android app not installed.");
     dialog
-        .setMessage("This robot app requires a client user interface app, but none of the applicable android apps are installed. Would you like to install the app from the market place?");
+        .setMessage("This concert app requires a client user interface app, but none of the applicable android apps are installed. Would you like to install the app from the market place?");
     dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dlog, int i) {
@@ -154,7 +154,7 @@ public class AppLauncher {
         dlog.dismiss();
       }
     });
-    dialog.show();
+    dialog.show();*/
     return false;
   }
 }

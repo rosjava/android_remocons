@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2011, Willow Garage, Inc.
  * Copyright (c) 2013, OSRF.
- * Copyright (c) 2013, Yujin Robot.
+ * Copyright (c) 2013, Yujin Concert.
  *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -66,16 +66,17 @@ import org.ros.message.MessageListener;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
-import com.github.rosjava.android_apps.application_management.AppManager;
 import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertId;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker;
 
-import rocon_app_manager_msgs.App;
-import rocon_app_manager_msgs.AppList;
+import concert_msgs.GetRolesAndAppsResponse;
+import concert_msgs.RemoconApp;
+import concert_msgs.RoleAppList;
 import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.ErrorCodes;
 import rocon_app_manager_msgs.StopAppResponse;
@@ -83,14 +84,14 @@ import rocon_app_manager_msgs.StopAppResponse;
 public class ConcertRemocon extends ConcertActivity {
 
     /* startActivityForResult Request Codes */
-	private static final int ROBOT_MASTER_CHOOSER_REQUEST_CODE = 1;
+	private static final int CONCERT_MASTER_CHOOSER_REQUEST_CODE = 1;
 
 	private static final int MULTI_RAPP_DISABLED = 1;
 	private static final int CLOSE_EXISTING = 0;
 
-	private TextView robotNameView;
-	private ArrayList<App> availableAppsCache;
-	private ArrayList<App> runningAppsCache;
+	private TextView concertNameView;
+	private ArrayList<RemoconApp> availableAppsCache;
+	private ArrayList<RemoconApp> runningAppsCache;
 	private Button deactivate;
 	private Button stopAppsButton;
 	private Button exchangeButton;
@@ -99,11 +100,12 @@ public class ConcertRemocon extends ConcertActivity {
 	private AlertDialogWrapper wifiDialog;
 	private AlertDialogWrapper evictDialog;
 	private AlertDialogWrapper errorDialog;
-    protected AppManager listAppsSubscriber = null;
+    protected ConcertAppsManager listAppsService = null;  // used to be///        listAppsSubscriber
 	private boolean alreadyClicked = false;
-	private boolean validatedRobot;
+	private boolean validatedConcert;
 	private boolean runningNodes = false;
 	private long availableAppsCacheTime;
+    private String userRole;
 
 	private void stopProgress() {
         Log.i("ConcertRemocon", "Stopping the spinner");
@@ -232,8 +234,8 @@ public class ConcertRemocon extends ConcertActivity {
 	public ConcertRemocon() {
 		super("ConcertRemocon", "ConcertRemocon");
 		availableAppsCacheTime = 0;
-		availableAppsCache = new ArrayList<App>();
-		runningAppsCache = new ArrayList<App>();
+		availableAppsCache = new ArrayList<RemoconApp>();
+		runningAppsCache = new ArrayList<RemoconApp>();
 	}
 
 	/** Called when the activity is first created. */
@@ -243,8 +245,8 @@ public class ConcertRemocon extends ConcertActivity {
 		setMainWindowResource(R.layout.main);
 		super.onCreate(savedInstanceState);
 
-		robotNameView = (TextView) findViewById(R.id.robot_name_view);
-		deactivate = (Button) findViewById(R.id.deactivate_robot);
+		concertNameView = (TextView) findViewById(R.id.concert_name_view);
+		deactivate = (Button) findViewById(R.id.deactivate_concert);
 		deactivate.setVisibility(deactivate.GONE);
 		stopAppsButton = (Button) findViewById(R.id.stop_applications);
 		stopAppsButton.setVisibility(stopAppsButton.GONE);
@@ -258,9 +260,9 @@ public class ConcertRemocon extends ConcertActivity {
      * or as in the case when it has been relaunched by an application,
      * from intents set by the application.
      *
-     * Here we configure the remocon environment for a particular robot,
+     * Here we configure the remocon environment for a particular concert,
      * listing apps and providing the required triggers for interacting
-     * with that robot.
+     * with that concert.
      *
      * @param nodeMainExecutor
      */
@@ -269,34 +271,34 @@ public class ConcertRemocon extends ConcertActivity {
 
 		super.init(nodeMainExecutor);
 
-        // set up a subscriber to the applist topic so it can check
-        // status of available and running apps.
-        listAppsSubscriber = new AppManager("", getRobotNameSpaceResolver());
-        listAppsSubscriber.setAppListSubscriber(new MessageListener<AppList>() {
+        listAppsService = new ConcertAppsManager("", userRole, getConcertNameSpaceResolver());
+        listAppsService.setListService(new ServiceResponseListener<GetRolesAndAppsResponse> () {
             @Override
-            public void onNewMessage(AppList message) {
-                availableAppsCache = (ArrayList<App>) message.getAvailableApps();
-                runningAppsCache = (ArrayList<App>) message.getRunningApps();
-                ArrayList<String> runningAppsNames = new ArrayList<String>();
-                int i = 0;
-                for (i = 0; i < availableAppsCache.size(); i++) {
-                    App item = availableAppsCache.get(i);
-                    ArrayList<String> clients = new ArrayList<String>();
-                    for (int j = 0; j < item.getPairingClients().size(); j++) {
-                        clients.add(item.getPairingClients().get(j)
-                                .getClientType());
-                    }
-                    if (!clients.contains("android")
-                            && item.getPairingClients().size() != 0) {
-                        availableAppsCache.remove(i);
-                    }
-                    if (item.getPairingClients().size() == 0) {
-                        Log.i("ConcertRemocon",
-                                "Item name: " + item.getName());
-                        runningAppsNames.add(item.getName());
-                    }
-                }
-                Log.i("ConcertRemocon", "AppList Publication: "
+            public void onSuccess(GetRolesAndAppsResponse response) {
+                java.util.List<concert_msgs.RoleAppList>  kk = response.getData();
+                concert_msgs.RoleAppList a = kk.get(0);
+                availableAppsCache = (ArrayList<RemoconApp>)a.getRemoconApps();
+                // also sends the role, but...  what I do with it?
+//                availableAppsCache = (ArrayList<RemoconApp>) response.getData().;
+//                availableAppsCache.addAll(response.getData());  // also sends the role, but...
+//                for (int i = 0; i < availableAppsCache.size(); i++) {
+//                    RemoconApp app = availableAppsCache.get(i);
+////                    ArrayList<String> clients = new ArrayList<String>();
+////                    for (int j = 0; j < app..getPairingClients().size(); j++) {
+////                        clients.add(item.getPairingClients().get(j)
+////                                .getClientType());
+////                    }
+////                    if (!clients.contains("android")
+////                            && item.getPairingClients().size() != 0) {
+////                        availableAppsCache.remove(i);
+////                    }
+////                    if (item.getPairingClients().size() == 0) {
+////                        Log.i("ConcertRemocon",
+////                                "Item name: " + item.getName());
+////                        runningAppsNames.add(item.getName());
+////                    }
+//                }
+                Log.i("ConcertRemocon", "RoleAppList Publication: "
                         + availableAppsCache.size() + " apps");
                 availableAppsCacheTime = System.currentTimeMillis();
                 runOnUiThread(new Runnable() {
@@ -307,19 +309,25 @@ public class ConcertRemocon extends ConcertActivity {
                     }
                 });
             }
-        });
-        listAppsSubscriber.setFunction("list_apps");
-        nodeMainExecutor.execute(listAppsSubscriber,
+
+            @Override
+            public void onFailure(RemoteException e) {
+                Log.e("ConcertRemocon", "Retrive rapps for role " + userRole + " failed: " + e.getMessage());
+            }
+
+            });
+        listAppsService.setFunction("list");
+        nodeMainExecutor.execute(listAppsService,
                 nodeConfiguration.setNodeName("list_apps_subscriber_node"));
     }
 
     /**
-     * Initialise from an intent triggered by either the returning robot
-     * chooser or a robot app.
+     * Initialise from an intent triggered by either the returning concert
+     * chooser or a concert app.
      *
      * Validation will occur slightly differently in both cases - when
      * returning from the app, it will assume its already
-     * in control and skip the invitation step (see validateRobot).
+     * in control and skip the invitation step (see validateConcert).
      *
      * This eventually passes control back to the generic init function
      * (TODO: can probably incorporate this into that function).
@@ -329,18 +337,18 @@ public class ConcertRemocon extends ConcertActivity {
     void init(Intent intent) {
         URI uri;
         try {
-            String role = (String)intent.getSerializableExtra("UserRole");
+            userRole = (String)intent.getSerializableExtra("UserRole");
 
-            robotDescription = (ConcertDescription) intent
+            concertDescription = (ConcertDescription) intent
                     .getSerializableExtra(ConcertDescription.UNIQUE_KEY);
 
-            robotNameResolver.setConcertName(robotDescription
+            concertNameResolver.setConcertName(concertDescription
                     .getConcertName());
 
-            validatedRobot = false;
-            validateRobot(robotDescription.getConcertId());
+            validatedConcert = false;
+            validateConcert(concertDescription.getConcertId());
 
-            uri = new URI(robotDescription.getConcertId()
+            uri = new URI(concertDescription.getConcertId()
                     .getMasterUri());
         } catch (URISyntaxException e) {
             throw new RosRuntimeException(e);
@@ -355,8 +363,9 @@ public class ConcertRemocon extends ConcertActivity {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                while (!validatedRobot) {
+                while (!validatedConcert) {
                     // should use a sleep here to avoid burnout
+                    try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
                 }
                 ConcertRemocon.this.init(nodeMainExecutorService);
                 return null;
@@ -364,7 +373,7 @@ public class ConcertRemocon extends ConcertActivity {
         }.execute();
     }
     /**
-     * The main result gathered here is that from the robot master chooser
+     * The main result gathered here is that from the concert master chooser
      * which is started on top of the initial ConcertRemocon Activity.
      * This proceeds to then set the uri and trigger the init() calls.
      *
@@ -377,7 +386,7 @@ public class ConcertRemocon extends ConcertActivity {
 		if (resultCode == RESULT_CANCELED) {
 			finish();
 		} else if (resultCode == RESULT_OK) {
-			if (requestCode == ROBOT_MASTER_CHOOSER_REQUEST_CODE) {
+			if (requestCode == CONCERT_MASTER_CHOOSER_REQUEST_CODE) {
                 init(data);
             } else {
 				// Without a master URI configured, we are in an unusable state.
@@ -391,26 +400,26 @@ public class ConcertRemocon extends ConcertActivity {
      * This is an override which diverts the usual startup once a node is
      * connected. Typically this would go to the master chooser, however
      * here we are sometimes returning from one of its child apps (in which
-     * case it doesn't have to go choosing a robot). In that case, send
-     * it directly to the robot validation and initialisation steps.
+     * case it doesn't have to go choosing a concert). In that case, send
+     * it directly to the concert validation and initialisation steps.
      */
 	@Override
 	public void startMasterChooser() {
 		if (!fromApplication) {
 			super.startActivityForResult(new Intent(this,
 					ConcertChooser.class),
-					ROBOT_MASTER_CHOOSER_REQUEST_CODE);
+					CONCERT_MASTER_CHOOSER_REQUEST_CODE);
 		} else {
             if (getIntent().hasExtra(ConcertDescription.UNIQUE_KEY)) {
                 init(getIntent());
-                Log.i("ConcertRemocon", "closing remocon application and successfully retrieved the robot description via intents.");
+                Log.i("ConcertRemocon", "closing remocon application and successfully retrieved the concert description via intents.");
             } else {
-                Log.e("ConcertRemocon", "closing remocon application didn't return the robot description - *spank*.");
+                Log.e("ConcertRemocon", "closing remocon application didn't return the concert description - *spank*.");
             }
         }
 	}
 
-	public void validateRobot(final ConcertId id) {
+	public void validateConcert(final ConcertId id) {
 		wifiDialog = new AlertDialogWrapper(this, new AlertDialog.Builder(this)
 				.setTitle("Change Wifi?").setCancelable(false), "Yes", "No");
 		evictDialog = new AlertDialogWrapper(this,
@@ -428,7 +437,7 @@ public class ConcertRemocon extends ConcertActivity {
 		// The last step - ensure the master is up.
 		final MasterChecker mc = new MasterChecker(
 				new MasterChecker.ConcertDescriptionReceiver() {
-					public void receive(ConcertDescription robotDescription) {
+					public void receive(ConcertDescription concertDescription) {
 						runOnUiThread(new Runnable() {
 							public void run() {
 								final ProgressDialogWrapper p = progressDialog;
@@ -439,42 +448,46 @@ public class ConcertRemocon extends ConcertActivity {
 						});
                         if(!fromApplication) {
                             // Check that it's not busy
-                            if ( robotDescription.getConnectionStatus() == ConcertDescription.UNAVAILABLE ) {
+                            if ( concertDescription.getConnectionStatus() == ConcertDescription.UNAVAILABLE ) {
                                 errorDialog.show("Concert is unavailable : busy serving another remote controller.");
                                 errorDialog.dismiss();
                                 startMasterChooser();
                             } else {
+
+                                validatedConcert = true;   // for us this is enough check!
+
                                 // Invitation checker - should reconstruct the control/master/invitation checkers
                                 // Note the control checker is doing user control checking, not used by turtlebots, but by pr2?
-                                NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
-                                NodeConfiguration nodeConfiguration;
-                                try {
-                                    URI uri = new URI(robotDescription.getMasterUri());
-                                    nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
-                                } catch (URISyntaxException e) {
-                                    return; // should handle this
-                                }
-                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getConcertName());
-                                nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
-                                Boolean result = client.waitForResponse();
-                                nodeMainExecutorService.shutdownNodeMain(client);
-                                if ( !result ) {
-                                    errorDialog.show("Timed out trying to invite the robot for pairing mode.");
-                                    errorDialog.dismiss();
-                                    startMasterChooser();
-                                } else {
-                                    if ( client.getInvitationResult().equals(Boolean.TRUE) ) {
-                                        validatedRobot = true;
-                                    } else {
-                                        startMasterChooser();
-                                    }
-                                }
+//                                NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
+//                                NodeConfiguration nodeConfiguration;
+//                                try {
+//                                    URI uri = new URI(concertDescription.getMasterUri());
+//                                    nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
+//                                } catch (URISyntaxException e) {
+//                                    return; // should handle this
+//                                }
+
+//                                InvitationServiceClient client = new InvitationServiceClient(concertDescription.getGatewayName(), concertDescription.getConcertName());
+//                                nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
+//                                Boolean result = client.waitForResponse();
+//                                nodeMainExecutorService.shutdownNodeMain(client);
+//                                if ( !result ) {
+//                                    errorDialog.show("Timed out trying to invite the concert for pairing mode.");
+//                                    errorDialog.dismiss();
+//                                    startMasterChooser();
+//                                } else {
+//                                    if ( client.getInvitationResult().equals(Boolean.TRUE) ) {
+//                                        validatedConcert = true;
+//                                    } else {
+//                                        startMasterChooser();
+//                                    }
+//                                }
                             }
                         } else { // fromApplication
                             // Working on the lovely assumption that we're already controlling the rapp manager
                             // since we come from a running app. Note that this code is run after platform info
                             // checks have been made (see MasterChecker).
-                            validatedRobot = true;
+                            validatedConcert = true;
                         }
 					}
 				}, new MasterChecker.FailureHandler() {
@@ -492,12 +505,12 @@ public class ConcertRemocon extends ConcertActivity {
 						errorDialog.show("Cannot contact ROS master: "
 								+ reason2);
 						errorDialog.dismiss();
-                        // TODO : gracefully abort back to the robot master chooser instead.
+                        // TODO : gracefully abort back to the concert master chooser instead.
                         finish();
 					}
 				});
 
-		// Ensure the robot is in a good state
+		// Ensure the concert is in a good state
 		final ControlChecker cc = new ControlChecker(
 				new ControlChecker.SuccessHandler() {
 					public void handleSuccess() {
@@ -524,7 +537,7 @@ public class ConcertRemocon extends ConcertActivity {
 								}
 							}
 						});
-						errorDialog.show("Cannot connect to control robot: "
+						errorDialog.show("Cannot connect to control concert: "
 								+ reason2);
 						errorDialog.dismiss();
 						finish();
@@ -546,14 +559,14 @@ public class ConcertRemocon extends ConcertActivity {
 						}
 						evictDialog
 								.setMessage(current
-										+ " is running custom software on this robot. Do you want to evict this user?"
+										+ " is running custom software on this concert. Do you want to evict this user?"
 										+ m);
 						runOnUiThread(new Runnable() {
 							public void run() {
 								final ProgressDialogWrapper p = progressDialog;
 								if (p != null) {
 									p.show("Connecting...",
-											"Deactivating robot");
+											"Deactivating concert");
 								}
 							}
 						});
@@ -572,7 +585,7 @@ public class ConcertRemocon extends ConcertActivity {
 								final ProgressDialogWrapper p = progressDialog;
 								if (p != null) {
 									p.dismiss();
-									p.show("Connecting...", "Starting robot");
+									p.show("Connecting...", "Starting concert");
 								}
 							}
 						});
@@ -589,7 +602,7 @@ public class ConcertRemocon extends ConcertActivity {
 								if (p != null) {
 									p.dismiss();
 									p.show("Connecting...",
-											"Checking robot state");
+											"Checking concert state");
 								}
 							}
 						});
@@ -606,7 +619,7 @@ public class ConcertRemocon extends ConcertActivity {
 								}
 							}
 						});
-						errorDialog.show("Cannot connect to robot WiFi: "
+						errorDialog.show("Cannot connect to concert WiFi: "
 								+ reason2);
 						errorDialog.dismiss();
 						finish();
@@ -623,10 +636,10 @@ public class ConcertRemocon extends ConcertActivity {
 						});
 						if (from == null) {
 							wifiDialog
-									.setMessage("To use this robot, you must connect to a wifi network. You are currently not connected to a wifi network. Would you like to connect to the correct wireless network?");
+									.setMessage("To use this concert, you must connect to a wifi network. You are currently not connected to a wifi network. Would you like to connect to the correct wireless network?");
 						} else {
 							wifiDialog
-									.setMessage("To use this robot, you must switch wifi networks. Do you want to switch from "
+									.setMessage("To use this concert, you must switch wifi networks. Do you want to switch from "
 											+ from + " to " + to + "?");
 						}
 						runOnUiThread(new Runnable() {
@@ -645,10 +658,10 @@ public class ConcertRemocon extends ConcertActivity {
 		wc.beginChecking(id, (WifiManager) getSystemService(WIFI_SERVICE));
 	}
 
-	public void onAppClicked(final App app, final boolean isClientApp) {
+    public void onAppClicked(final RemoconApp app, final boolean isClientApp) {
 
 		boolean running = false;
-		for (App i : runningAppsCache) {
+		for (RemoconApp i : runningAppsCache) {
 			if (i.getName().equals(app.getName())) {
 				running = true;
 			}
@@ -657,8 +670,8 @@ public class ConcertRemocon extends ConcertActivity {
 		if (!running && alreadyClicked == false) {
 			alreadyClicked = true;
 
-			AppManager appManager = new AppManager(app.getName(),
-					getRobotNameSpaceResolver());
+			ConcertAppsManager appManager = new ConcertAppsManager(app.getName(),
+					getConcertNameSpaceResolver());
 			appManager.setFunction("start");
 
 			stopProgress();
@@ -710,8 +723,8 @@ public class ConcertRemocon extends ConcertActivity {
 		}
 	}
 
-	protected void updateAppList(final ArrayList<App> apps,
-			final ArrayList<App> runningApps) {
+	protected void updateAppList(final ArrayList<RemoconApp> apps,
+			final ArrayList<RemoconApp> runningApps) {
 		Log.d("ConcertRemocon", "updating app list gridview");
 		GridView gridview = (GridView) findViewById(R.id.gridview);
 		AppAdapter appAdapter = new AppAdapter(ConcertRemocon.this, apps,
@@ -723,7 +736,7 @@ public class ConcertRemocon extends ConcertActivity {
 			public void onItemClick(AdapterView<?> parent, View v,
 					int position, long id) {
 
-				App app = availableAppsCache.get(position);
+				RemoconApp app = availableAppsCache.get(position);
 
 				if (runningAppsCache.size() > 0) {
 					runningNodes = true;
@@ -731,7 +744,7 @@ public class ConcertRemocon extends ConcertActivity {
 				}
 
 				if (AppLauncher.launch(ConcertRemocon.this, apps.get(position),
-						getMasterUri(), robotDescription, runningNodes) == true) {
+						getMasterUri(), concertDescription, runningNodes) == true) {
 					if (progress != null) {
 						progress.dismiss();
 					}
@@ -751,62 +764,49 @@ public class ConcertRemocon extends ConcertActivity {
 	}
 
 	public void chooseNewMasterClicked(View view) {
-        // uninvite ourselves
-        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getConcertName(), Boolean.TRUE);
-        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
-        Boolean result = client.waitForResponse();
-        nodeMainExecutorService.shutdownNodeMain(client);
-        if ( !result ) {
-            errorDialog.show("Timed out trying to invite the robot for pairing mode.");
-            errorDialog.dismiss();
-        }
-        returnToRobotMasterChooser();
+        returnToConcertMasterChooser();
 	}
 
     /**
-     * This returns the activity to the robot master chooser
+     * This returns the activity to the concert master chooser
      * activity. It will get triggered via either a backpress
      * or the button provided in the ConcertRemocon activity.
      */
-    private void returnToRobotMasterChooser() {
-        if (pairingApplicationNamePublisher != null) {
-            nodeMainExecutor.shutdownNodeMain(pairingApplicationNamePublisher);
+    private void returnToConcertMasterChooser() {
+        if (listAppsService != null) {
+            nodeMainExecutor.shutdownNodeMain(listAppsService);
         }
-        if (listAppsSubscriber != null) {
-            nodeMainExecutor.shutdownNodeMain(listAppsSubscriber);
-        }
-        releaseRobotNameResolver();
-        releaseDashboardNode(); // TODO this work costs too many times
+        releaseConcertNameResolver();
         availableAppsCache.clear();
         runningAppsCache.clear();
         startActivityForResult(new Intent(this, ConcertChooser.class),
-                ROBOT_MASTER_CHOOSER_REQUEST_CODE);
+                CONCERT_MASTER_CHOOSER_REQUEST_CODE);
     }
 
 	public void exchangeButtonClicked(View view) {
 	}
 
-	public void deactivateRobotClicked(View view) {
+	public void deactivateConcertClicked(View view) {
 	}
 
     /**
-     * Currently stops all/any robot applications and is called
+     * Currently stops all/any concert applications and is called
      * when either the button to stop all applications has
      * been pressed or the android application terminates itself.
      */
-    public void stopRobotApplication() {
+    public void stopConcertApplication() {
         // Should find a way to stop the application without using *, i.e. keep
-        // the previously rapp-initialised AppManager around and stop that from here.
-        // Can we use just one AppManager?
-        AppManager appManager = new AppManager("*", getRobotNameSpaceResolver());
+        // the previously rapp-initialised ConcertAppsManager around and stop that from here.
+        // Can we use just one ConcertAppsManager?
+        ConcertAppsManager appManager = new ConcertAppsManager("*", getConcertNameSpaceResolver());
         appManager.setFunction("stop");
         appManager
                 .setStopService(new ServiceResponseListener<StopAppResponse>() {
                     @Override
                     public void onSuccess(StopAppResponse message) {
                         Log.i("ConcertRemocon", "app stopped successfully");
-                        availableAppsCache = new ArrayList<App>();
-                        runningAppsCache = new ArrayList<App>();
+                        availableAppsCache = new ArrayList<RemoconApp>();
+                        runningAppsCache = new ArrayList<RemoconApp>();
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -829,9 +829,9 @@ public class ConcertRemocon extends ConcertActivity {
 
     /**
      * Callback for the button that appears in the app list view
-     * when a paired robot app is running and either there is no
+     * when a paired concert app is running and either there is no
      * local android app, or for some reason, the local android app
-     * closed without terminating the paired robot app.
+     * closed without terminating the paired concert app.
      *
      * @param view
      */
@@ -839,17 +839,17 @@ public class ConcertRemocon extends ConcertActivity {
 
         /* Why trying to launch again? */
 		/*
-		for (App i : runningAppsCache) {
+		for (RemoconApp i : runningAppsCache) {
 			Log.i("ConcertRemocon", "sending intent to stop app to the app launcher [" + i.getName() + "]");
 			AppLauncher
-					.launch(this, i, getMasterUri(), robotDescription, false);
+					.launch(this, i, getMasterUri(), concertDescription, false);
 		}
         */
 
 		progressDialog = new ProgressDialogWrapper(this);
 		progressDialog.show("Stopping Applications",
 				"Stopping all applications...");
-        stopRobotApplication();
+        stopConcertApplication();
 	}
 
 	@Override
@@ -871,7 +871,7 @@ public class ConcertRemocon extends ConcertActivity {
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		// readRobotList();
+		// readConcertList();
 		final Dialog dialog;
 		Button button;
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -886,8 +886,8 @@ public class ConcertRemocon extends ConcertActivity {
 			dialog = builder.create();
 			break;
 		case MULTI_RAPP_DISABLED:
-			builder.setTitle("Multi-App Disabled on Robot");
-			builder.setMessage("The mode for running multiple apps is disabled on the robot. If you would like to enable it then you can change the arguments that the App Manager gets in its launch file.");
+			builder.setTitle("Multi-App Disabled on Concert");
+			builder.setMessage("The mode for running multiple apps is disabled on the concert. If you would like to enable it then you can change the arguments that the App Manager gets in its launch file.");
 			// builder.setNeutralButton("Okay", new DialogButtonClickHandler());
 			dialog = builder.create();
 			break;
@@ -901,7 +901,7 @@ public class ConcertRemocon extends ConcertActivity {
     @Override
     public void onBackPressed() {
         // this takes too long to complete and gets in the way of quickly shutting down.
-        // returnToRobotMasterChooser();
+        // returnToConcertMasterChooser();
         finish();
     }
 }

@@ -31,8 +31,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ConcertChooser" />
-        <!--<activity android:name="org.ros.android.MasterChooser" />-->
+        <activity android:name="com.github.rosjava.android_remocons.concert_remocon.ConcertChooser" />
+        <activity android:name="org.ros.android.MasterChooser" />
         <activity android:name="com.github.rosjava.android_remocons.concert_remocon.nfc.ForegroundDispatch"
             android:label="NFC tag scan">
             <intent-filter>
@@ -41,7 +41,7 @@
             </intent-filter>
         </activity>
 
-        <!--<service android:name="AppLauncher" />-->
+        <service android:name="AppLauncher" />
         <service android:name="org.ros.android.NodeMainExecutorService" >
             <intent-filter>
                 <action android:name="org.ros.android.NodeMainExecutorService" />

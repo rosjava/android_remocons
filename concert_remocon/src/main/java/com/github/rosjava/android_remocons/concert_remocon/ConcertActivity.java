@@ -30,10 +30,10 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
-import com.github.rosjava.android_apps.application_management.AppManager;
 import com.github.rosjava.android_apps.application_management.Dashboard;
 
 import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertNameResolver;
 
@@ -41,10 +41,10 @@ import rocon_app_manager_msgs.StopAppResponse;
 
 /**
  * Design goal of this activity should be to handle almost everything
- * necessary for interaction with a robot/rocon app manager. This
+ * necessary for interaction with a concert/rocon app manager. This
  * involves direct interactions on services and topics, and also
  * necessary data transfer required for correct display of the
- * 'robot' screen in the ConcertRemocon.
+ * 'concert' screen in the ConcertRemocon.
  *
  * This used to be part of the old RosAppActivity, but
  * that used quite heavily a 'what am i' process to work
@@ -54,9 +54,9 @@ import rocon_app_manager_msgs.StopAppResponse;
  */
 public abstract class ConcertActivity extends RosActivity {
 
-	private String robotAppName = null;
-	private String defaultRobotAppName = null;
-	private String defaultRobotName = null;
+	private String concertAppName = null;
+	private String defaultConcertAppName = null;
+	private String defaultConcertName = null;
     /*
       By default we assume the remocon has just launched independantly, however
       it can be launched upon the closure of one of its children applications.
@@ -68,8 +68,8 @@ public abstract class ConcertActivity extends RosActivity {
 	private Dashboard dashboard = null;
 	protected NodeConfiguration nodeConfiguration;
     protected NodeMainExecutor nodeMainExecutor;
-	protected ConcertNameResolver robotNameResolver;
-	protected ConcertDescription robotDescription;
+	protected ConcertNameResolver concertNameResolver;
+	protected ConcertDescription concertDescription;
     protected PairingApplicationNamePublisher pairingApplicationNamePublisher = null;
 
 	protected void setDashboardResource(int resource) {
@@ -80,12 +80,12 @@ public abstract class ConcertActivity extends RosActivity {
 		mainWindowId = resource;
 	}
 
-	protected void setDefaultRobotName(String name) {
-		defaultRobotName = name;
+	protected void setDefaultConcertName(String name) {
+		defaultConcertName = name;
 	}
 
 	protected void setDefaultAppName(String name) {
-        defaultRobotAppName = name;
+        defaultConcertAppName = name;
 	}
 
 	protected void setCustomDashboardPath(String path) {
@@ -116,17 +116,17 @@ public abstract class ConcertActivity extends RosActivity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(mainWindowId);
 
-		robotNameResolver = new ConcertNameResolver();
+		concertNameResolver = new ConcertNameResolver();
 
-		if (defaultRobotName != null) {
-			robotNameResolver.setConcertName(defaultRobotName);
+		if (defaultConcertName != null) {
+			concertNameResolver.setConcertName(defaultConcertName);
 		}
 
-		robotAppName = getIntent().getStringExtra(
-				AppManager.PACKAGE + ".robot_app_name");
-		if (robotAppName == null) {
-			robotAppName = defaultRobotAppName;
-        } else if (robotAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
+		concertAppName = getIntent().getStringExtra(
+				ConcertAppsManager.PACKAGE + ".concert_app_name");
+		if (concertAppName == null) {
+			concertAppName = defaultConcertAppName;
+        } else if (concertAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
             Log.i("ConcertRemocon", "reinitialising from a closing remocon application");
             fromApplication = true;
 		} else {
@@ -144,9 +144,9 @@ public abstract class ConcertActivity extends RosActivity {
 
     /**
      * Start cooking! Init is run once either the master chooser has
-     * finished and detected all the robot information it needs, or
+     * finished and detected all the concert information it needs, or
      * it has returned from a remocon application. Either way, both
-     * are guaranteed to return with a master uri and robot description.
+     * are guaranteed to return with a master uri and concert description.
      *
      * We use them here to kickstart everything else.
      *
@@ -158,17 +158,17 @@ public abstract class ConcertActivity extends RosActivity {
         nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
                 .newNonLoopback().getHostAddress(), getMasterUri());
 
-        // robotDescription will get set by the robot master chooser as it exits
+        // concertDescription will get set by the concert master chooser as it exits
         // or passed back as an intent from a closing remocon application.
         // It should never be null!
-        robotNameResolver.setConcert(robotDescription);
-        dashboard.setRobotName(robotDescription.getConcertType());
+        concertNameResolver.setConcert(concertDescription);
+        dashboard.setRobotName(concertDescription.getConcertType());
         pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Concert Remocon");
         nodeMainExecutor.execute(pairingApplicationNamePublisher,
                 nodeConfiguration.setNodeName("pairingApplicationNamePublisher"));
-        nodeMainExecutor.execute(robotNameResolver,
-                nodeConfiguration.setNodeName("robotNameResolver"));
-        robotNameResolver.waitForResolver();
+        nodeMainExecutor.execute(concertNameResolver,
+                nodeConfiguration.setNodeName("concertNameResolver"));
+        concertNameResolver.waitForResolver();
         nodeMainExecutor.execute(dashboard,
                 nodeConfiguration.setNodeName("dashboard"));
         // Child application post-handling
@@ -178,21 +178,21 @@ public abstract class ConcertActivity extends RosActivity {
     }
 
 	protected NameResolver getAppNameSpace() {
-		return robotNameResolver.getAppNameSpace();
+		return concertNameResolver.getAppNameSpace();
 	}
 
-	protected NameResolver getRobotNameSpaceResolver() {
-		return robotNameResolver.getConcertNameSpace();
+	protected NameResolver getConcertNameSpaceResolver() {
+		return concertNameResolver.getConcertNameSpace();
 	}
 
-    protected String getRobotNameSpace() {
-        return robotNameResolver.getConcertNameSpace().getNamespace().toString();
+    protected String getConcertNameSpace() {
+        return concertNameResolver.getConcertNameSpace().getNamespace().toString();
     }
 
 	protected void stopApp() {
-		Log.i("ConcertRemocon", "android application stopping a rapp [" + robotAppName + "]");
-		AppManager appManager = new AppManager(robotAppName,
-				getRobotNameSpaceResolver());
+		Log.i("ConcertRemocon", "android application stopping a rapp [" + concertAppName + "]");
+		ConcertAppsManager appManager = new ConcertAppsManager(concertAppName,
+				getConcertNameSpaceResolver());
 		appManager.setFunction("stop");
 
 		appManager
@@ -215,8 +215,8 @@ public abstract class ConcertActivity extends RosActivity {
 				nodeConfiguration.setNodeName("stop_app"));
 	}
 
-	protected void releaseRobotNameResolver() {
-		nodeMainExecutor.shutdownNodeMain(robotNameResolver);
+	protected void releaseConcertNameResolver() {
+		nodeMainExecutor.shutdownNodeMain(concertNameResolver);
 	}
 
 	protected void releaseDashboardNode() {

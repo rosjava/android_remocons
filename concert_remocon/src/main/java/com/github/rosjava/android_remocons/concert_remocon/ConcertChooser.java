@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2011, Willow Garage, Inc.
  * Copyright (c) 2013, OSRF.
- * Copyright (c) 2013, Yujin Robot.
+ * Copyright (c) 2013, Yujin Concert.
  *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -66,6 +66,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.rosjava.android_apps.application_management.RobotDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertsContentProvider;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertId;
@@ -92,18 +93,18 @@ public class ConcertChooser extends Activity {
 
 	private static final int ADD_URI_DIALOG_ID = 0;
 	private static final int ADD_DELETION_DIALOG_ID = 1;
-	private static final int ADD_SEARCH_ROBOT_DIALOG_ID = 2;
+	private static final int ADD_SEARCH_CONCERT_DIALOG_ID = 2;
 
     private static final int QR_CODE_SCAN_REQUEST_CODE = 101;
     private static final int NFC_TAG_SCAN_REQUEST_CODE = 102;
 
-	private List<ConcertDescription> robots;
+	private List<ConcertDescription> concerts;
 	private boolean[] selections;
 	private MasterSearcher masterSearcher;
 	private ListView listView;
 
 	public ConcertChooser() {
-		robots = new ArrayList<ConcertDescription>();
+		concerts = new ArrayList<ConcertDescription>();
 	}
 
 	private void readConcertList() {
@@ -111,38 +112,38 @@ public class ConcertChooser extends Activity {
 		Cursor c = getContentResolver().query(
 				ConcertsContentProvider.CONTENT_URI, null, null, null, null);
 		if (c == null) {
-			robots = new ArrayList<ConcertDescription>();
-			Log.e("ConcertRemocon", "robot master chooser provider failed!!!");
+			concerts = new ArrayList<ConcertDescription>();
+			Log.e("ConcertRemocon", "concert master chooser provider failed!!!");
 			return;
 		}
 		if (c.getCount() > 0) {
 			c.moveToFirst();
 			str = c.getString(c
 					.getColumnIndex(ConcertsContentProvider.TABLE_COLUMN));
-			Log.i("ConcertRemocon", "robot master chooser found a robot: " + str);
+			Log.i("ConcertRemocon", "concert master chooser found a concert: " + str);
 		}
 		if (str != null) {
 			Yaml yaml = new Yaml();
-			robots = (List<ConcertDescription>) yaml.load(str);
+			concerts = (List<ConcertDescription>) yaml.load(str);
 		} else {
-			robots = new ArrayList<ConcertDescription>();
+			concerts = new ArrayList<ConcertDescription>();
 		}
 	}
 
 	public void writeConcertList() {
-		Log.i("ConcertRemocon", "robot master chooser saving robot...");
+		Log.i("ConcertRemocon", "concert master chooser saving concert...");
 		Yaml yaml = new Yaml();
 		String txt = null;
-		final List<ConcertDescription> robot = robots; // Avoid race conditions
-		if (robot != null) {
-			txt = yaml.dump(robot);
+		final List<ConcertDescription> concert = concerts; // Avoid race conditions
+		if (concert != null) {
+			txt = yaml.dump(concert);
 		}
 		ContentValues cv = new ContentValues();
 		cv.put(ConcertsContentProvider.TABLE_COLUMN, txt);
 		Uri newEmp = getContentResolver().insert(
 				ConcertsContentProvider.CONTENT_URI, cv);
 		if (newEmp != ConcertsContentProvider.CONTENT_URI) {
-			Log.e("ConcertRemocon", "robot master chooser could not save robot, non-equal URI's");
+			Log.e("ConcertRemocon", "concert master chooser could not save concert, non-equal URI's");
 		}
 	}
 
@@ -152,9 +153,9 @@ public class ConcertChooser extends Activity {
 	}
 
 	private void updateListView() {
-		setContentView(R.layout.robot_master_chooser);
+		setContentView(R.layout.concert_master_chooser);
 		ListView listview = (ListView) findViewById(R.id.master_list);
-		listview.setAdapter(new MasterAdapter(this, robots));
+		listview.setAdapter(new MasterAdapter(this, concerts));
 		registerForContextMenu(listview);
 
 		listview.setOnItemClickListener(new OnItemClickListener() {
@@ -167,7 +168,7 @@ public class ConcertChooser extends Activity {
 	}
 
     /**
-     * Called when the user clicks on one of the robots in master chooser
+     * Called when the user clicks on one of the concerts in master chooser
      * view. Should probably check the connection status before
      * proceeding here, but perhaps we can just rely on the user clicking
      * refresh so this process stays without any lag delay.
@@ -175,13 +176,13 @@ public class ConcertChooser extends Activity {
      * @param position
      */
 	private void choose(int position) {
-		ConcertDescription robot = robots.get(position);
-		if (robot == null || robot.getConnectionStatus() == null
-				|| robot.getConnectionStatus().equals(robot.ERROR)) {
+		ConcertDescription concert = concerts.get(position);
+		if (concert == null || concert.getConnectionStatus() == null
+				|| concert.getConnectionStatus().equals(concert.ERROR)) {
 			AlertDialog d = new AlertDialog.Builder(ConcertChooser.this)
 					.setTitle("Error!")
 					.setCancelable(false)
-					.setMessage("Failed: Cannot contact robot")
+					.setMessage("Failed: Cannot contact concert")
 					.setNeutralButton("OK",
 							new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog,
@@ -189,7 +190,7 @@ public class ConcertChooser extends Activity {
 								}
 							}).create();
 			d.show();
-        } else if ( robot.getConnectionStatus().equals(robot.UNAVAILABLE) ) {
+        } else if ( concert.getConnectionStatus().equals(concert.UNAVAILABLE) ) {
             AlertDialog d = new AlertDialog.Builder(ConcertChooser.this)
                     .setTitle("Concert Unavailable!")
                     .setCancelable(false)
@@ -202,31 +203,29 @@ public class ConcertChooser extends Activity {
                             }).create();
             d.show();
         } else {
-            concertChosen(robot);
+            concertChosen(concert);
 		}
 	}
 
-    private void concertChosen(final ConcertDescription robot) {
+    private void concertChosen(final ConcertDescription concert) {
         Log.i("ConcertRemocon", "Concert chosen; show choose user role dialog");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose your role");
 
-        builder.setSingleChoiceItems(robot.getUserRoles(), 0, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int selectedRole) {
-                        Toast.makeText(ConcertChooser.this, robot.getUserRoles()[selectedRole] + " selected",
-                                       Toast.LENGTH_SHORT).show();
+        builder.setSingleChoiceItems(concert.getUserRoles(), 0, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int selectedRole) {
+                String role = concert.getUserRoles()[selectedRole];
+                Toast.makeText(ConcertChooser.this, role + " selected", Toast.LENGTH_SHORT).show();
 
-                        String role = robot.getUserRoles()[selectedRole];
-
-                        Intent resultIntent = new Intent();
-                        resultIntent
-                                .putExtra(ConcertDescription.UNIQUE_KEY, robot)
-                                .putExtra("UserRole", role);
-                        setResult(RESULT_OK, resultIntent);
-                        finish();
-                    }
-                });
+                Intent resultIntent = new Intent();
+                resultIntent
+                        .putExtra(ConcertDescription.UNIQUE_KEY, concert)
+                        .putExtra("UserRole", role);
+                setResult(RESULT_OK, resultIntent);
+                finish();
+            }
+        });
         AlertDialog alert = builder.create();
         alert.show();
     }
@@ -236,25 +235,25 @@ public class ConcertChooser extends Activity {
 	}
 
 	private void addMaster(ConcertId concertId, boolean connectToDuplicates) {
-		Log.i("MasterChooserActivity", "adding master to the robot master chooser [" + concertId.toString() + "]");
+		Log.i("MasterChooserActivity", "adding master to the concert master chooser [" + concertId.toString() + "]");
 		if (concertId == null || concertId.getMasterUri() == null) {
 		} else {
-			for (int i = 0; i < robots.toArray().length; i++) {
-				ConcertDescription robot = robots.get(i);
-				if (robot.getConcertId().equals(concertId)) {
+			for (int i = 0; i < concerts.toArray().length; i++) {
+				ConcertDescription concert = concerts.get(i);
+				if (concert.getConcertId().equals(concertId)) {
 					if (connectToDuplicates) {
 						choose(i);
 						return;
 					} else {
-						Toast.makeText(this, "That robot is already listed.",
+						Toast.makeText(this, "That concert is already listed.",
 								Toast.LENGTH_SHORT).show();
 						return;
 					}
 				}
 			}
-			Log.i("MasterChooserActivity", "creating robot description: "
+			Log.i("MasterChooserActivity", "creating concert description: "
 					+ concertId.toString());
-			robots.add(ConcertDescription.createUnknown(concertId));
+			concerts.add(ConcertDescription.createUnknown(concertId));
 			Log.i("MasterChooserActivity", "description created");
 			onConcertsChanged();
 		}
@@ -266,7 +265,7 @@ public class ConcertChooser extends Activity {
 	}
 
 	private void deleteAllConcerts() {
-		robots.clear();
+		concerts.clear();
 		onConcertsChanged();
 	}
 
@@ -274,7 +273,7 @@ public class ConcertChooser extends Activity {
 		int j = 0;
 		for (int i = 0; i < array.length; i++) {
 			if (array[i]) {
-				robots.remove(j);
+				concerts.remove(j);
 			} else {
 				j++;
 			}
@@ -283,13 +282,13 @@ public class ConcertChooser extends Activity {
 	}
 
 	private void deleteUnresponsiveConcerts() {
-		Iterator<ConcertDescription> iter = robots.iterator();
+		Iterator<ConcertDescription> iter = concerts.iterator();
 		while (iter.hasNext()) {
-			ConcertDescription robot = iter.next();
-			if (robot == null || robot.getConnectionStatus() == null
-					|| robot.getConnectionStatus().equals(robot.ERROR)) {
-				Log.i("ConcertRemocon", "robot master chooser removing robot with connection status '"
-						+ robot.getConnectionStatus() + "'");
+			ConcertDescription concert = iter.next();
+			if (concert == null || concert.getConnectionStatus() == null
+					|| concert.getConnectionStatus().equals(concert.ERROR)) {
+				Log.i("ConcertRemocon", "concert master chooser removing concert with connection status '"
+						+ concert.getConnectionStatus() + "'");
 				iter.remove();
 			}
 		}
@@ -306,7 +305,7 @@ public class ConcertChooser extends Activity {
 
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-        // Sub-activity to gather robot connection data completed: can be QR code or NFC tag scan
+        // Sub-activity to gather concert connection data completed: can be QR code or NFC tag scan
         // TODO: cannot unify both calls?
 
         if (resultCode == RESULT_CANCELED) {
@@ -344,7 +343,7 @@ public class ConcertChooser extends Activity {
                 addMaster(new ConcertId(data), false);
             } catch (Exception e) {
                 Toast.makeText(this,
-                        "Invalid robot description: " + e.getMessage(),
+                        "Invalid concert description: " + e.getMessage(),
                         Toast.LENGTH_SHORT).show();
             }
         }
@@ -360,7 +359,7 @@ public class ConcertChooser extends Activity {
 		case ADD_URI_DIALOG_ID:
 			dialog = new Dialog(this);
 			dialog.setContentView(R.layout.add_uri_dialog);
-			dialog.setTitle("Add a robot");
+			dialog.setTitle("Add a concert");
 			dialog.setOnKeyListener(new DialogKeyListener());
 			EditText uriField = (EditText) dialog.findViewById(R.id.uri_editor);
 			EditText controlUriField = (EditText) dialog
@@ -409,24 +408,24 @@ public class ConcertChooser extends Activity {
 		case ADD_DELETION_DIALOG_ID:
 			builder = new AlertDialog.Builder(this);
 			String newline = System.getProperty("line.separator");
-			if (robots.size() > 0) {
-				selections = new boolean[robots.size()];
-				Spannable[] robot_names = new Spannable[robots.size()];
+			if (concerts.size() > 0) {
+				selections = new boolean[concerts.size()];
+				Spannable[] concert_names = new Spannable[concerts.size()];
 				Spannable name;
-				for (int i = 0; i < robots.size(); i++) {
+				for (int i = 0; i < concerts.size(); i++) {
 					name = Factory.getInstance().newSpannable(
-							robots.get(i).getConcertName() + newline
-									+ robots.get(i).getConcertId());
-					name.setSpan(new ForegroundColorSpan(0xff888888), robots
+							concerts.get(i).getConcertName() + newline
+									+ concerts.get(i).getConcertId());
+					name.setSpan(new ForegroundColorSpan(0xff888888), concerts
 							.get(i).getConcertName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					name.setSpan(new RelativeSizeSpan(0.8f), robots.get(i)
+					name.setSpan(new RelativeSizeSpan(0.8f), concerts.get(i)
 							.getConcertName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					robot_names[i] = name;
+					concert_names[i] = name;
 				}
-				builder.setTitle("Delete a robot");
-				builder.setMultiChoiceItems(robot_names, selections,
+				builder.setTitle("Delete a concert");
+				builder.setMultiChoiceItems(concert_names, selections,
 						new DialogSelectionClickHandler());
 				builder.setPositiveButton("Delete Selections",
 						new DeletionDialogButtonClickHandler());
@@ -434,7 +433,7 @@ public class ConcertChooser extends Activity {
 						new DeletionDialogButtonClickHandler());
 				dialog = builder.create();
 			} else {
-				builder.setTitle("No robots to delete.");
+				builder.setTitle("No concerts to delete.");
 				dialog = builder.create();
 				final Timer t = new Timer();
 				t.schedule(new TimerTask() {
@@ -444,7 +443,7 @@ public class ConcertChooser extends Activity {
 				}, 2 * 1000);
 			}
 			break;
-		case ADD_SEARCH_ROBOT_DIALOG_ID:
+		case ADD_SEARCH_CONCERT_DIALOG_ID:
 			builder = new AlertDialog.Builder(this);
 			builder.setTitle("Scanning on the local network...");
 			LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -614,21 +613,21 @@ public class ConcertChooser extends Activity {
 
 	public void searchConcertClicked(View view) {
 		removeDialog(ADD_URI_DIALOG_ID);
-		showDialog(ADD_SEARCH_ROBOT_DIALOG_ID);
+		showDialog(ADD_SEARCH_CONCERT_DIALOG_ID);
 
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.robot_master_chooser_option_menu, menu);
+		inflater.inflate(R.menu.concert_master_chooser_option_menu, menu);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.add_robot) {
+		if (id == R.id.add_concert) {
 			showDialog(ADD_URI_DIALOG_ID);
 			return true;
 		} else if (id == R.id.delete_selected) {

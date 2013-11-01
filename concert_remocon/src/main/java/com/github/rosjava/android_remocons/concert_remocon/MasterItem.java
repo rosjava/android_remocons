@@ -57,7 +57,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 /**
  * Data class behind view of one item in the list of ROS Masters. Gets created
  * with a master URI and a local host name, then starts a {@link com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker}
- * to look up robot name and type.
+ * to look up concert name and type.
  *
  * @author hersh@willowgarage.com
  */
@@ -72,10 +72,10 @@ public class MasterItem implements MasterChecker.ConcertDescriptionReceiver,
   private ConcertChooser parentMca;
   private String errorReason;
   private boolean control;
-  public MasterItem(ConcertDescription robotDescription, ConcertChooser parentMca) {
+  public MasterItem(ConcertDescription concertDescription, ConcertChooser parentMca) {
     errorReason = "";
     this.parentMca = parentMca;
-    this.description = robotDescription;
+    this.description = concertDescription;
     this.description.setConnectionStatus(ConcertDescription.CONNECTING);
     if (WifiChecker.wifiValid(this.description.getConcertId(),
             (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
@@ -103,8 +103,8 @@ public class MasterItem implements MasterChecker.ConcertDescriptionReceiver,
     checker.beginChecking(this.description.getConcertId());
   }
   @Override
-  public void receive(ConcertDescription robotDescription) {
-    description.copyFrom(robotDescription);
+  public void receive(ConcertDescription concertDescription) {
+    description.copyFrom(concertDescription);
     safePopulateView();
   }
   @Override
@@ -148,7 +148,7 @@ public class MasterItem implements MasterChecker.ConcertDescriptionReceiver,
     progress.setVisibility(isConnecting ? View.VISIBLE : View.GONE );
     ImageView errorImage = (ImageView) view.findViewById(R.id.error_icon);
     errorImage.setVisibility( isError ? View.VISIBLE : View.GONE );
-    ImageView iv = (ImageView) view.findViewById(R.id.robot_icon);
+    ImageView iv = (ImageView) view.findViewById(R.id.concert_icon);
     iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
     if (description.getConcertType() == null) {
       iv.setImageResource(R.drawable.question_mark);

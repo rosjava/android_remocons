@@ -42,17 +42,17 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
-import rocon_app_manager_msgs.App;
+import concert_msgs.RemoconApp;
 import java.util.ArrayList;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
 public class AppAdapter extends BaseAdapter {
   private Context context;
-  private ArrayList<App> apps;
-  private ArrayList<App> runningApps;
+  private ArrayList<RemoconApp> apps;
+  private ArrayList<RemoconApp> runningApps;
 
-  public AppAdapter(Context c, ArrayList<App> apps, ArrayList<App> runningApps) {
+  public AppAdapter(Context c, ArrayList<RemoconApp> apps, ArrayList<RemoconApp> runningApps) {
     context = c;
     this.apps = apps;
     this.runningApps = runningApps;
@@ -76,11 +76,11 @@ public class AppAdapter extends BaseAdapter {
     return 0;
   }
 
-  boolean isAppRunning(App app) {
+  boolean isAppRunning(RemoconApp app) {
     if (app.getName() == null) {
       return false;
     }
-    for (App c : this.runningApps) {
+    for (RemoconApp c : this.runningApps) {
       if (app.getName().equals(c.getName())) {
         return true;
       }
@@ -96,7 +96,7 @@ public class AppAdapter extends BaseAdapter {
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
     View view = inflater.inflate(R.layout.app_item, null);
-    App app = apps.get(position);
+    RemoconApp app = apps.get(position);
     if( app.getIcon().getData().array().length > 0 && app.getIcon().getFormat() != null &&
         (app.getIcon().getFormat().equals("jpeg") || app.getIcon().getFormat().equals("png")) ) {
     	ChannelBuffer buffer = app.getIcon().getData();

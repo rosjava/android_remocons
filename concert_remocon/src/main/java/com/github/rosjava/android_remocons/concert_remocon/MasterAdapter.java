@@ -48,12 +48,12 @@ import java.util.List;
 public class MasterAdapter extends BaseAdapter {
   private Context context;
   private List<MasterItem> masterItems;
-  public MasterAdapter(ConcertChooser rmc, List<ConcertDescription> robots) {
+  public MasterAdapter(ConcertChooser rmc, List<ConcertDescription> concerts) {
     context = rmc;
     masterItems = new ArrayList<MasterItem>();
-    if (robots != null) {
-      for (int i = 0; i < robots.size(); i++) {
-        masterItems.add(new MasterItem(robots.get(i), rmc));
+    if (concerts != null) {
+      for (int i = 0; i < concerts.size(); i++) {
+        masterItems.add(new MasterItem(concerts.get(i), rmc));
       }
     }
   }
