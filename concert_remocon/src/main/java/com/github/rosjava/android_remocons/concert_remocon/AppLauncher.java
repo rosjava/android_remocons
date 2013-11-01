@@ -57,7 +57,6 @@ public class AppLauncher {
   static public boolean launch(final ConcertActivity parentActivity, concert_msgs.RemoconApp app, URI uri,ConcertDescription currentConcert,boolean runningNodes) {
 //    ArrayList<ClientAppData> android_apps = new ArrayList<ClientAppData>();
 
-    /*
     if (parentActivity instanceof ConcertRemocon) {
       ((ConcertRemocon)parentActivity).onAppClicked(app, app.getPairingClients().size() > 0);
     } else {
@@ -154,7 +153,7 @@ public class AppLauncher {
         dlog.dismiss();
       }
     });
-    dialog.show();*/
+    dialog.show();
     return false;
   }
 }

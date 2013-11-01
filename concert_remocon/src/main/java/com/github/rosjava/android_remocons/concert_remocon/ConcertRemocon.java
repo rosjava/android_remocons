@@ -66,7 +66,6 @@ import org.ros.message.MessageListener;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
-import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertId;
@@ -89,18 +88,15 @@ public class ConcertRemocon extends ConcertActivity {
 	private static final int MULTI_RAPP_DISABLED = 1;
 	private static final int CLOSE_EXISTING = 0;
 
-	private TextView concertNameView;
 	private ArrayList<RemoconApp> availableAppsCache;
-	private ArrayList<RemoconApp> runningAppsCache;
-	private Button deactivate;
-	private Button stopAppsButton;
-	private Button exchangeButton;
+    private TextView concertNameView;
+	private Button leaveConcertButton;
 	private ProgressDialog progress;
 	private ProgressDialogWrapper progressDialog;
 	private AlertDialogWrapper wifiDialog;
 	private AlertDialogWrapper evictDialog;
 	private AlertDialogWrapper errorDialog;
-    protected ConcertAppsManager listAppsService = null;  // used to be///        listAppsSubscriber
+    protected ConcertAppsManager listAppsService;
 	private boolean alreadyClicked = false;
 	private boolean validatedConcert;
 	private boolean runningNodes = false;
@@ -224,8 +220,7 @@ public class ConcertRemocon extends ConcertActivity {
 			if (progressDialog != null) {
 				this.dismiss();
 			}
-			progressDialog = ProgressDialog.show(activity, title, text, true,
-					true);
+			progressDialog = ProgressDialog.show(activity, title, text, true, true);
 			progressDialog.setCancelable(false);
 			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		}
@@ -235,23 +230,17 @@ public class ConcertRemocon extends ConcertActivity {
 		super("ConcertRemocon", "ConcertRemocon");
 		availableAppsCacheTime = 0;
 		availableAppsCache = new ArrayList<RemoconApp>();
-		runningAppsCache = new ArrayList<RemoconApp>();
 	}
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		setDashboardResource(R.id.top_bar);
 		setMainWindowResource(R.layout.main);
 		super.onCreate(savedInstanceState);
 
 		concertNameView = (TextView) findViewById(R.id.concert_name_view);
-		deactivate = (Button) findViewById(R.id.deactivate_concert);
-		deactivate.setVisibility(deactivate.GONE);
-		stopAppsButton = (Button) findViewById(R.id.stop_applications);
-		stopAppsButton.setVisibility(stopAppsButton.GONE);
-		exchangeButton = (Button) findViewById(R.id.exchange_button);
-		exchangeButton.setVisibility(deactivate.GONE);
+	//	leaveConcertButton = (Button) findViewById(R.id.leave_button);
+//        leaveConcertButton.setVisibility(View.VISIBLE);
 	}
 
     /**
@@ -304,8 +293,7 @@ public class ConcertRemocon extends ConcertActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        updateAppList(availableAppsCache,
-                                runningAppsCache);
+                        updateAppList(availableAppsCache);
                     }
                 });
             }
@@ -661,74 +649,73 @@ public class ConcertRemocon extends ConcertActivity {
     public void onAppClicked(final RemoconApp app, final boolean isClientApp) {
 
 		boolean running = false;
-		for (RemoconApp i : runningAppsCache) {
-			if (i.getName().equals(app.getName())) {
-				running = true;
-			}
-		}
+        // where starts the android app????
+//		for (RemoconApp i : runningAppsCache) {
+//			if (i.getName().equals(app.getName())) {
+//				running = true;
+//			}
+//		}
 
-		if (!running && alreadyClicked == false) {
-			alreadyClicked = true;
-
-			ConcertAppsManager appManager = new ConcertAppsManager(app.getName(),
-					getConcertNameSpaceResolver());
-			appManager.setFunction("start");
-
-			stopProgress();
-			runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					stopProgress();
-					progress = ProgressDialog.show(ConcertRemocon.this,
-							"Starting Rapp",
-							"Starting " + app.getDisplayName() + "...", true,
-							false);
-					progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-				}
-			});
-
-			appManager
-					.setStartService(new ServiceResponseListener<StartAppResponse>() {
-						@Override
-						public void onSuccess(StartAppResponse message) {
-							if (message.getStarted()) {
-								Log.i("ConcertRemocon", "Rapp started successfully [" + app.getDisplayName() + "]");
-								alreadyClicked = false;
-								// safeSetStatus("Started");
-							} else if (message.getErrorCode() == ErrorCodes.MULTI_RAPP_NOT_SUPPORTED) {
-								runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										showDialog(MULTI_RAPP_DISABLED);
-									}
-								});
-
-							} else {
-								Log.w("ConcertRemocon", message.getMessage());
-								// safeSetStatus(message.getMessage());
-							}
-							stopProgress();
-						}
-
-						@Override
-						public void onFailure(RemoteException e) {
-							// safeSetStatus("Failed: " + e.getMessage());
-							stopProgress();
-						}
-					});
-
-			nodeMainExecutor.execute(appManager,
-					nodeConfiguration.setNodeName("start_app"));
-
-		}
+//		if (!running && alreadyClicked == false) {
+//			alreadyClicked = true;
+//
+//			ConcertAppsManager appManager = new ConcertAppsManager(app.getName(),
+//					getConcertNameSpaceResolver());
+//			appManager.setFunction("start");
+//
+//			stopProgress();
+//			runOnUiThread(new Runnable() {
+//				@Override
+//				public void run() {
+//					stopProgress();
+//					progress = ProgressDialog.show(ConcertRemocon.this,
+//							"Starting Rapp",
+//							"Starting " + app.getDisplayName() + "...", true,
+//							false);
+//					progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//				}
+//			});
+//
+//			appManager
+//					.setStartService(new ServiceResponseListener<StartAppResponse>() {
+//						@Override
+//						public void onSuccess(StartAppResponse message) {
+//							if (message.getStarted()) {
+//								Log.i("ConcertRemocon", "Rapp started successfully [" + app.getDisplayName() + "]");
+//								alreadyClicked = false;
+//								// safeSetStatus("Started");
+//							} else if (message.getErrorCode() == ErrorCodes.MULTI_RAPP_NOT_SUPPORTED) {
+//								runOnUiThread(new Runnable() {
+//									@Override
+//									public void run() {
+//										showDialog(MULTI_RAPP_DISABLED);
+//									}
+//								});
+//
+//							} else {
+//								Log.w("ConcertRemocon", message.getMessage());
+//								// safeSetStatus(message.getMessage());
+//							}
+//							stopProgress();
+//						}
+//
+//						@Override
+//						public void onFailure(RemoteException e) {
+//							// safeSetStatus("Failed: " + e.getMessage());
+//							stopProgress();
+//						}
+//					});
+//
+//			nodeMainExecutor.execute(appManager,
+//					nodeConfiguration.setNodeName("start_app"));
+//
+//		}
 	}
 
-	protected void updateAppList(final ArrayList<RemoconApp> apps,
-			final ArrayList<RemoconApp> runningApps) {
+	protected void updateAppList(final ArrayList<RemoconApp> apps) {
 		Log.d("ConcertRemocon", "updating app list gridview");
 		GridView gridview = (GridView) findViewById(R.id.gridview);
-		AppAdapter appAdapter = new AppAdapter(ConcertRemocon.this, apps,
-				runningApps);
+		AppAdapter appAdapter = new AppAdapter(ConcertRemocon.this, apps);
 		gridview.setAdapter(appAdapter);
 		registerForContextMenu(gridview);
 		gridview.setOnItemClickListener(new OnItemClickListener() {
@@ -737,11 +724,6 @@ public class ConcertRemocon extends ConcertActivity {
 					int position, long id) {
 
 				RemoconApp app = availableAppsCache.get(position);
-
-				if (runningAppsCache.size() > 0) {
-					runningNodes = true;
-					Log.i("ConcertRemocon", "RunningAppsCache greater than zero.");
-				}
 
 				if (AppLauncher.launch(ConcertRemocon.this, apps.get(position),
 						getMasterUri(), concertDescription, runningNodes) == true) {
@@ -753,18 +735,7 @@ public class ConcertRemocon extends ConcertActivity {
 					onAppClicked(app, true);
 			}
 		});
-		if (runningApps != null) {
-			if (runningApps.toArray().length != 0) {
-				stopAppsButton.setVisibility(stopAppsButton.VISIBLE);
-			} else {
-				stopAppsButton.setVisibility(stopAppsButton.GONE);
-			}
-		}
 		Log.d("ConcertRemocon", "app list gridview updated");
-	}
-
-	public void chooseNewMasterClicked(View view) {
-        returnToConcertMasterChooser();
 	}
 
     /**
@@ -772,85 +743,15 @@ public class ConcertRemocon extends ConcertActivity {
      * activity. It will get triggered via either a backpress
      * or the button provided in the ConcertRemocon activity.
      */
-    private void returnToConcertMasterChooser() {
+    public void leaveConcertClicked(View view) {
         if (listAppsService != null) {
             nodeMainExecutor.shutdownNodeMain(listAppsService);
         }
         releaseConcertNameResolver();
         availableAppsCache.clear();
-        runningAppsCache.clear();
         startActivityForResult(new Intent(this, ConcertChooser.class),
                 CONCERT_MASTER_CHOOSER_REQUEST_CODE);
     }
-
-	public void exchangeButtonClicked(View view) {
-	}
-
-	public void deactivateConcertClicked(View view) {
-	}
-
-    /**
-     * Currently stops all/any concert applications and is called
-     * when either the button to stop all applications has
-     * been pressed or the android application terminates itself.
-     */
-    public void stopConcertApplication() {
-        // Should find a way to stop the application without using *, i.e. keep
-        // the previously rapp-initialised ConcertAppsManager around and stop that from here.
-        // Can we use just one ConcertAppsManager?
-        ConcertAppsManager appManager = new ConcertAppsManager("*", getConcertNameSpaceResolver());
-        appManager.setFunction("stop");
-        appManager
-                .setStopService(new ServiceResponseListener<StopAppResponse>() {
-                    @Override
-                    public void onSuccess(StopAppResponse message) {
-                        Log.i("ConcertRemocon", "app stopped successfully");
-                        availableAppsCache = new ArrayList<RemoconApp>();
-                        runningAppsCache = new ArrayList<RemoconApp>();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateAppList(availableAppsCache,
-                                        runningAppsCache);
-                            }
-                        });
-                        progressDialog.dismiss();
-
-                    }
-
-                    @Override
-                    public void onFailure(RemoteException e) {
-                        Log.e("ConcertRemocon", "app failed to stop!");
-                    }
-                });
-        nodeMainExecutor.execute(appManager,
-                nodeConfiguration.setNodeName("stop_app"));
-    }
-
-    /**
-     * Callback for the button that appears in the app list view
-     * when a paired concert app is running and either there is no
-     * local android app, or for some reason, the local android app
-     * closed without terminating the paired concert app.
-     *
-     * @param view
-     */
-	public void stopApplicationsClicked(View view) {
-
-        /* Why trying to launch again? */
-		/*
-		for (RemoconApp i : runningAppsCache) {
-			Log.i("ConcertRemocon", "sending intent to stop app to the app launcher [" + i.getName() + "]");
-			AppLauncher
-					.launch(this, i, getMasterUri(), concertDescription, false);
-		}
-        */
-
-		progressDialog = new ProgressDialogWrapper(this);
-		progressDialog.show("Stopping Applications",
-				"Stopping all applications...");
-        stopConcertApplication();
-	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -869,39 +770,8 @@ public class ConcertRemocon extends ConcertActivity {
 		return true;
 	}
 
-	@Override
-	protected Dialog onCreateDialog(int id) {
-		// readConcertList();
-		final Dialog dialog;
-		Button button;
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		switch (id) {
-		case CLOSE_EXISTING:
-			builder.setTitle("Stop Current Application?");
-			builder.setMessage("There is an application already running. You cannot run two applications at once. Would you like to stop the current application?");
-			// builder.setPositiveButton("Stop Current",
-			// new DialogButtonClickHandler());
-			// builder.setNegativeButton("Don't Stop",
-			// new DialogButtonClickHandler());
-			dialog = builder.create();
-			break;
-		case MULTI_RAPP_DISABLED:
-			builder.setTitle("Multi-App Disabled on Concert");
-			builder.setMessage("The mode for running multiple apps is disabled on the concert. If you would like to enable it then you can change the arguments that the App Manager gets in its launch file.");
-			// builder.setNeutralButton("Okay", new DialogButtonClickHandler());
-			dialog = builder.create();
-			break;
-		default:
-			dialog = null;
-
-		}
-		return dialog;
-	}
-
     @Override
     public void onBackPressed() {
-        // this takes too long to complete and gets in the way of quickly shutting down.
-        // returnToConcertMasterChooser();
-        finish();
+        leaveConcertClicked(null);
     }
 }

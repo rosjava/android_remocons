@@ -50,12 +50,10 @@ import org.jboss.netty.buffer.ChannelBuffer;
 public class AppAdapter extends BaseAdapter {
   private Context context;
   private ArrayList<RemoconApp> apps;
-  private ArrayList<RemoconApp> runningApps;
 
-  public AppAdapter(Context c, ArrayList<RemoconApp> apps, ArrayList<RemoconApp> runningApps) {
+  public AppAdapter(Context c, ArrayList<RemoconApp> apps) {
     context = c;
     this.apps = apps;
-    this.runningApps = runningApps;
   }
 
   @Override
@@ -76,21 +74,9 @@ public class AppAdapter extends BaseAdapter {
     return 0;
   }
 
-  boolean isAppRunning(RemoconApp app) {
-    if (app.getName() == null) {
-      return false;
-    }
-    for (RemoconApp c : this.runningApps) {
-      if (app.getName().equals(c.getName())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   /**
-* Create a new View for each item referenced by the Adapter.
-*/
+   * Create a new View for each item referenced by the Adapter.
+   */
   @Override
   public View getView(int position, View convertView, ViewGroup parent) {
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -109,11 +95,7 @@ public class AppAdapter extends BaseAdapter {
     }
     TextView tv = (TextView) view.findViewById(R.id.name);
     tv.setText(app.getDisplayName());
-    if (isAppRunning(app)) {
-      view.setBackgroundResource(R.drawable.highlight);
-    } else {
-      view.setBackgroundResource(0);
-    }
+
     return view;
   }
 }

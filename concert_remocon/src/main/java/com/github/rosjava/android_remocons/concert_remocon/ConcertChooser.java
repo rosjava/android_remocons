@@ -223,6 +223,7 @@ public class ConcertChooser extends Activity {
                         .putExtra(ConcertDescription.UNIQUE_KEY, concert)
                         .putExtra("UserRole", role);
                 setResult(RESULT_OK, resultIntent);
+                dialog.dismiss();
                 finish();
             }
         });

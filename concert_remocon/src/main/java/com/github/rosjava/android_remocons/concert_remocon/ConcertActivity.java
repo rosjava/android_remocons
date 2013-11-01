@@ -28,11 +28,7 @@ import org.ros.exception.RemoteException;
 import org.ros.namespace.NameResolver;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
-import org.ros.node.service.ServiceResponseListener;
 
-import com.github.rosjava.android_apps.application_management.Dashboard;
-
-import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertNameResolver;
@@ -63,18 +59,11 @@ public abstract class ConcertActivity extends RosActivity {
      */
     protected boolean fromApplication = false;  // true if it is a remocon activity getting control from a closing application
 
-	private int dashboardResourceId = 0;
 	private int mainWindowId = 0;
-	private Dashboard dashboard = null;
 	protected NodeConfiguration nodeConfiguration;
     protected NodeMainExecutor nodeMainExecutor;
 	protected ConcertNameResolver concertNameResolver;
 	protected ConcertDescription concertDescription;
-    protected PairingApplicationNamePublisher pairingApplicationNamePublisher = null;
-
-	protected void setDashboardResource(int resource) {
-		dashboardResourceId = resource;
-	}
 
 	protected void setMainWindowResource(int resource) {
 		mainWindowId = resource;
@@ -88,10 +77,6 @@ public abstract class ConcertActivity extends RosActivity {
         defaultConcertAppName = name;
 	}
 
-	protected void setCustomDashboardPath(String path) {
-		dashboard.setCustomDashboardPath(path);
-	}
-
 	protected ConcertActivity(String notificationTicker, String notificationTitle) {
 		super(notificationTicker, notificationTitle);
 	}
@@ -99,17 +84,6 @@ public abstract class ConcertActivity extends RosActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		if (mainWindowId == 0) {
-			Log.e("ConcertRemocon",
-					"You must set the dashboard resource ID in your ConcertActivity");
-			return;
-		}
-		if (dashboardResourceId == 0) {
-			Log.e("ConcertRemocon",
-					"You must set the dashboard resource ID in your ConcertActivity");
-			return;
-		}
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -131,14 +105,6 @@ public abstract class ConcertActivity extends RosActivity {
             fromApplication = true;
 		} else {
 			// DJS: do we need anything here? I think the first two cases cover everything
-		}
-
-		if (dashboard == null) {
-			dashboard = new Dashboard(this);
-			dashboard.setView((LinearLayout) findViewById(dashboardResourceId),
-					new LinearLayout.LayoutParams(
-							LinearLayout.LayoutParams.WRAP_CONTENT,
-							LinearLayout.LayoutParams.WRAP_CONTENT));
 		}
 	}
 
@@ -162,19 +128,9 @@ public abstract class ConcertActivity extends RosActivity {
         // or passed back as an intent from a closing remocon application.
         // It should never be null!
         concertNameResolver.setConcert(concertDescription);
-        dashboard.setRobotName(concertDescription.getConcertType());
-        pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Concert Remocon");
-        nodeMainExecutor.execute(pairingApplicationNamePublisher,
-                nodeConfiguration.setNodeName("pairingApplicationNamePublisher"));
         nodeMainExecutor.execute(concertNameResolver,
                 nodeConfiguration.setNodeName("concertNameResolver"));
         concertNameResolver.waitForResolver();
-        nodeMainExecutor.execute(dashboard,
-                nodeConfiguration.setNodeName("dashboard"));
-        // Child application post-handling
-        if (fromApplication) {
-            stopApp();
-        }
     }
 
 	protected NameResolver getAppNameSpace() {
@@ -189,38 +145,8 @@ public abstract class ConcertActivity extends RosActivity {
         return concertNameResolver.getConcertNameSpace().getNamespace().toString();
     }
 
-	protected void stopApp() {
-		Log.i("ConcertRemocon", "android application stopping a rapp [" + concertAppName + "]");
-		ConcertAppsManager appManager = new ConcertAppsManager(concertAppName,
-				getConcertNameSpaceResolver());
-		appManager.setFunction("stop");
-
-		appManager
-				.setStopService(new ServiceResponseListener<StopAppResponse>() {
-					@Override
-					public void onSuccess(StopAppResponse message) {
-                        if ( message.getStopped() ) {
-						    Log.i("ConcertRemocon", "rapp stopped successfully");
-                        } else {
-                            Log.i("ConcertRemocon", "stop rapp request rejected [" + message.getMessage() + "]");
-                        }
-					}
-
-					@Override
-					public void onFailure(RemoteException e) {
-						Log.e("ConcertRemocon", "rapp failed to stop when requested!");
-					}
-				});
-		nodeMainExecutor.execute(appManager,
-				nodeConfiguration.setNodeName("stop_app"));
-	}
-
 	protected void releaseConcertNameResolver() {
 		nodeMainExecutor.shutdownNodeMain(concertNameResolver);
-	}
-
-	protected void releaseDashboardNode() {
-		nodeMainExecutor.shutdownNodeMain(dashboard);
 	}
 
 	@Override
