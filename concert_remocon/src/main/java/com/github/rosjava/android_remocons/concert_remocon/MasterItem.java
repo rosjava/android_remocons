@@ -49,7 +49,7 @@ import android.net.wifi.WifiManager;
 
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -61,12 +61,12 @@ import org.jboss.netty.buffer.ChannelBuffer;
  *
  * @author hersh@willowgarage.com
  */
-public class MasterItem implements MasterChecker.ConcertDescriptionReceiver,
-                                   MasterChecker.FailureHandler,
+public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
+                                   ConcertChecker.FailureHandler,
                                    ControlChecker.SuccessHandler,
                                    ControlChecker.FailureHandler {
   private ControlChecker controlChecker;
-  private MasterChecker checker;
+  private ConcertChecker checker;
   private View view;
   private ConcertDescription description;
   private ConcertChooser parentMca;
@@ -79,7 +79,7 @@ public class MasterItem implements MasterChecker.ConcertDescriptionReceiver,
     this.description.setConnectionStatus(ConcertDescription.CONNECTING);
     if (WifiChecker.wifiValid(this.description.getConcertId(),
             (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
-      checker = new MasterChecker(this, this);
+      checker = new ConcertChecker(this, this);
       if (this.description.getConcertId().getControlUri() != null) {
         control = true;
         controlChecker = new ControlChecker(this, this);
@@ -150,9 +150,7 @@ public class MasterItem implements MasterChecker.ConcertDescriptionReceiver,
     errorImage.setVisibility( isError ? View.VISIBLE : View.GONE );
     ImageView iv = (ImageView) view.findViewById(R.id.concert_icon);
     iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
-    if (description.getConcertType() == null) {
-      iv.setImageResource(R.drawable.question_mark);
-    } else if (isWifi) {
+    if (isWifi) {
       iv.setImageResource(R.drawable.wifi_question_mark);
     } else if ( description.getConcertIconData() == null ) {
         iv.setImageResource(R.drawable.question_mark);

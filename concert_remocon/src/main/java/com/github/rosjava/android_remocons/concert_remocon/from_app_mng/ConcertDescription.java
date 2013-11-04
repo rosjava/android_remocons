@@ -52,8 +52,7 @@ public class ConcertDescription implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     private ConcertId concertId;
     private String concertName;
-    private String concertType;
-    private String gatewayName; // unique id used as the signature of the remote app manager (used to check that the remote controller is us).
+    private String description;
     private String[] userRoles;
     // Icon stored piecemeal because msg arrays (stored as jboss ChannelBuffers) can't
     // be dumped and reloaded by the snakeyaml library.
@@ -71,12 +70,12 @@ public class ConcertDescription implements java.io.Serializable {
     public ConcertDescription() {
     }
 
-    public ConcertDescription(ConcertId concertId, String concertName, String concertType,
+    public ConcertDescription(ConcertId concertId, String concertName, String description,
                               rocon_std_msgs.Icon concertIcon, Date timeLastSeen) {
             setConcertName(concertName);
+            setDescription(description);
             setConcertId(concertId);
             this.concertName = concertName;
-            this.concertType = concertType;
             if ( concertIcon != null ) {
                 this.concertIconFormat = concertIcon.getFormat();
                 this.concertIconData = concertIcon.getData().array();
@@ -87,9 +86,9 @@ public class ConcertDescription implements java.io.Serializable {
     }
     public void copyFrom(ConcertDescription other) {
             concertId = other.concertId;
+            userRoles = other.userRoles.clone();
             concertName = other.concertName;
-            concertType = other.concertType;
-            gatewayName = other.gatewayName;
+            description = other.description;
             concertIconFormat = other.concertIconFormat;
             concertIconData = other.concertIconData;
             concertIconDataOffset = other.concertIconDataOffset;
@@ -100,8 +99,12 @@ public class ConcertDescription implements java.io.Serializable {
     public ConcertId getConcertId() {
             return concertId;
     }
+    public String getDescription()  { return description; }
+    public String getConcertName()   {
+        return concertName;
+    }
+    public String[] getUserRoles()  { return userRoles;}
 
-    public String getGatewayName() { return gatewayName; }
 
     /**
      * Convenience accessor to dig into the master uri for this concert.
@@ -119,11 +122,6 @@ public class ConcertDescription implements java.io.Serializable {
             // TODO: validate
             this.concertId = concertId;
     }
-    public String getConcertName() {
-            return concertName;
-    }
-    public String[] getUserRoles() { return userRoles;}
-
     public void setUserRoles(concert_msgs.Roles roles)
     {
         java.util.List<java.lang.String> tmp = roles.getList();
@@ -164,20 +162,8 @@ public class ConcertDescription implements java.io.Serializable {
         return result.toString();
     }
 
-    public void setConcertName(String concertName) {
-            // TODO: GraphName validation was removed. What replaced it?
-            // if (!GraphName.validate(concertName)) {
-            // throw new InvalidConcertDescriptionException("Bad concert name: " +
-            // concertName);
-            // }
-            this.concertName = concertName;
-    }
-    public String getConcertType() {
-            return concertType;
-    }
-    public void setConcertType(String concertType) {
-            this.concertType = concertType;
-    }
+    public void setConcertName(String concertName) { this.concertName = concertName; }
+    public void setDescription(String description) { this.description = description; }
 
     public String getConcertIconFormat() {
         return concertIconFormat;
@@ -229,11 +215,9 @@ public class ConcertDescription implements java.io.Serializable {
                     return false;
             }
             // Cast to the appropriate type.
-            // This will succeed because of the instanceof, and lets us access
-            // private fields.
+            // This will succeed because of the instanceof, and lets us access private fields.
             ConcertDescription lhs = (ConcertDescription) o;
-            // Check each field. Primitive fields, reference fields, and nullable
-            // reference
+            // Check each field. Primitive fields, reference fields, and nullable reference
             // fields are all treated differently.
             return (concertId == null ? lhs.concertId == null : concertId.equals(lhs.concertId));
     }

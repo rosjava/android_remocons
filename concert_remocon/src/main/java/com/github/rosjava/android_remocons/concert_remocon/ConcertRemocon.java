@@ -40,6 +40,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -52,6 +53,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
@@ -60,6 +63,7 @@ import android.widget.TextView;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
+import org.ros.android.RosActivity;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.message.MessageListener;
@@ -71,7 +75,7 @@ import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertD
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertId;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker;
+import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
 
 import concert_msgs.GetRolesAndAppsResponse;
 import concert_msgs.RemoconApp;
@@ -80,14 +84,17 @@ import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.ErrorCodes;
 import rocon_app_manager_msgs.StopAppResponse;
 
-public class ConcertRemocon extends ConcertActivity {
+public class ConcertRemocon extends RosActivity {
 
     /* startActivityForResult Request Codes */
 	private static final int CONCERT_MASTER_CHOOSER_REQUEST_CODE = 1;
 
-	private static final int MULTI_RAPP_DISABLED = 1;
-	private static final int CLOSE_EXISTING = 0;
-
+    private String concertAppName = null;
+    private String defaultConcertAppName = null;
+    private String defaultConcertName = null;
+    private ConcertDescription concertDescription;
+    private NodeMainExecutor nodeMainExecutor;
+    private NodeConfiguration nodeConfiguration;
 	private ArrayList<RemoconApp> availableAppsCache;
     private TextView concertNameView;
 	private Button leaveConcertButton;
@@ -102,6 +109,12 @@ public class ConcertRemocon extends ConcertActivity {
 	private boolean runningNodes = false;
 	private long availableAppsCacheTime;
     private String userRole;
+
+    /*
+      By default we assume the remocon has just launched independantly, however
+      it can be launched upon the closure of one of its children applications.
+     */
+    private boolean fromApplication = false;  // true if it is a remocon activity getting control from a closing application
 
 	private void stopProgress() {
         Log.i("ConcertRemocon", "Stopping the spinner");
@@ -122,9 +135,9 @@ public class ConcertRemocon extends ConcertActivity {
 	private class AlertDialogWrapper {
 		private int state;
 		private AlertDialog dialog;
-		private ConcertActivity context;
+		private Activity context;
 
-		public AlertDialogWrapper(ConcertActivity context,
+		public AlertDialogWrapper(Activity context,
 				AlertDialog.Builder builder, String yesButton, String noButton) {
 			state = 0;
 			this.context = context;
@@ -145,7 +158,7 @@ public class ConcertRemocon extends ConcertActivity {
 							}).create();
 		}
 
-		public AlertDialogWrapper(ConcertActivity context,
+		public AlertDialogWrapper(Activity context,
 				AlertDialog.Builder builder, String okButton) {
 			state = 0;
 			this.context = context;
@@ -202,9 +215,9 @@ public class ConcertRemocon extends ConcertActivity {
 	 */
 	private class ProgressDialogWrapper {
 		private ProgressDialog progressDialog;
-		private ConcertActivity activity;
+		private Activity activity;
 
-		public ProgressDialogWrapper(ConcertActivity activity) {
+		public ProgressDialogWrapper(Activity activity) {
 			this.activity = activity;
 			progressDialog = null;
 		}
@@ -227,16 +240,30 @@ public class ConcertRemocon extends ConcertActivity {
 	}
 
 	public ConcertRemocon() {
-		super("ConcertRemocon", "ConcertRemocon");
-		availableAppsCacheTime = 0;
+        super("ConcertRemocon", "ConcertRemocon");
+        availableAppsCacheTime = 0;
 		availableAppsCache = new ArrayList<RemoconApp>();
 	}
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		setMainWindowResource(R.layout.main);
-		super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
+
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.main);
+
+        concertAppName = getIntent().getStringExtra(ConcertAppsManager.PACKAGE + ".concert_app_name");
+        if (concertAppName == null) {
+            concertAppName = defaultConcertAppName;
+        } else if (concertAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
+            Log.i("ConcertRemocon", "reinitialising from a closing remocon application");
+            fromApplication = true;
+        } else {
+            // DJS: do we need anything here? I think the first two cases cover everything
+        }
 
 		concertNameView = (TextView) findViewById(R.id.concert_name_view);
 	//	leaveConcertButton = (Button) findViewById(R.id.leave_button);
@@ -257,10 +284,11 @@ public class ConcertRemocon extends ConcertActivity {
      */
 	@Override
 	protected void init(NodeMainExecutor nodeMainExecutor) {
+        this.nodeMainExecutor = nodeMainExecutor;
+        nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
+                .newNonLoopback().getHostAddress(), getMasterUri());
 
-		super.init(nodeMainExecutor);
-
-        listAppsService = new ConcertAppsManager("", userRole, getConcertNameSpaceResolver());
+        listAppsService = new ConcertAppsManager("", userRole);
         listAppsService.setListService(new ServiceResponseListener<GetRolesAndAppsResponse> () {
             @Override
             public void onSuccess(GetRolesAndAppsResponse response) {
@@ -330,8 +358,8 @@ public class ConcertRemocon extends ConcertActivity {
             concertDescription = (ConcertDescription) intent
                     .getSerializableExtra(ConcertDescription.UNIQUE_KEY);
 
-            concertNameResolver.setConcertName(concertDescription
-                    .getConcertName());
+//            concertNameResolver.setConcertName(concertDescription     get rid of this concertNameResolver  TODO
+  //                  .getConcertName());
 
             validatedConcert = false;
             validateConcert(concertDescription.getConcertId());
@@ -423,8 +451,8 @@ public class ConcertRemocon extends ConcertActivity {
 
 		// Run a set of checkers in series.
 		// The last step - ensure the master is up.
-		final MasterChecker mc = new MasterChecker(
-				new MasterChecker.ConcertDescriptionReceiver() {
+		final ConcertChecker mc = new ConcertChecker(
+				new ConcertChecker.ConcertDescriptionReceiver() {
 					public void receive(ConcertDescription concertDescription) {
 						runOnUiThread(new Runnable() {
 							public void run() {
@@ -478,7 +506,7 @@ public class ConcertRemocon extends ConcertActivity {
                             validatedConcert = true;
                         }
 					}
-				}, new MasterChecker.FailureHandler() {
+				}, new ConcertChecker.FailureHandler() {
 					public void handleFailure(String reason) {
 						final String reason2 = reason;
                         // Kill the connecting to ros master dialog.
@@ -646,10 +674,10 @@ public class ConcertRemocon extends ConcertActivity {
 		wc.beginChecking(id, (WifiManager) getSystemService(WIFI_SERVICE));
 	}
 
-    public void onAppClicked(final RemoconApp app, final boolean isClientApp) {
+    public void onAppClicked(final RemoconApp app) {
 
 		boolean running = false;
-        // where starts the android app????
+        // where starts the android app????    on app launcher!   but what I need to do with this?
 //		for (RemoconApp i : runningAppsCache) {
 //			if (i.getName().equals(app.getName())) {
 //				running = true;
@@ -732,7 +760,7 @@ public class ConcertRemocon extends ConcertActivity {
 					}
 					finish();
 				} else
-					onAppClicked(app, true);
+					onAppClicked(app);
 			}
 		});
 		Log.d("ConcertRemocon", "app list gridview updated");
@@ -747,7 +775,7 @@ public class ConcertRemocon extends ConcertActivity {
         if (listAppsService != null) {
             nodeMainExecutor.shutdownNodeMain(listAppsService);
         }
-        releaseConcertNameResolver();
+
         availableAppsCache.clear();
         startActivityForResult(new Intent(this, ConcertChooser.class),
                 CONCERT_MASTER_CHOOSER_REQUEST_CODE);

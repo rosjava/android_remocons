@@ -76,11 +76,10 @@ public class ConcertAppsManager extends AbstractNodeMain {
 	static public final String PACKAGE = "com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager";
 	private static final String startTopic = "start_app";
 	private static final String stopTopic  = "stop_app";
-	private static final String listService = "get_roles_and_apps";
+	private static final String listService = "/concert/get_roles_and_apps";
 
 	private String appName;
     private String userRole;
-	private NameResolver resolver;
 	private ServiceResponseListener<StartAppResponse> startServiceResponseListener;
 	private ServiceResponseListener<StopAppResponse> stopServiceResponseListener;
 	private ServiceResponseListener<GetRolesAndAppsResponse> listServiceResponseListener;
@@ -90,23 +89,9 @@ public class ConcertAppsManager extends AbstractNodeMain {
 	private ConnectedNode connectedNode;
 	private String function = null;
 
-	public ConcertAppsManager(final String appName, final String userRole, NameResolver resolver) {
+	public ConcertAppsManager(final String appName, final String userRole) {
 		this.appName  = appName;
         this.userRole = userRole;
-		this.resolver = resolver;
-	}
-
-    public ConcertAppsManager(final String appName, NameResolver resolver) {
-        this.appName  = appName;
-        this.resolver = resolver;
-    }
-
-	public ConcertAppsManager(final String appName) {
-		this.appName = appName;
-	}
-
-	public ConcertAppsManager() {
-
 	}
 
 	public void setFunction(String function) {
@@ -136,50 +121,7 @@ public class ConcertAppsManager extends AbstractNodeMain {
 		this.listServiceResponseListener = listServiceResponseListener;
 	}
 
-    public void continuouslyListApps() {
-        subscriber = connectedNode.newSubscriber(resolver.resolve("app_list"),"concert_msgs/RoleAppList");
-        subscriber.addMessageListener(this.appListListener);
-    }
-
-    public void startApp() {
-		String startTopic = resolver.resolve(this.startTopic).toString();
-
-		ServiceClient<StartAppRequest, StartAppResponse> startAppClient;
-		try {
-			Log.d("ApplicationManagement", "start app service client created [" + startTopic + "]");
-			startAppClient = connectedNode.newServiceClient(startTopic,
-					StartApp._TYPE);
-		} catch (ServiceNotFoundException e) {
-            Log.w("ApplicationManagement", "start app service not found [" + startTopic + "]");
-			throw new RosRuntimeException(e);
-		}
-		final StartAppRequest request = startAppClient.newMessage();
-		request.setName(appName);
-		startAppClient.call(request, startServiceResponseListener);
-		Log.d("ApplicationManagement", "start app service call done [" + startTopic + "]");
-	}
-
-	public void stopApp() {
-		String stopTopic = resolver.resolve(this.stopTopic).toString();
-
-		ServiceClient<StopAppRequest, StopAppResponse> stopAppClient;
-		try {
-			Log.d("ApplicationManagement", "Stop app service client created");
-			stopAppClient = connectedNode.newServiceClient(stopTopic,
-					StopApp._TYPE);
-		} catch (ServiceNotFoundException e) {
-            Log.w("ApplicationManagement", "Stop app service not found");
-			throw new RosRuntimeException(e);
-		}
-		final StopAppRequest request = stopAppClient.newMessage();
-		// request.setName(appName); // stop app name unused for now
-		stopAppClient.call(request, stopServiceResponseListener);
-		Log.d("ApplicationManagement", "Stop app service call done");
-	}
-
 	public void listApps() {
-		String listService = resolver.resolve(this.listService).toString();
-		
 		ServiceClient<GetRolesAndAppsRequest, GetRolesAndAppsResponse> listAppsClient;
 		try {
 			Log.d("ApplicationManagement", "List app service client created [" + listService + "]");
@@ -189,29 +131,14 @@ public class ConcertAppsManager extends AbstractNodeMain {
 			throw new RosRuntimeException(e);
 		}
 		final GetRolesAndAppsRequest request = listAppsClient.newMessage();
-        Vector<String> roles = new Vector<String>(); roles.add(userRole);  // TODO why we pass a list, if only choose one?
 
         request.getRoles().add(userRole);
-        PlatformInfo pi = request.getPlatformInfo();
-//        request.setRoles(rs);
-//        request.setPlatformInfo(pi);
+        request.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);
+        request.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
+        request.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
+        request.getPlatformInfo().setSystem(PlatformInfo.SYSTEM_ROSJAVA);
+        request.getPlatformInfo().setPlatform(PlatformInfo.NAME_ANY);
 
-//        request.setRoles(roles);
-//        request.setPlatformInfo(new PlatformInfo() {                       // and Why he want platform info?
-//            @Override public String getOs() { return PlatformInfo.OS_ANDROID; }
-//            @Override public void setOs(String s) { }
-//            @Override public String getVersion() { return PlatformInfo.VERSION_ANDROID_JELLYBEAN; }
-//            @Override public void setVersion(String s) { }
-//            @Override public String getPlatform() { return PlatformInfo.PLATFORM_TABLET; }
-//            @Override public void setPlatform(String s) { }
-//            @Override public String getSystem() { return PlatformInfo.SYSTEM_ROSJAVA; }
-//            @Override public void setSystem(String s) { }
-//            @Override public String getName() { return PlatformInfo.NAME_ANY; }  // take app name
-//            @Override public void setName(String s) { }
-//            @Override public Icon getIcon() { return null; }
-//            @Override public void setIcon(Icon icon) { }
-//            @Override public RawMessage toRawMessage() { return null; }
-//        });
 		listAppsClient.call(request, listServiceResponseListener);
 		Log.d("ApplicationManagement", "List apps service call done [" + listService + "]");
 	}
@@ -236,14 +163,6 @@ public class ConcertAppsManager extends AbstractNodeMain {
             return;
         }
         this.connectedNode = connectedNode;
-		if (function.equals("start")) {
-			startApp();
-		} else if (function.equals("stop")) {
-			stopApp();
-		} else if (function.equals("list")) {       // call roles_and_apps service
-			listApps();
-		} else if (function.equals("list_apps")) {  // listen for app_list topic
-            continuouslyListApps();
-        }
+    	listApps();       // call roles_and_apps service
 	}
 }

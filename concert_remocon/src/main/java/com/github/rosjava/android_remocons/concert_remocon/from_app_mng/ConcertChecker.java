@@ -38,7 +38,9 @@ import android.util.Log;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
-import org.ros.exception.ServiceNotFoundException;
+import org.ros.internal.node.client.ParameterClient;
+import org.ros.internal.node.server.NodeIdentifier;
+import org.ros.namespace.GraphName;
 import org.ros.node.NodeConfiguration;
 
 import java.net.URI;
@@ -46,14 +48,14 @@ import java.net.URISyntaxException;
 import java.util.Date;
 
 /**
- * Threaded ROS-master checker. Runs a thread which checks for a valid ROS
- * master and sends back a {@link ConcertDescription} (with concert name and type)
+ * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS
+ * concert and sends back a {@link ConcertDescription} (with concert name and type)
  * on success or a failure reason on failure.
  *
  * @author hersh@willowgarage.com
  * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)
  */
-public class MasterChecker {
+public class ConcertChecker {
     public interface ConcertDescriptionReceiver {
         /**
          * Called on success with a description of the concert that got checked.
@@ -70,14 +72,14 @@ public class MasterChecker {
     }
 
     private CheckerThread checkerThread;
-    private ConcertDescriptionReceiver foundMasterCallback;
+    private ConcertDescriptionReceiver foundConcertCallback;
     private FailureHandler failureCallback;
 
     /**
      * Constructor. Should not take any time.
      */
-    public MasterChecker(ConcertDescriptionReceiver foundMasterCallback, FailureHandler failureCallback) {
-        this.foundMasterCallback = foundMasterCallback;
+    public ConcertChecker(ConcertDescriptionReceiver foundConcertCallback, FailureHandler failureCallback) {
+        this.foundConcertCallback = foundConcertCallback;
         this.failureCallback = failureCallback;
     }
 
@@ -88,14 +90,14 @@ public class MasterChecker {
     public void beginChecking(ConcertId concertId) {
         stopChecking();
         if (concertId.getMasterUri() == null) {
-            failureCallback.handleFailure("empty master URI");
+            failureCallback.handleFailure("empty concert URI");
             return;
         }
         URI uri;
         try {
             uri = new URI(concertId.getMasterUri());
         } catch (URISyntaxException e) {
-            failureCallback.handleFailure("invalid master URI");
+            failureCallback.handleFailure("invalid concert URI");
             return;
         }
         checkerThread = new CheckerThread(concertId, uri);
@@ -112,11 +114,11 @@ public class MasterChecker {
     }
 
     private class CheckerThread extends Thread {
-        private URI masterUri;
+        private URI concertUri;
         private ConcertId concertId;
 
-        public CheckerThread(ConcertId concertId, URI masterUri) {
-            this.masterUri = masterUri;
+        public CheckerThread(ConcertId concertId, URI concertUri) {
+            this.concertUri = concertUri;
             this.concertId = concertId;
             setDaemon(true);
             // don't require callers to explicitly kill all the old checker threads.
@@ -131,53 +133,56 @@ public class MasterChecker {
         @Override
         public void run() {
             try {
-                // Check if the master exists - no really good way in rosjava except by checking a standard parameter.
-//                ParameterClient paramClient = new ParameterClient(
-//                        NodeIdentifier.forNameAndUri("/master_checker", masterUri.toString()), masterUri);
+                // Check if the concert exists by looking for /concert/name parameter
                 // getParam throws when it can't find the parameter.
-//                String unused_rosversion = (String) paramClient.getParam(GraphName.of("rosversion")).getResult();
+                ParameterClient paramClient = new ParameterClient(
+                        NodeIdentifier.forNameAndUri("/concert_checker", concertUri.toString()), concertUri);
+                String name = (String) paramClient.getParam(GraphName.of("/concert/name")).getResult();
+                Log.i("ConcertRemocon", "Concert " + name + " found; retrieve additional information");
 
-                // Check for the platform information - be sure to check that master exists first otherwise you'll
-                // start a thread which perpetually crashes and triest to re-register in .execute()
                 NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
                 NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(
-                        InetAddressFactory.newNonLoopback().getHostAddress(),
-                        masterUri);
+                        InetAddressFactory.newNonLoopback().getHostAddress(), concertUri);
 
-                PlatformInfoServiceClient srvClient = new PlatformInfoServiceClient();
-                nodeMainExecutorService.execute(srvClient, nodeConfiguration.setNodeName("platform_info_client_node"));
-                srvClient.waitForResponse();
-                String concertName = srvClient.getUniqueName();
-                String concertType = srvClient.getConcertType();
-                rocon_std_msgs.Icon concertIcon = srvClient.getConcertIcon();
+                // Check for the concert information topic (/concert/info)
+                ListenerNode<concert_msgs.ConcertInfo> readInfoTopic =
+                        new ListenerNode("/concert/info", concert_msgs.ConcertInfo._TYPE);
+                nodeMainExecutorService.execute(readInfoTopic, nodeConfiguration.setNodeName("read_info_node"));
+                readInfoTopic.waitForResponse();
 
-                ListenerNode<concert_msgs.Roles> readTopic =
-                        new ListenerNode(srvClient.getConcertNamespace() + "/roles", concert_msgs.Roles._TYPE);
-                nodeMainExecutorService.execute(readTopic, nodeConfiguration.setNodeName("concert_roles_node"));
-                readTopic.waitForResponse();
 
-                nodeMainExecutorService.shutdownNodeMain(srvClient);
-                nodeMainExecutorService.shutdownNodeMain(readTopic);
+                concert_msgs.ConcertInfo concertInfo = readInfoTopic.getLastMessage();
+
+                String              concertName = concertInfo.getName();
+                String              concertDesc = concertInfo.getDescription();
+                rocon_std_msgs.Icon concertIcon = concertInfo.getIcon();
+
+                if (name.equals(concertName) == false)
+                    Log.w("ConcertRemocon", "Concert names from parameter and topic differs; we use the later");
+
+                // Check for the concert roles topic (/concert/roles)
+                ListenerNode<concert_msgs.Roles> readRolesTopic =
+                        new ListenerNode("/concert/roles", concert_msgs.Roles._TYPE);
+                nodeMainExecutorService.execute(readRolesTopic, nodeConfiguration.setNodeName("concert_roles_node"));
+                readRolesTopic.waitForResponse();
+
+                nodeMainExecutorService.shutdownNodeMain(readInfoTopic);
+                nodeMainExecutorService.shutdownNodeMain(readRolesTopic);
 
                 // configure concert description
                 Date timeLastSeen = new Date();
-                ConcertDescription concertDescription = new ConcertDescription(concertId, concertName, concertType, concertIcon, timeLastSeen);
-                Log.i("ConcertRemocon", "rapp manager is available");
-                concertDescription.setConnectionStatus(ConcertDescription.OK);
-                concertDescription.setUserRoles(readTopic.getLastMessage());
-                foundMasterCallback.receive(concertDescription);
+                ConcertDescription description = new ConcertDescription(concertId, concertName, concertDesc, concertIcon, timeLastSeen);
+                Log.i("ConcertRemocon", "Concert is available");
+                description.setConnectionStatus(ConcertDescription.OK);
+                description.setUserRoles(readRolesTopic.getLastMessage());
+                foundConcertCallback.receive(description);
                 return;
             } catch ( RuntimeException e) {
-                // thrown if master could not be found in the getParam call (from java.net.ConnectException)
-                Log.w("ConcertRemocon", "could not find the master [" + masterUri + "][" + e.toString() + "]");
+                // thrown if concert could not be found in the getParam call (from java.net.ConnectException)
+                Log.w("ConcertRemocon", "could not find concert [" + concertUri + "][" + e.toString() + "]");
                 failureCallback.handleFailure(e.toString());
-            } catch (ServiceNotFoundException e) {
-                // thrown by client.waitForResponse() if it times out
-                Log.w("ConcertRemocon", e.getMessage()); // e.getMessage() is a little less verbose (no org.ros.exception.ServiceNotFoundException prefix)
-                failureCallback.handleFailure(e.getMessage());  // don't need the master uri, it's already shown above in the concert description from input method.
             } catch (Throwable e) {
-                Log.w("ConcertRemocon", "exception while creating node in masterchecker for master URI "
-                        + masterUri, e);
+                Log.w("ConcertRemocon", "exception while creating node in concert checker for URI " + concertUri, e);
                 failureCallback.handleFailure(e.toString());
             }
         }
