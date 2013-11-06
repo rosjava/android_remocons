@@ -49,6 +49,7 @@ import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -60,6 +61,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
@@ -67,22 +69,24 @@ import org.ros.android.RosActivity;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.message.MessageListener;
+import org.ros.namespace.GraphName;
+import org.ros.node.ConnectedNode;
+import org.ros.node.Node;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
+import org.ros.node.NodeMain;
 import org.ros.node.service.ServiceResponseListener;
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.ConcertId;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertId;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
+import com.google.common.base.Preconditions;
 
 import concert_msgs.GetRolesAndAppsResponse;
 import concert_msgs.RemoconApp;
-import concert_msgs.RoleAppList;
-import rocon_app_manager_msgs.StartAppResponse;
-import rocon_app_manager_msgs.ErrorCodes;
-import rocon_app_manager_msgs.StopAppResponse;
+import concert_msgs.RequestInteractionResponse;
 
 public class ConcertRemocon extends RosActivity {
 
@@ -103,12 +107,12 @@ public class ConcertRemocon extends RosActivity {
 	private AlertDialogWrapper wifiDialog;
 	private AlertDialogWrapper evictDialog;
 	private AlertDialogWrapper errorDialog;
-    protected ConcertAppsManager listAppsService;
+    private ConcertAppsManager appsManager;
+    private StatusPublisher statusPublisher;
 	private boolean alreadyClicked = false;
 	private boolean validatedConcert;
 	private boolean runningNodes = false;
 	private long availableAppsCacheTime;
-    private String userRole;
 
     /*
       By default we assume the remocon has just launched independantly, however
@@ -129,7 +133,7 @@ public class ConcertRemocon extends RosActivity {
 		}
 	}
 
-	/**
+    /**
 	 * Wraps the alert dialog so it can be used as a yes/no function
 	 */
 	private class AlertDialogWrapper {
@@ -243,6 +247,7 @@ public class ConcertRemocon extends RosActivity {
         super("ConcertRemocon", "ConcertRemocon");
         availableAppsCacheTime = 0;
 		availableAppsCache = new ArrayList<RemoconApp>();
+        statusPublisher = StatusPublisher.getInstance();
 	}
 
 	/** Called when the activity is first created. */
@@ -283,40 +288,69 @@ public class ConcertRemocon extends RosActivity {
      * @param nodeMainExecutor
      */
 	@Override
-	protected void init(NodeMainExecutor nodeMainExecutor) {
+	protected void init(final NodeMainExecutor nodeMainExecutor) {
         this.nodeMainExecutor = nodeMainExecutor;
         nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
                 .newNonLoopback().getHostAddress(), getMasterUri());
 
-        listAppsService = new ConcertAppsManager("", userRole);
-        listAppsService.setListService(new ServiceResponseListener<GetRolesAndAppsResponse> () {
+        final String userRole = concertDescription.getCurrentRole();
+        appsManager = new ConcertAppsManager(userRole);
+        appsManager.setListService(new ServiceResponseListener<concert_msgs.GetRolesAndAppsResponse> () {
             @Override
-            public void onSuccess(GetRolesAndAppsResponse response) {
+            public void onSuccess(concert_msgs.GetRolesAndAppsResponse response) {
                 java.util.List<concert_msgs.RoleAppList>  kk = response.getData();
                 concert_msgs.RoleAppList a = kk.get(0);
                 availableAppsCache = (ArrayList<RemoconApp>)a.getRemoconApps();
-                // also sends the role, but...  what I do with it?
-//                availableAppsCache = (ArrayList<RemoconApp>) response.getData().;
-//                availableAppsCache.addAll(response.getData());  // also sends the role, but...
-//                for (int i = 0; i < availableAppsCache.size(); i++) {
-//                    RemoconApp app = availableAppsCache.get(i);
-////                    ArrayList<String> clients = new ArrayList<String>();
-////                    for (int j = 0; j < app..getPairingClients().size(); j++) {
-////                        clients.add(item.getPairingClients().get(j)
-////                                .getClientType());
-////                    }
-////                    if (!clients.contains("android")
-////                            && item.getPairingClients().size() != 0) {
-////                        availableAppsCache.remove(i);
-////                    }
-////                    if (item.getPairingClients().size() == 0) {
-////                        Log.i("ConcertRemocon",
-////                                "Item name: " + item.getName());
-////                        runningAppsNames.add(item.getName());
-////                    }
-//                }
+                nodeMainExecutor.shutdownNodeMain(appsManager);
                 Log.i("ConcertRemocon", "RoleAppList Publication: "
                         + availableAppsCache.size() + " apps");
+                availableAppsCacheTime = System.currentTimeMillis();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateAppList(availableAppsCache);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(RemoteException e) {
+                nodeMainExecutor.shutdownNodeMain(appsManager);
+                Log.e("ConcertRemocon", "Retrive rapps for role " + userRole + " failed: " + e.getMessage());
+            }
+
+            });
+
+        appsManager.setRequestService(new ServiceResponseListener<concert_msgs.RequestInteractionResponse>() {
+            @Override
+            public void onSuccess(concert_msgs.RequestInteractionResponse response) {
+                Looper.prepare();
+
+                boolean allowed = response.getResult();
+                String  reason = response.getMessage();
+                if (allowed) {
+                    Log.i("ConcertRemocon", "Concert allowed use selected app. " + reason);
+                    RemoconApp app = appsManager.getSelectedApp();
+                    nodeMainExecutor.shutdownNodeMain(appsManager);
+                    if (AppLauncher.launch(ConcertRemocon.this, app, getMasterUri(),
+                            concertDescription, runningNodes) == true) {
+                        if (progress != null) {
+                            progress.dismiss();
+                        }
+                        statusPublisher.update(true, app.getName());
+                        finish();
+                    } else {
+                        statusPublisher.update(false, null);
+                        onAppClicked(app);
+                    }
+                }
+                else {
+                    nodeMainExecutor.shutdownNodeMain(appsManager);
+                    Log.i("ConcertRemocon", "Concert denies the use of selected app. " + reason);
+                    Toast.makeText(ConcertRemocon.this, "Refused: " + reason, Toast.LENGTH_SHORT).show();
+                }
+
+
                 availableAppsCacheTime = System.currentTimeMillis();
                 runOnUiThread(new Runnable() {
                     @Override
@@ -331,10 +365,12 @@ public class ConcertRemocon extends RosActivity {
                 Log.e("ConcertRemocon", "Retrive rapps for role " + userRole + " failed: " + e.getMessage());
             }
 
-            });
-        listAppsService.setFunction("list");
-        nodeMainExecutor.execute(listAppsService,
-                nodeConfiguration.setNodeName("list_apps_subscriber_node"));
+        });
+
+        appsManager.setAction(ConcertAppsManager.ACTION_LIST_APPS);
+        nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("list_apps_srv_node"));
+
+        nodeMainExecutor.execute(statusPublisher, nodeConfiguration.setNodeName("remocon_status_pub_node"));
     }
 
     /**
@@ -353,13 +389,8 @@ public class ConcertRemocon extends RosActivity {
     void init(Intent intent) {
         URI uri;
         try {
-            userRole = (String)intent.getSerializableExtra("UserRole");
-
             concertDescription = (ConcertDescription) intent
                     .getSerializableExtra(ConcertDescription.UNIQUE_KEY);
-
-//            concertNameResolver.setConcertName(concertDescription     get rid of this concertNameResolver  TODO
-  //                  .getConcertName());
 
             validatedConcert = false;
             validateConcert(concertDescription.getConcertId());
@@ -676,68 +707,8 @@ public class ConcertRemocon extends RosActivity {
 
     public void onAppClicked(final RemoconApp app) {
 
-		boolean running = false;
-        // where starts the android app????    on app launcher!   but what I need to do with this?
-//		for (RemoconApp i : runningAppsCache) {
-//			if (i.getName().equals(app.getName())) {
-//				running = true;
-//			}
-//		}
+		// TODO do I need this?
 
-//		if (!running && alreadyClicked == false) {
-//			alreadyClicked = true;
-//
-//			ConcertAppsManager appManager = new ConcertAppsManager(app.getName(),
-//					getConcertNameSpaceResolver());
-//			appManager.setFunction("start");
-//
-//			stopProgress();
-//			runOnUiThread(new Runnable() {
-//				@Override
-//				public void run() {
-//					stopProgress();
-//					progress = ProgressDialog.show(ConcertRemocon.this,
-//							"Starting Rapp",
-//							"Starting " + app.getDisplayName() + "...", true,
-//							false);
-//					progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-//				}
-//			});
-//
-//			appManager
-//					.setStartService(new ServiceResponseListener<StartAppResponse>() {
-//						@Override
-//						public void onSuccess(StartAppResponse message) {
-//							if (message.getStarted()) {
-//								Log.i("ConcertRemocon", "Rapp started successfully [" + app.getDisplayName() + "]");
-//								alreadyClicked = false;
-//								// safeSetStatus("Started");
-//							} else if (message.getErrorCode() == ErrorCodes.MULTI_RAPP_NOT_SUPPORTED) {
-//								runOnUiThread(new Runnable() {
-//									@Override
-//									public void run() {
-//										showDialog(MULTI_RAPP_DISABLED);
-//									}
-//								});
-//
-//							} else {
-//								Log.w("ConcertRemocon", message.getMessage());
-//								// safeSetStatus(message.getMessage());
-//							}
-//							stopProgress();
-//						}
-//
-//						@Override
-//						public void onFailure(RemoteException e) {
-//							// safeSetStatus("Failed: " + e.getMessage());
-//							stopProgress();
-//						}
-//					});
-//
-//			nodeMainExecutor.execute(appManager,
-//					nodeConfiguration.setNodeName("start_app"));
-//
-//		}
 	}
 
 	protected void updateAppList(final ArrayList<RemoconApp> apps) {
@@ -748,19 +719,26 @@ public class ConcertRemocon extends RosActivity {
 		registerForContextMenu(gridview);
 		gridview.setOnItemClickListener(new OnItemClickListener() {
 			@Override
-			public void onItemClick(AdapterView<?> parent, View v,
-					int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                RemoconApp app = apps.get(position);
 
-				RemoconApp app = availableAppsCache.get(position);
+                appsManager.setSelectedApp(apps.get(position));
+                appsManager.setAction(ConcertAppsManager.ACTION_REQUEST_APP);
+                nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("request_app_srv_node"));
 
-				if (AppLauncher.launch(ConcertRemocon.this, apps.get(position),
-						getMasterUri(), concertDescription, runningNodes) == true) {
-					if (progress != null) {
-						progress.dismiss();
-					}
-					finish();
-				} else
-					onAppClicked(app);
+
+
+//				if (AppLauncher.launch(ConcertRemocon.this, app, getMasterUri(),
+//					                   concertDescription, runningNodes) == true) {
+//					if (progress != null) {
+//						progress.dismiss();
+//					}
+//                    statusPublisher.update(true, app.getName());
+//					finish();
+//				} else {
+//                    statusPublisher.update(false, null);
+//                    onAppClicked(app);
+//                }
 			}
 		});
 		Log.d("ConcertRemocon", "app list gridview updated");
@@ -772,13 +750,16 @@ public class ConcertRemocon extends RosActivity {
      * or the button provided in the ConcertRemocon activity.
      */
     public void leaveConcertClicked(View view) {
-        if (listAppsService != null) {
-            nodeMainExecutor.shutdownNodeMain(listAppsService);
+        if (appsManager != null) {
+            nodeMainExecutor.shutdownNodeMain(appsManager);
         }
 
         availableAppsCache.clear();
         startActivityForResult(new Intent(this, ConcertChooser.class),
                 CONCERT_MASTER_CHOOSER_REQUEST_CODE);
+
+        statusPublisher.shutdown();
+        nodeMainExecutor.shutdownNodeMain(statusPublisher);
     }
 
 	@Override
@@ -802,4 +783,34 @@ public class ConcertRemocon extends RosActivity {
     public void onBackPressed() {
         leaveConcertClicked(null);
     }
+
+    /////////////////////////////
+    // NodeMain implementation //
+    /////////////////////////////
+
+//    @Override
+//    public GraphName getDefaultNodeName() {
+//        return GraphName.of("concert_remocon_node");
+//    }
+//
+//    @Override
+//    public void onStart(ConnectedNode connectedNode) {
+//   //     statusPublisher.init(connectedNode);
+//        Log.e("8888888888888888888888888888","dddddddddddddddddddddddddd");
+//    }
+//
+//    @Override
+//    public void onShutdown(Node node) {
+//
+//    }
+//
+//    @Override
+//    public void onShutdownComplete(Node node) {
+//
+//    }
+//
+//    @Override
+//    public void onError(Node node, Throwable throwable) {
+//
+//    }
 }

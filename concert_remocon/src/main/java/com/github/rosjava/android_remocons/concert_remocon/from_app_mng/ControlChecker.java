@@ -44,6 +44,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 
+import com.github.rosjava.android_apps.application_management.ConcertId;
+
 /**
  * Threaded control checker. Checks to see if the software is running and in a valid state.
  *

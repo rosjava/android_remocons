@@ -33,15 +33,16 @@
 
 package com.github.rosjava.android_remocons.concert_remocon;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
 
-import java.util.ArrayList;
-import java.util.List;
 /**
  * @author hersh@willowgarage.com
  */

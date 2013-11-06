@@ -39,6 +39,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
+import com.github.rosjava.android_apps.application_management.ConcertId;
+
 /**
  * Threaded WiFi checker. Checks and tests if the WiFi is configured properly and if not, connects to the correct network.
  *

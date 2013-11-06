@@ -36,8 +36,6 @@ package com.github.rosjava.android_remocons.concert_remocon;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -47,8 +45,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
 
 public class AppLauncher {
     static private final String CLIENT_TYPE = "android";
@@ -74,7 +72,6 @@ public class AppLauncher {
 
         Log.i("ConcertRemocon", "launching concert app " + app.getDisplayName() + " on service " + app.getServiceName());
 
-        //TODO: this installs the last android app in the set.
         String className = app.getName();
 
         // Create an intent for this app
@@ -82,13 +79,11 @@ public class AppLauncher {
 
         // Set up standard intent fields.
         intent.setAction(className);
- //       intent.addCategory("android.intent.category.LAUNCHER");
 
         // Copy all app data to "extra" data in the intent.
-
-        // TODO just to make compatible current apps; not needed if we rewrite as concert apps
-        intent.putExtra(com.github.rosjava.android_apps.application_management.AppManager.PACKAGE + ".concert_app_name", className);
-//        intent.putExtra(ConcertDescription.UNIQUE_KEY, currentConcert);
+        intent.putExtra(ConcertAppsManager.PACKAGE + ".concert_app_name", className);
+        intent.putExtra(ConcertDescription.UNIQUE_KEY, currentConcert);
+        intent.putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon");
         intent.putExtra("ChooserURI", uri.toString());
 //      intent.putExtra("Parameters", app.getParameters());
 //      intent.putExtra("Remappings", app.getRemappings());
@@ -118,45 +113,45 @@ public class AppLauncher {
             intent.putExtra("RemappingsFrom", remap_from);
             intent.putExtra("RemappingsTo", remap_to);
         }
-
-
-// TODO extract both list to veryfy it works!
-
-        ArrayList<String> param_keys = intent.getStringArrayListExtra("ParametersKeys");
-        ArrayList<String> param_values = intent.getStringArrayListExtra("ParametersValues");
-
-        if (((param_keys != null) && (param_keys.size() > 0)) &&
-            ((param_values != null) && (param_values.size() > 0))) {
-            if (param_keys.size() != param_values.size()) {
-                Log.e("ApplicationManagement",
-                        "Remappings from and to lists sizes doesn't match (" + param_keys.size() + " != " + param_values.size());
-                return false;
-            }
-
-            ArrayList<Parameter> params = new ArrayList<Parameter>(param_keys.size());
-            for (int i = 0; i < param_keys.size(); i++) {
-                params.add(new Parameter(param_keys.get(i), param_values.get(i)));
-            }
-        }
-
-
-
-        ArrayList<String> remap_from = intent.getStringArrayListExtra("RemappingsFrom");
-        ArrayList<String> remap_to = intent.getStringArrayListExtra("RemappingsTo");
-
-        if (((remap_from != null) && (remap_from.size() > 0)) &&
-            ((remap_to != null) && (remap_to.size() > 0))) {
-            if (remap_from.size() != remap_to.size()) {
-                Log.e("ApplicationManagement",
-                      "Remappings from and to lists sizes doesn't match (" + remap_from.size() + " != " + remap_to.size());
-                return false;
-            }
-
-            ArrayList<Remapping> remaps = new ArrayList<Remapping>(remap_from.size());
-            for (int i = 0; i < remap_from.size(); i++) {
-                remaps.add(new Remapping(remap_from.get(i), remap_to.get(i)));
-            }
-        }
+//
+//
+//// TODO extract both list to veryfy it works!
+//
+//        ArrayList<String> param_keys = intent.getStringArrayListExtra("ParametersKeys");
+//        ArrayList<String> param_values = intent.getStringArrayListExtra("ParametersValues");
+//
+//        if (((param_keys != null) && (param_keys.size() > 0)) &&
+//            ((param_values != null) && (param_values.size() > 0))) {
+//            if (param_keys.size() != param_values.size()) {
+//                Log.e("ApplicationManagement",
+//                        "Remappings from and to lists sizes doesn't match (" + param_keys.size() + " != " + param_values.size());
+//                return false;
+//            }
+//
+//            ArrayList<Parameter> params = new ArrayList<Parameter>(param_keys.size());
+//            for (int i = 0; i < param_keys.size(); i++) {
+//                params.add(new Parameter(param_keys.get(i), param_values.get(i)));
+//            }
+//        }
+//
+//
+//
+//        ArrayList<String> remap_from = intent.getStringArrayListExtra("RemappingsFrom");
+//        ArrayList<String> remap_to = intent.getStringArrayListExtra("RemappingsTo");
+//
+//        if (((remap_from != null) && (remap_from.size() > 0)) &&
+//            ((remap_to != null) && (remap_to.size() > 0))) {
+//            if (remap_from.size() != remap_to.size()) {
+//                Log.e("ApplicationManagement",
+//                      "Remappings from and to lists sizes doesn't match (" + remap_from.size() + " != " + remap_to.size());
+//                return false;
+//            }
+//
+//            ArrayList<Remapping> remaps = new ArrayList<Remapping>(remap_from.size());
+//            for (int i = 0; i < remap_from.size(); i++) {
+//                remaps.add(new Remapping(remap_from.get(i), remap_to.get(i)));
+//            }
+//        }
 
 
 //      intent.putExtra("runningNodes", runningNodes);
@@ -199,25 +194,5 @@ public class AppLauncher {
         });
         dialog.show();
         return false;
-    }
-
-    private static class Parameter {
-        public Parameter(final String key, final String value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public String key;
-        public String value;
-    }
-
-    private static class Remapping {
-        public Remapping(final String from, final String to) {
-            this.from = from;
-            this.to = to;
-        }
-
-        public String from;
-        public String to;
     }
 }

@@ -47,7 +47,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.net.wifi.WifiManager;
 
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;

@@ -66,10 +66,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.rosjava.android_apps.application_management.RobotDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertsContentProvider;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertDescription;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertId;
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.ConcertId;
 import com.github.rosjava.android_remocons.concert_remocon.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.google.zxing.IntentIntegrator;
@@ -215,13 +214,12 @@ public class ConcertChooser extends Activity {
         builder.setSingleChoiceItems(concert.getUserRoles(), 0, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int selectedRole) {
-                String role = concert.getUserRoles()[selectedRole];
+                concert.setCurrentRole(selectedRole);
+                String role = concert.getCurrentRole();
                 Toast.makeText(ConcertChooser.this, role + " selected", Toast.LENGTH_SHORT).show();
 
                 Intent resultIntent = new Intent();
-                resultIntent
-                        .putExtra(ConcertDescription.UNIQUE_KEY, concert)
-                        .putExtra("UserRole", role);
+                resultIntent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
                 setResult(RESULT_OK, resultIntent);
                 dialog.dismiss();
                 finish();

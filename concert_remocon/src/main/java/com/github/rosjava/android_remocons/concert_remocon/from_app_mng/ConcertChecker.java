@@ -47,6 +47,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 
+import com.github.rosjava.android_apps.application_management.ConcertId;
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
+
 /**
  * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS
  * concert and sends back a {@link ConcertDescription} (with concert name and type)

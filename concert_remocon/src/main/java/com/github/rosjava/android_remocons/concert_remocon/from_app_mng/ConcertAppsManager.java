@@ -18,35 +18,30 @@ package com.github.rosjava.android_remocons.concert_remocon.from_app_mng;
 
 import android.util.Log;
 
+import com.github.rosjava.android_remocons.concert_remocon.StatusPublisher;
+import com.google.common.base.Preconditions;
+
 import org.ros.exception.RosRuntimeException;
 import org.ros.exception.ServiceNotFoundException;
 import org.ros.internal.message.RawMessage;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
-import org.ros.namespace.NameResolver;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Vector;
-
+import concert_msgs.RemoconApp;
 import concert_msgs.RoleAppList;
+import concert_msgs.RequestInteraction;
+import concert_msgs.RequestInteractionRequest;
+import concert_msgs.RequestInteractionResponse;
 import concert_msgs.GetRolesAndApps;
 import concert_msgs.GetRolesAndAppsRequest;
 import concert_msgs.GetRolesAndAppsResponse;
-import rocon_app_manager_msgs.StartApp;
-import rocon_app_manager_msgs.StartAppRequest;
 import rocon_app_manager_msgs.StartAppResponse;
-import rocon_app_manager_msgs.StopApp;
-import rocon_app_manager_msgs.StopAppRequest;
 import rocon_app_manager_msgs.StopAppResponse;
-import rocon_std_msgs.Icon;
 import rocon_std_msgs.PlatformInfo;
 
 /**
@@ -73,75 +68,100 @@ import rocon_std_msgs.PlatformInfo;
 public class ConcertAppsManager extends AbstractNodeMain {
 
     // unique identifier to key string variables between activities.
-	static public final String PACKAGE = "com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager";
-	private static final String startTopic = "start_app";
-	private static final String stopTopic  = "stop_app";
-	private static final String listService = "/concert/get_roles_and_apps";
+    // TODO I make it compatible current apps; not needed if we rewrite as concert apps
+    public static final String PACKAGE = com.github.rosjava.android_apps.application_management.AppManager.PACKAGE;
 
-	private String appName;
+    public static final int ACTION_NONE        = 0;  // TODO make enum
+    public static final int ACTION_LIST_APPS   = 1;
+    public static final int ACTION_REQUEST_APP = 2;
+
+	private static final String listService    = "/concert/get_roles_and_apps";
+    private static final String requestService = "/concert/request_interaction";
+
+    private int action = ACTION_NONE;
     private String userRole;
-	private ServiceResponseListener<StartAppResponse> startServiceResponseListener;
-	private ServiceResponseListener<StopAppResponse> stopServiceResponseListener;
+	private RemoconApp selectedApp;
+	private ServiceResponseListener<RequestInteractionResponse> requestServiceResponseListener;
 	private ServiceResponseListener<GetRolesAndAppsResponse> listServiceResponseListener;
-    private MessageListener<RoleAppList> appListListener;
-	private Subscriber<RoleAppList> subscriber;
+//    private MessageListener<RoleAppList> appListListener;
+//	private Subscriber<RoleAppList> subscriber;
 
 	private ConnectedNode connectedNode;
-	private String function = null;
 
-	public ConcertAppsManager(final String appName, final String userRole) {
-		this.appName  = appName;
+	public ConcertAppsManager(final String userRole) {
+        Preconditions.checkNotNull(userRole);
+
         this.userRole = userRole;
 	}
 
-	public void setFunction(String function) {
-		this.function = function;
+	public void setAction(int action) {
+		this.action = action;
 	}
 	
-	public void setAppName(String appName) {
-		this.appName = appName;
+	public void setSelectedApp(RemoconApp app) {
+		this.selectedApp = app;
 	}
 
-    public void setAppListSubscriber(MessageListener<RoleAppList> appListListener) {
-        this.appListListener = appListListener;
+    public RemoconApp getSelectedApp() {
+        return this.selectedApp;
     }
 
-    public void setStartService(
-			ServiceResponseListener<StartAppResponse> startServiceResponseListener) {
-		this.startServiceResponseListener = startServiceResponseListener;
+
+	public void setRequestService(ServiceResponseListener<RequestInteractionResponse> requestServiceResponseListener) {
+		this.requestServiceResponseListener = requestServiceResponseListener;
 	}
 
-	public void setStopService(
-			ServiceResponseListener<StopAppResponse> stopServiceResponseListener) {
-		this.stopServiceResponseListener = stopServiceResponseListener;
-	}
-
-	public void setListService(
-			ServiceResponseListener<GetRolesAndAppsResponse> listServiceResponseListener) {
+	public void setListService(ServiceResponseListener<GetRolesAndAppsResponse> listServiceResponseListener) {
 		this.listServiceResponseListener = listServiceResponseListener;
 	}
 
 	public void listApps() {
 		ServiceClient<GetRolesAndAppsRequest, GetRolesAndAppsResponse> listAppsClient;
 		try {
-			Log.d("ApplicationManagement", "List app service client created [" + listService + "]");
+			Log.d("ConcertRemocon", "List apps service client created [" + listService + "]");
 			listAppsClient = connectedNode.newServiceClient(listService, GetRolesAndApps._TYPE);
 		} catch (ServiceNotFoundException e) {
-            Log.w("ApplicationManagement", "List app service not found [" + listService + "]");
+            Log.w("ConcertRemocon", "List apps service not found [" + listService + "]");
 			throw new RosRuntimeException(e);
 		}
 		final GetRolesAndAppsRequest request = listAppsClient.newMessage();
 
         request.getRoles().add(userRole);
-        request.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);
+        // request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
+        request.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);  // TODO take fron StatusPub
         request.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
         request.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
         request.getPlatformInfo().setSystem(PlatformInfo.SYSTEM_ROSJAVA);
-        request.getPlatformInfo().setPlatform(PlatformInfo.NAME_ANY);
+        request.getPlatformInfo().setName(PlatformInfo.NAME_ANY);
 
 		listAppsClient.call(request, listServiceResponseListener);
-		Log.d("ApplicationManagement", "List apps service call done [" + listService + "]");
+		Log.d("ConcertRemocon", "List apps service call done [" + listService + "]");
 	}
+
+    public void requestApp() {
+        ServiceClient<RequestInteractionRequest, RequestInteractionResponse> requestAppClient;
+        try {
+            Log.d("ConcertRemocon", "Request app service client created [" + requestService + "]");
+            requestAppClient = connectedNode.newServiceClient(requestService, RequestInteraction._TYPE);
+        } catch (ServiceNotFoundException e) {
+            Log.w("ConcertRemocon", "Request app service not found [" + requestService + "]");
+            throw new RosRuntimeException(e);
+        }
+        final RequestInteractionRequest request = requestAppClient.newMessage();
+
+        request.setRole(userRole);
+        request.setApplication(selectedApp.getName());
+        request.setServiceName(selectedApp.getServiceName());
+        // request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
+        request.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);  // TODO take fron StatusPub
+        request.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
+        request.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
+        request.getPlatformInfo().setSystem(PlatformInfo.SYSTEM_ROSJAVA);
+        request.getPlatformInfo().setName(PlatformInfo.NAME_ANY);
+
+        requestAppClient.call(request, requestServiceResponseListener);
+        Log.d("ConcertRemocon", "Request app service call done [" + requestService + "]");
+    }
 
     @Override
 	public GraphName getDefaultNodeName() {
@@ -159,10 +179,32 @@ public class ConcertAppsManager extends AbstractNodeMain {
 	@Override
 	public void onStart(final ConnectedNode connectedNode) {
         if (this.connectedNode != null) {
-            Log.e("ApplicationManagement", "app manager instances may only ever be executed once [" + function + "].");
+            Log.e("ConcertRemocon", "app manager instances can only be executed once at a time [" + action + "].");
             return;
         }
+
         this.connectedNode = connectedNode;
-    	listApps();       // call roles_and_apps service
+
+        Log.d("ConcertRemocon", "onStart() - " + action);
+
+        switch (action) {
+            case ACTION_NONE:
+                break;
+            case ACTION_REQUEST_APP:
+                requestApp();
+                break;
+            case ACTION_LIST_APPS:
+             	listApps();       // call roles_and_apps service
+                break;
+            default:
+                Log.w("ConcertRemocon", "Unrecogniced action requested: " + action);
+        }
+
+        if (this.connectedNode != null) {
+            Log.e("ConcertRemocon", "app manager instances may only ever be executed once [" + action + "].");
+            //    return;
+            this.connectedNode.shutdown();
+            this.connectedNode = null;
+        }
 	}
 }
