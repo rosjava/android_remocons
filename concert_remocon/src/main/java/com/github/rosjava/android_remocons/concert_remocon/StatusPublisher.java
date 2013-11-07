@@ -48,7 +48,7 @@ public class StatusPublisher extends AbstractNodeMain {
     @Override
     public void onStart(ConnectedNode connectedNode) {
         // Prepare latched publisher
-        publisher = connectedNode.newPublisher("/remocons/" + REMOCON_NAME + "_kkk",// + REMOCON_UUID,
+        publisher = connectedNode.newPublisher("/remocons/" + REMOCON_NAME + "_" + REMOCON_UUID,
                                                "concert_msgs/RemoconStatus");
         publisher.setLatchMode(true);
 
@@ -59,8 +59,6 @@ public class StatusPublisher extends AbstractNodeMain {
         status.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
         status.getPlatformInfo().setSystem(PlatformInfo.SYSTEM_ROSJAVA);
         status.getPlatformInfo().setName(REMOCON_NAME);
-//        status.getPlatformInfo().getIcon().setFormat("png");
-//        status.getPlatformInfo().getIcon().getData().setByte(0, 0);
 //        status.getUuid().getUuid().setByte(0, 0);//REMOCON_UUID.getBytes());
         status.setUuid(REMOCON_UUID);  // TODO hack!  uuid is a byte[16] array but like this it fails msg delivery! must be cause the weird rosjava version of byte[] reserves 255 bytes buffer
         status.setRunningApp(false);
@@ -79,7 +77,7 @@ public class StatusPublisher extends AbstractNodeMain {
     }
 
     public void update(boolean runningApp, String appName) {
-        android.util.Log.e("8888888888888888888888888888888888888888888888888888888888888888888888888888888", "GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+        android.util.Log.e("8888888888888888888888888888888888888888888888888888888888888888888888888888888", "GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO   " + runningApp);
 
         status.setRunningApp(runningApp);
         if (runningApp == false || appName == null)
@@ -93,5 +91,7 @@ public class StatusPublisher extends AbstractNodeMain {
     public void shutdown() {
         android.util.Log.e("8888888888888888888888888888888888888888888888888888888888888888888888888888888", "KILLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
         Preconditions.checkArgument(initialized, "Remocon status publisher not initialized");
+
+        publisher.shutdown();
     }
 }

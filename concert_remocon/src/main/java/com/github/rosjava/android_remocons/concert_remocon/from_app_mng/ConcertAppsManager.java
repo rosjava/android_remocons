@@ -201,8 +201,7 @@ public class ConcertAppsManager extends AbstractNodeMain {
         }
 
         if (this.connectedNode != null) {
-            Log.e("ConcertRemocon", "app manager instances may only ever be executed once [" + action + "].");
-            //    return;
+            // Log.e("ConcertRemocon", "app manager instances may only ever be executed once [" + action + "].");
             this.connectedNode.shutdown();
             this.connectedNode = null;
         }
