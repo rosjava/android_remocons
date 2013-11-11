@@ -25,7 +25,7 @@ public class StatusPublisher implements NodeMain {
     public  static final String NODE_NAME = "remocon_status_pub_node";
 
     private static final String REMOCON_NAME = "android_remocon";
-    private static final String REMOCON_UUID = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 16);
+    private static final String REMOCON_UUID = UUID.randomUUID().toString().replaceAll("-", "");
 
     private static StatusPublisher   instance;
 
