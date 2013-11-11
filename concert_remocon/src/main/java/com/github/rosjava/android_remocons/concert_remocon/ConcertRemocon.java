@@ -106,7 +106,6 @@ public class ConcertRemocon extends RosActivity {
     private StatusPublisher statusPublisher;
 	private boolean alreadyClicked = false;
 	private boolean validatedConcert;
-	private boolean runningNodes = false;
 	private long availableAppsCacheTime;
 
     /*
@@ -216,7 +215,7 @@ public class ConcertRemocon extends RosActivity {
                         @Override
                         public void run() {
                             if (AppLauncher.launch(ConcertRemocon.this, app, getMasterUri(),
-                                    concertDescription, runningNodes) == true) {
+                                                   concertDescription) == true) {
                                 // App successfully launched! Notify the concert and finish this activity
                                 statusPublisher.update(true, app.getName());
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
