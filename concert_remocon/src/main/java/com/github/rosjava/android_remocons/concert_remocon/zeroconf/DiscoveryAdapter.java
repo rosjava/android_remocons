@@ -116,11 +116,11 @@ this,false);
                 }
                 ImageView im = (ImageView) v.findViewById(R.id.icon);
                 if ( im != null ) {
-                	if ( discovered_service.type.indexOf("_ros-master._tcp" ) != -1 ||
-                		 discovered_service.type.indexOf("_ros-master._udp" ) != -1) {
-                    	im.setImageDrawable(context.getResources().getDrawable(R.drawable.turtle));
-                	} else {
+                	if ( discovered_service.type.indexOf("_concert-master._tcp" ) != -1 ||
+                		 discovered_service.type.indexOf("_concert-master._udp" ) != -1) {
                     	im.setImageDrawable(context.getResources().getDrawable(R.drawable.conductor));
+                	} else {
+                    	im.setImageDrawable(context.getResources().getDrawable(R.drawable.turtle));
                 	}
                 }
         }

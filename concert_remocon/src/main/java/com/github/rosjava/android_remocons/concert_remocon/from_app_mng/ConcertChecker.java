@@ -165,7 +165,7 @@ public class ConcertChecker {
 
                 // Check for the concert roles topic (/concert/roles)
                 ListenerNode<concert_msgs.Roles> readRolesTopic =
-                        new ListenerNode("/concert/roles", concert_msgs.Roles._TYPE);
+                        new ListenerNode("/concert/interactions/roles", concert_msgs.Roles._TYPE);
                 nodeMainExecutorService.execute(readRolesTopic, nodeConfiguration.setNodeName("concert_roles_node"));
                 readRolesTopic.waitForResponse();
 

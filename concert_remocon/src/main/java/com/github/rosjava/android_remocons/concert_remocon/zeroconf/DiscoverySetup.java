@@ -41,8 +41,8 @@ public class DiscoverySetup extends AsyncTask<Zeroconf, String, Void> {
             Zeroconf zconf = zeroconfs[0];
             android.util.Log.i("zeroconf", "*********** Discovery Commencing **************");
 
-            zconf.addListener("_ros-master._tcp","local");
-            zconf.addListener("_ros-master._udp","local");
+            zconf.addListener("_concert-master._tcp","local");
+            zconf.addListener("_concert-master._udp","local");
 
         } else {
         	android.util.Log.i("zeroconf", "Error - DiscoveryTask::doInBackground received #zeroconfs != 1");

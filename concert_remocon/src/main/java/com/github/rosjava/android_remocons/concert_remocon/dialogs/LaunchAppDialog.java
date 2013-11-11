@@ -12,8 +12,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
 
-import com.github.rosjava.android_remocons.concert_remocon.R;
-
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
@@ -32,16 +30,18 @@ public class LaunchAppDialog extends AlertDialogWrapper {
 
         if (buffer.array().length > 0 && iconFormat != null &&
            (iconFormat.equals("jpeg") || iconFormat.equals("png"))) {
-            Bitmap iconBitmap =
+            Bitmap bitmap =
                     BitmapFactory.decodeByteArray(buffer.array(), buffer.arrayOffset(), buffer.readableBytes());
-            if (iconBitmap != null) {
+            if (bitmap != null) {
+                Bitmap iconBitmap = Bitmap.createScaledBitmap(bitmap, 180, 180, false);
                 dialog.setIcon(new BitmapDrawable(context.getResources(), iconBitmap));
                 hasValidIcon = true;
             }
         }
 
         if (! hasValidIcon) {
-            dialog.setIcon(context.getResources().getDrawable(R.drawable.question_mark));
+            // dialog.setIcon(context.getResources().getDrawable(R.drawable.question_mark));
+            // TODO default image?  concert icon?
         }
 
         dialog.setTitle(app.getDisplayName());

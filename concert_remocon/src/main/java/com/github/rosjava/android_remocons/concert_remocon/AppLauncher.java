@@ -85,74 +85,16 @@ public class AppLauncher {
         intent.putExtra(ConcertDescription.UNIQUE_KEY, currentConcert);
         intent.putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon");
         intent.putExtra("ChooserURI", uri.toString());
-//      intent.putExtra("Parameters", app.getParameters());
-//      intent.putExtra("Remappings", app.getRemappings());
+        intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
 
-        if ((app.getParameters() != null) && (app.getParameters().size() > 0)) {
-            ArrayList<String> param_keys = new ArrayList<String>(app.getParameters().size());
-            ArrayList<String> param_values = new ArrayList<String>(app.getParameters().size());
-
-            for (rocon_std_msgs.KeyValue param: app.getParameters()) {
-                param_keys.add(param.getKey());
-                param_values.add(param.getValue());
-            }
-
-            intent.putExtra("ParametersKeys", param_keys);
-            intent.putExtra("ParametersValues", param_values);
-        }
-
+        // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
         if ((app.getRemappings() != null) && (app.getRemappings().size() > 0)) {
-            ArrayList<String> remap_from = new ArrayList<String>(app.getRemappings().size());
-            ArrayList<String> remap_to = new ArrayList<String>(app.getRemappings().size());
-
-            for (rocon_std_msgs.Remapping remap: app.getRemappings()) {
-                remap_from.add(remap.getRemapFrom());
-                remap_to.add(remap.getRemapTo());
-            }
-
-            intent.putExtra("RemappingsFrom", remap_from);
-            intent.putExtra("RemappingsTo", remap_to);
+            String remaps = "{";
+            for (rocon_std_msgs.Remapping remap: app.getRemappings())
+                remaps += remap.getRemapFrom() + ": " + remap.getRemapTo() + ", ";
+            remaps = remaps.substring(0, remaps.length() - 2) + "}";
+            intent.putExtra("Remappings", remaps);
         }
-//
-//
-//// TODO extract both list to veryfy it works!
-//
-//        ArrayList<String> param_keys = intent.getStringArrayListExtra("ParametersKeys");
-//        ArrayList<String> param_values = intent.getStringArrayListExtra("ParametersValues");
-//
-//        if (((param_keys != null) && (param_keys.size() > 0)) &&
-//            ((param_values != null) && (param_values.size() > 0))) {
-//            if (param_keys.size() != param_values.size()) {
-//                Log.e("ApplicationManagement",
-//                        "Remappings from and to lists sizes doesn't match (" + param_keys.size() + " != " + param_values.size());
-//                return false;
-//            }
-//
-//            ArrayList<Parameter> params = new ArrayList<Parameter>(param_keys.size());
-//            for (int i = 0; i < param_keys.size(); i++) {
-//                params.add(new Parameter(param_keys.get(i), param_values.get(i)));
-//            }
-//        }
-//
-//
-//
-//        ArrayList<String> remap_from = intent.getStringArrayListExtra("RemappingsFrom");
-//        ArrayList<String> remap_to = intent.getStringArrayListExtra("RemappingsTo");
-//
-//        if (((remap_from != null) && (remap_from.size() > 0)) &&
-//            ((remap_to != null) && (remap_to.size() > 0))) {
-//            if (remap_from.size() != remap_to.size()) {
-//                Log.e("ApplicationManagement",
-//                      "Remappings from and to lists sizes doesn't match (" + remap_from.size() + " != " + remap_to.size());
-//                return false;
-//            }
-//
-//            ArrayList<Remapping> remaps = new ArrayList<Remapping>(remap_from.size());
-//            for (int i = 0; i < remap_from.size(); i++) {
-//                remaps.add(new Remapping(remap_from.get(i), remap_to.get(i)));
-//            }
-//        }
-
 
 //      intent.putExtra("runningNodes", runningNodes);
 //      intent.putExtra("PairedManagerActivity", "com.github.concertics_in_concert.rocon_android.concert_remocon.ConcertRemocon");

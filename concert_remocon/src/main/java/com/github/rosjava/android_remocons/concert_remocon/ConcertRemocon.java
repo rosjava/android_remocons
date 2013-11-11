@@ -222,7 +222,7 @@ public class ConcertRemocon extends RosActivity {
                                     concertDescription, runningNodes) == true) {
                                 // App successfully launched! Notify the concert and finish this activity
                                 statusPublisher.update(true, app.getName());
-                                finish(); // TODO try to no finish
+                                // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
                         };
                     });
@@ -241,7 +241,10 @@ public class ConcertRemocon extends RosActivity {
         progressDialog.show("Getting apps...", "Waiting for concert apps for " + userRole + " role");
         nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("list_apps_srv_node"));
 
-        nodeMainExecutor.execute(statusPublisher, nodeConfiguration.setNodeName("remocon_status_pub_node"));
+        if (! statusPublisher.isInitialized()) {
+            // If we come back from an app, it should be already initialized, so call execute again would crash
+            nodeMainExecutor.execute(statusPublisher, nodeConfiguration.setNodeName(StatusPublisher.NODE_NAME));
+        }
     }
 
     /**
@@ -497,7 +500,6 @@ public class ConcertRemocon extends RosActivity {
         startActivityForResult(new Intent(this, ConcertChooser.class),
                 CONCERT_MASTER_CHOOSER_REQUEST_CODE);
 
-        statusPublisher.shutdown();
         nodeMainExecutor.shutdownNodeMain(statusPublisher);
     }
 

@@ -211,7 +211,7 @@ public class ConcertChooser extends Activity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Choose your role");
 
-        builder.setSingleChoiceItems(concert.getUserRoles(), 0, new DialogInterface.OnClickListener() {
+        builder.setSingleChoiceItems(concert.getUserRoles(), -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int selectedRole) {
                 concert.setCurrentRole(selectedRole);

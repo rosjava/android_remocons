@@ -1,10 +1,13 @@
 package com.github.rosjava.android_remocons.concert_remocon;
 
+import android.util.Log;
+
 import com.google.common.base.Preconditions;
 
 import org.ros.namespace.GraphName;
-import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
+import org.ros.node.NodeMain;
+import org.ros.node.Node;
 import org.ros.node.topic.Publisher;
 
 import java.util.UUID;
@@ -16,8 +19,10 @@ import rocon_std_msgs.PlatformInfo;
  * Created by jorge on 11/6/13.
  *
  * Publishes the remocon platform info and current role/app being run (if selected) in a latched topic.
+ * Singleton class, intended to survive along the whole remocon session, including go and back to apps.
  */
-public class StatusPublisher extends AbstractNodeMain {
+public class StatusPublisher implements NodeMain {
+    public  static final String NODE_NAME = "remocon_status_pub_node";
 
     private static final String REMOCON_NAME = "android_remocon";
     private static final String REMOCON_UUID = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 16);
@@ -34,19 +39,25 @@ public class StatusPublisher extends AbstractNodeMain {
     public static StatusPublisher getInstance() {
         if (instance == null) {
             instance = new StatusPublisher();
-            android.util.Log.e("8888888888888888888888888888888888888888888888888888888888888888888888888888888", "NEWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
+            Log.d("ConcertRemocon", "Remocon status publisher created");
         }
 
         return instance;
     }
 
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     @Override
     public GraphName getDefaultNodeName() {
-        return GraphName.of("remocon_status_node");
+        return GraphName.of(NODE_NAME);
     }
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
+        Preconditions.checkArgument(! initialized, "Remocon status publisher already initialized");
+
         // Prepare latched publisher
         publisher = connectedNode.newPublisher("/remocons/" + REMOCON_NAME + "_" + REMOCON_UUID,
                                                "concert_msgs/RemoconStatus");
@@ -67,7 +78,25 @@ public class StatusPublisher extends AbstractNodeMain {
         publisher.publish(status);
 
         initialized = true;
-        android.util.Log.e("8888888888888888888888888888888888888888888888888888888888888888888888888888888", "READYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+        Log.i("ConcertRemocon", "Remocon status publisher initialized");
+    }
+
+    @Override
+    public void onShutdown(Node node) {
+        Preconditions.checkArgument(initialized, "Remocon status publisher not initialized");
+
+        publisher.shutdown();
+        initialized = false;
+        Log.i("ConcertRemocon", "Remocon status publisher shutdown");
+    }
+
+    @Override
+    public void onShutdownComplete(Node node) {
+    }
+
+    @Override
+    public void onError(Node node, Throwable throwable) {
+        Log.e("ConcertRemocon", "Remocon status publisher error: " + throwable.getMessage());
     }
 
     public PlatformInfo getPlatformInfo() {
@@ -77,7 +106,7 @@ public class StatusPublisher extends AbstractNodeMain {
     }
 
     public void update(boolean runningApp, String appName) {
-        android.util.Log.e("8888888888888888888888888888888888888888888888888888888888888888888888888888888", "GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO   " + runningApp);
+        Log.d("ConcertRemocon", "Remocon status publisher updated. Running app: " + runningApp);
 
         status.setRunningApp(runningApp);
         if (runningApp == false || appName == null)
@@ -86,12 +115,5 @@ public class StatusPublisher extends AbstractNodeMain {
             status.setAppName(appName);
 
         publisher.publish(status);
-    }
-
-    public void shutdown() {
-        android.util.Log.e("8888888888888888888888888888888888888888888888888888888888888888888888888888888", "KILLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
-        Preconditions.checkArgument(initialized, "Remocon status publisher not initialized");
-
-        publisher.shutdown();
     }
 }

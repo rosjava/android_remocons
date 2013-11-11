@@ -23,26 +23,19 @@ import com.google.common.base.Preconditions;
 
 import org.ros.exception.RosRuntimeException;
 import org.ros.exception.ServiceNotFoundException;
-import org.ros.internal.message.RawMessage;
-import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
-import org.ros.node.topic.Subscriber;
 
 import concert_msgs.RemoconApp;
-import concert_msgs.RoleAppList;
 import concert_msgs.RequestInteraction;
 import concert_msgs.RequestInteractionRequest;
 import concert_msgs.RequestInteractionResponse;
 import concert_msgs.GetRolesAndApps;
 import concert_msgs.GetRolesAndAppsRequest;
 import concert_msgs.GetRolesAndAppsResponse;
-import rocon_app_manager_msgs.StartAppResponse;
-import rocon_app_manager_msgs.StopAppResponse;
-import rocon_std_msgs.PlatformInfo;
 
 /**
  * This class implements the services and topics required to communicate
@@ -75,16 +68,14 @@ public class ConcertAppsManager extends AbstractNodeMain {
     public static final int ACTION_LIST_APPS   = 1;
     public static final int ACTION_REQUEST_APP = 2;
 
-	private static final String listService    = "/concert/get_roles_and_apps";
-    private static final String requestService = "/concert/request_interaction";
+	private static final String listService    = "/concert/interactions/get_roles_and_apps";
+    private static final String requestService = "/concert/interactions/request_interaction";
 
     private int action = ACTION_NONE;
     private String userRole;
 	private RemoconApp selectedApp;
 	private ServiceResponseListener<RequestInteractionResponse> requestServiceResponseListener;
 	private ServiceResponseListener<GetRolesAndAppsResponse> listServiceResponseListener;
-//    private MessageListener<RoleAppList> appListListener;
-//	private Subscriber<RoleAppList> subscriber;
 
 	private ConnectedNode connectedNode;
 
@@ -127,12 +118,7 @@ public class ConcertAppsManager extends AbstractNodeMain {
 		final GetRolesAndAppsRequest request = listAppsClient.newMessage();
 
         request.getRoles().add(userRole);
-        // request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
-        request.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);  // TODO take fron StatusPub
-        request.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
-        request.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
-        request.getPlatformInfo().setSystem(PlatformInfo.SYSTEM_ROSJAVA);
-        request.getPlatformInfo().setName(PlatformInfo.NAME_ANY);
+        request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
 
 		listAppsClient.call(request, listServiceResponseListener);
 		Log.d("ConcertRemocon", "List apps service call done [" + listService + "]");
@@ -152,12 +138,7 @@ public class ConcertAppsManager extends AbstractNodeMain {
         request.setRole(userRole);
         request.setApplication(selectedApp.getName());
         request.setServiceName(selectedApp.getServiceName());
-        // request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
-        request.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);  // TODO take fron StatusPub
-        request.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
-        request.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
-        request.getPlatformInfo().setSystem(PlatformInfo.SYSTEM_ROSJAVA);
-        request.getPlatformInfo().setName(PlatformInfo.NAME_ANY);
+        request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
 
         requestAppClient.call(request, requestServiceResponseListener);
         Log.d("ConcertRemocon", "Request app service call done [" + requestService + "]");
@@ -201,7 +182,6 @@ public class ConcertAppsManager extends AbstractNodeMain {
         }
 
         if (this.connectedNode != null) {
-            // Log.e("ConcertRemocon", "app manager instances may only ever be executed once [" + action + "].");
             this.connectedNode.shutdown();
             this.connectedNode = null;
         }
