@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2011, Willow Garage, Inc.
  * Copyright (c) 2013, OSRF.
- * Copyright (c) 2013, Yujin Concert.
+ * Copyright (c) 2013, Yujin Robot.
  *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -87,6 +87,7 @@ import java.util.TimerTask;
 /**
  * @author hersh@willowgarage.com
  * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)
+ * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
 public class ConcertChooser extends Activity {
 

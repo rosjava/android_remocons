@@ -16,7 +16,7 @@ import concert_msgs.RemoconStatus;
 import rocon_std_msgs.PlatformInfo;
 
 /**
- * Created by jorge on 11/6/13.
+ * @author jorge@yujinrobot.com (Jorge Santos Simon)
  *
  * Publishes the remocon platform info and current role/app being run (if selected) in a latched topic.
  * Singleton class, intended to survive along the whole remocon session, including go and back to apps.

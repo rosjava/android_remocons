@@ -49,6 +49,9 @@ import java.util.Date;
 
 import com.github.rosjava.android_apps.application_management.ConcertId;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_remocons.concert_remocon.ListenerNode;
+
+import concert_msgs.ConcertInfo;
 
 /**
  * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS
@@ -148,7 +151,7 @@ public class ConcertChecker {
                         InetAddressFactory.newNonLoopback().getHostAddress(), concertUri);
 
                 // Check for the concert information topic (/concert/info)
-                ListenerNode<concert_msgs.ConcertInfo> readInfoTopic =
+                ListenerNode<ConcertInfo> readInfoTopic =
                         new ListenerNode("/concert/info", concert_msgs.ConcertInfo._TYPE);
                 nodeMainExecutorService.execute(readInfoTopic, nodeConfiguration.setNodeName("read_info_node"));
                 readInfoTopic.waitForResponse();

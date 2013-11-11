@@ -35,7 +35,6 @@
 package com.github.rosjava.android_remocons.concert_remocon;
 
 import java.net.URI;
-import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -46,7 +45,6 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
 
 public class AppLauncher {
     static private final String CLIENT_TYPE = "android";
@@ -81,7 +79,7 @@ public class AppLauncher {
         intent.setAction(className);
 
         // Copy all app data to "extra" data in the intent.
-        intent.putExtra(ConcertAppsManager.PACKAGE + ".concert_app_name", className);
+        intent.putExtra(AppsManager.PACKAGE + ".concert_app_name", className);
         intent.putExtra(ConcertDescription.UNIQUE_KEY, currentConcert);
         intent.putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon");
         intent.putExtra("ChooserURI", uri.toString());

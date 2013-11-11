@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2013 OSRF.
+ * Copyright (C) 2013, OSRF.
+ * Copyright (c) 2013, Yujin Robot.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,7 +15,7 @@
  * the License.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon.from_app_mng;
+package com.github.rosjava.android_remocons.concert_remocon;
 
 import android.util.Log;
 
@@ -39,14 +40,12 @@ import concert_msgs.GetRolesAndAppsResponse;
 
 /**
  * This class implements the services and topics required to communicate
- * with the robot app manager. Typically to use this class its a three
+ * with the concert roles manager. Typically to use this class its a three
  * step process:
  *
  * 1) provide a callback via one of the setXXX methods
  * 2) set the function type you want to call (e.g. start_app, platform_info)
  * 3) execute the app manager instance.
- *
- * INSTANCES MAY ONLY EVER BE EXECUTED ONCE!
  *
  * Essentially you are creating a node when creating an instance, and
  * rosjava isolates each service/topic to each 'node'.
@@ -54,11 +53,14 @@ import concert_msgs.GetRolesAndAppsResponse;
  * See the RosAppActivity or RobotActivity (in android_remocons) for
  * examples.
  *
- * TODO: (DJS) move these into the .rapp_manager module as separate classes.
- * Since these can only be executed once, there is no real advantage to having
- * them together and ultimately just makes it difficult to follow the code.
+ * TODO: This class has been derived from RobotAppsManager in android_apps/application_management.
+ * The original is quite messy, and this is too, so needs refactor. Also RobotAppsManager claims
+ * That it can be executed once, but I'm doing otherwise here (and it looks to work), so working
+ * mechanism must be fully reviewed.
+ *
+ * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
-public class ConcertAppsManager extends AbstractNodeMain {
+public class AppsManager extends AbstractNodeMain {
 
     // unique identifier to key string variables between activities.
     // TODO I make it compatible current apps; not needed if we rewrite as concert apps
@@ -79,7 +81,7 @@ public class ConcertAppsManager extends AbstractNodeMain {
 
 	private ConnectedNode connectedNode;
 
-	public ConcertAppsManager(final String userRole) {
+	public AppsManager(final String userRole) {
         Preconditions.checkNotNull(userRole);
 
         this.userRole = userRole;

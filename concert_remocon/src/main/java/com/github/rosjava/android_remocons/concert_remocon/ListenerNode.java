@@ -1,4 +1,4 @@
-package com.github.rosjava.android_remocons.concert_remocon.from_app_mng;
+package com.github.rosjava.android_remocons.concert_remocon;
 
 import android.util.Log;
 

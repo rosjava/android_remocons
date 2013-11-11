@@ -3,7 +3,7 @@
  *
  * Copyright (c) 2011, Willow Garage, Inc.
  * Copyright (c) 2013, OSRF.
- * Copyright (c) 2013, Yujin Concert.
+ * Copyright (c) 2013, Yujin Robot.
  *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -41,16 +41,11 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -62,7 +57,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
@@ -73,11 +67,9 @@ import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.ConcertId;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertAppsManager;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
-import com.google.common.base.Preconditions;
 
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.LaunchAppDialog;
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.AlertDialogWrapper;
@@ -86,6 +78,11 @@ import com.github.rosjava.android_remocons.concert_remocon.dialogs.ProgressDialo
 import concert_msgs.RemoconApp;
 import concert_msgs.RoleAppList;
 
+/**
+ * A rewrite of RobotRemocon to work with concerts.
+ *
+ * @author jorge@yujinrobot.com (Jorge Santos Simon)
+ */
 public class ConcertRemocon extends RosActivity {
 
     /* startActivityForResult Request Codes */
@@ -105,7 +102,7 @@ public class ConcertRemocon extends RosActivity {
 	private AlertDialogWrapper wifiDialog;
 	private AlertDialogWrapper evictDialog;
 	private AlertDialogWrapper errorDialog;
-    private ConcertAppsManager appsManager;
+    private AppsManager appsManager;
     private StatusPublisher statusPublisher;
 	private boolean alreadyClicked = false;
 	private boolean validatedConcert;
@@ -135,7 +132,7 @@ public class ConcertRemocon extends RosActivity {
                              WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.main);
 
-        concertAppName = getIntent().getStringExtra(ConcertAppsManager.PACKAGE + ".concert_app_name");
+        concertAppName = getIntent().getStringExtra(AppsManager.PACKAGE + ".concert_app_name");
         if (concertAppName == null) {
             concertAppName = defaultConcertAppName;
         } else if (concertAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
@@ -168,7 +165,7 @@ public class ConcertRemocon extends RosActivity {
                 .newNonLoopback().getHostAddress(), getMasterUri());
 
         final String userRole = concertDescription.getCurrentRole();
-        appsManager = new ConcertAppsManager(userRole);
+        appsManager = new AppsManager(userRole);
         appsManager.setListService(new ServiceResponseListener<concert_msgs.GetRolesAndAppsResponse> () {
             @Override
             public void onSuccess(concert_msgs.GetRolesAndAppsResponse response) {
@@ -237,7 +234,7 @@ public class ConcertRemocon extends RosActivity {
             }
         });
 
-        appsManager.setAction(ConcertAppsManager.ACTION_LIST_APPS);
+        appsManager.setAction(AppsManager.ACTION_LIST_APPS);
         progressDialog.show("Getting apps...", "Waiting for concert apps for " + userRole + " role");
         nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("list_apps_srv_node"));
 
@@ -479,7 +476,7 @@ public class ConcertRemocon extends RosActivity {
                 progressDialog.show("Requesting app...", "Requesting permission to use "+ app.getDisplayName());
 
                 appsManager.setSelectedApp(apps.get(position));
-                appsManager.setAction(ConcertAppsManager.ACTION_REQUEST_APP);
+                appsManager.setAction(AppsManager.ACTION_REQUEST_APP);
                 nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("request_app_srv_node"));
 			}
 		});

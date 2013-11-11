@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Yujin Concert.
+ * Copyright (C) 2013 Yujin Robot.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,7 +24,6 @@ import android.widget.ListView;
 
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.Zeroconf;
-
 
 
 public class MasterSearcher {
