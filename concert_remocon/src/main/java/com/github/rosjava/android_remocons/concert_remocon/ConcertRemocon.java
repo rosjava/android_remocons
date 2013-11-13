@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -57,6 +58,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
@@ -129,7 +131,7 @@ public class ConcertRemocon extends RosActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                              WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.main);
+        setContentView(R.layout.concert_remocon);
 
         concertAppName = getIntent().getStringExtra(AppsManager.PACKAGE + ".concert_app_name");
         if (concertAppName == null) {
@@ -261,7 +263,6 @@ public class ConcertRemocon extends RosActivity {
         try {
             concertDescription = (ConcertDescription) intent
                     .getSerializableExtra(ConcertDescription.UNIQUE_KEY);
-
             validatedConcert = false;
             validateConcert(concertDescription.getConcertId());
 
@@ -276,18 +277,56 @@ public class ConcertRemocon extends RosActivity {
         // onPostExecute) that occurred when calling init. In reality
         // this shouldn't happen often - only when the connection
         // is unavailable inbetween validating and init'ing.
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                while (!validatedConcert) {
-                    // should use a sleep here to avoid burnout
-                    try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
+        if (concertDescription.getCurrentRole() == null) {
+            chooseRole();
+        }
+        else {
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    while (!validatedConcert) {
+                        // should use a sleep here to avoid burnout
+                        try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
+                    }
+                    ConcertRemocon.this.init(nodeMainExecutorService);
+                    return null;
                 }
-                ConcertRemocon.this.init(nodeMainExecutorService);
-                return null;
-            }
-        }.execute();
+            }.execute();
+        }
     }
+
+    private void chooseRole() {
+        Log.i("ConcertRemocon", "Concert chosen; show choose user role dialog");
+        concertDescription.setCurrentRole(-1);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ConcertRemocon.this);
+        builder.setTitle("Choose your role");
+        builder.setSingleChoiceItems(concertDescription.getUserRoles(), -1,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int selectedRole) {
+                        concertDescription.setCurrentRole(selectedRole);
+                        String role = concertDescription.getCurrentRole();
+                        Toast.makeText(ConcertRemocon.this, role + " selected", Toast.LENGTH_SHORT).show();
+                        dialog.dismiss();
+
+                        new AsyncTask<Void, Void, Void>() {
+                            @Override
+                            protected Void doInBackground(Void... params) {
+                                while (!validatedConcert) {
+                                    // should use a sleep here to avoid burnout
+                                    try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
+                                }
+                                ConcertRemocon.this.init(nodeMainExecutorService);
+                                return null;
+                            }
+                        }.execute();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+    }
+
     /**
      * The main result gathered here is that from the concert master chooser
      * which is started on top of the initial ConcertRemocon Activity.
@@ -481,6 +520,13 @@ public class ConcertRemocon extends RosActivity {
 		});
 		Log.d("ConcertRemocon", "app list gridview updated");
 	}
+
+    /**
+     * Choose a new role and get the apps associated to the new roll.
+     */
+    public void changeRoleClicked(View view) {
+        chooseRole();
+    }
 
     /**
      * This returns the activity to the concert master chooser

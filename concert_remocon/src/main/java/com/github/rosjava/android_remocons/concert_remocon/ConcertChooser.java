@@ -153,7 +153,7 @@ public class ConcertChooser extends Activity {
 	}
 
 	private void updateListView() {
-		setContentView(R.layout.concert_master_chooser);
+		setContentView(R.layout.concert_chooser);
 		ListView listview = (ListView) findViewById(R.id.master_list);
 		listview.setAdapter(new MasterAdapter(this, concerts));
 		registerForContextMenu(listview);
@@ -203,32 +203,12 @@ public class ConcertChooser extends Activity {
                             }).create();
             d.show();
         } else {
-            concertChosen(concert);
+            Intent resultIntent = new Intent();
+            resultIntent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
+            setResult(RESULT_OK, resultIntent);
+            finish();
 		}
 	}
-
-    private void concertChosen(final ConcertDescription concert) {
-        Log.i("ConcertRemocon", "Concert chosen; show choose user role dialog");
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Choose your role");
-
-        builder.setSingleChoiceItems(concert.getUserRoles(), -1, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int selectedRole) {
-                concert.setCurrentRole(selectedRole);
-                String role = concert.getCurrentRole();
-                Toast.makeText(ConcertChooser.this, role + " selected", Toast.LENGTH_SHORT).show();
-
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
-                setResult(RESULT_OK, resultIntent);
-                dialog.dismiss();
-                finish();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }
 
 	private void addMaster(ConcertId concertId) {
 		addMaster(concertId, false);
