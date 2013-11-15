@@ -13,6 +13,14 @@ import android.widget.Toast;
 
 import java.security.InvalidParameterException;
 
+import com.github.rosjava.android_remocons.common_tools.Util;
+import com.github.rosjava.android_remocons.common_tools.RoconNfcManager;
+
+import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+
+/**
+ * @author jorge@yujinrobot.com (Jorge Santos Simon)
+ */
 public class RoconNfcWriter extends Activity {
 
     private static final String PREFS_KEY_SSID = "SSID_KEY";
@@ -129,12 +137,12 @@ public class RoconNfcWriter extends Activity {
             extraData  = editExtraData.getText().toString();
             appRecord  = editAppRecord.getText().toString();
 
-            if (appRecord.length() > 58)  // TODO make limits a parameter or at least a constant
-                throw new InvalidParameterException("AAR limited to 58 chars");
+            if (appRecord.length() > NFC_APP_RECORD_FIELD_LENGTH)
+                throw new InvalidParameterException("AAR limited to " + NFC_APP_RECORD_FIELD_LENGTH + " chars");
 
-            byte[] content = Util.concat(Util.toFixSizeBytes(ssid,       (short)16, (byte)0),
-                                         Util.toFixSizeBytes(password,   (short)16, (byte)0),
-                                         Util.toFixSizeBytes(masterHost, (short)16, (byte)0),
+            byte[] content = Util.concat(Util.toFixSizeBytes(ssid, NFC_SSID_FIELD_LENGTH, (byte)0),
+                                         Util.toFixSizeBytes(password, NFC_PASSWORD_FIELD_LENGTH, (byte)0),
+                                         Util.toFixSizeBytes(masterHost, NFC_MASTER_HOST_FIELD_LENGTH, (byte)0),
                                          Util.toBytes(Short.decode(masterPort)),
                                          Util.toBytes(Short.decode(nfcAppId)),
                                          Util.toBytes(Short.decode(extraData)));
@@ -147,7 +155,8 @@ public class RoconNfcWriter extends Activity {
                 //   nfcid             2 bytes
                 //   data              2 bytes
                 //   TOTAL            54 bytes
-                //   AAR header needs 25 bytes, so AR max size is 58 bytes
+                // payload language and status byte require 3 bytes more
+                // AAR header needs 22 bytes, so AR max size is 58 bytes
 
                 boolean success = mNfcManager.writeTextNdefMessage(content, appRecord);
 
