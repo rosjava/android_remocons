@@ -10,32 +10,31 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.nfc" android:required="true" />
 
     <application android:label="@string/app_name" >
-        <activity android:name="com.github.rosjava.android_remocons.headless_launcher.ForegroundDispatch"
-            android:label="NFC tag scan">
+        <activity android:name="com.github.rosjava.android_remocons.headless_launcher.NfcLauncherActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />  <!--Only for debugging; remove when done-->
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.DEFAULT" />   <!--Needed?-->
+                <category android:name="android.intent.category.LAUNCHER" />  <!--Needed?-->
                 <data android:mimeType="text/plain" />
             </intent-filter>
+        </activity>
+        <!--<activity android:name="HeadlessLauncher"-->
+                  <!--android:label="@string/app_name">-->
             <!--<intent-filter>-->
                 <!--<action android:name="android.intent.action.MAIN" />-->
                 <!--<category android:name="android.intent.category.LAUNCHER" />-->
-                <!--<category android:name="android.intent.category.DEFAULT" />-->
             <!--</intent-filter>-->
-        </activity>
-        <activity android:name="HeadlessLauncher"
-                  android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <!--</activity>-->
 
-        <service android:name="AppLauncher" />
+        <!--<service android:name="AppLauncher" />-->
         <service android:name="org.ros.android.NodeMainExecutorService" >
             <intent-filter>
                 <action android:name="org.ros.android.NodeMainExecutorService" />
