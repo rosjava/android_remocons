@@ -70,7 +70,7 @@ import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.LaunchAppDialog;

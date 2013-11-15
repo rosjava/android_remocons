@@ -38,6 +38,8 @@ import concert_msgs.GetRolesAndApps;
 import concert_msgs.GetRolesAndAppsRequest;
 import concert_msgs.GetRolesAndAppsResponse;
 
+import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+
 /**
  * This class implements the services and topics required to communicate
  * with the concert roles manager. Typically to use this class its a three
@@ -69,9 +71,6 @@ public class AppsManager extends AbstractNodeMain {
     public static final int ACTION_NONE        = 0;  // TODO make enum
     public static final int ACTION_LIST_APPS   = 1;
     public static final int ACTION_REQUEST_APP = 2;
-
-	private static final String listService    = "/concert/interactions/get_roles_and_apps";
-    private static final String requestService = "/concert/interactions/request_interaction";
 
     private int action = ACTION_NONE;
     private String userRole;
@@ -111,10 +110,10 @@ public class AppsManager extends AbstractNodeMain {
 	public void listApps() {
 		ServiceClient<GetRolesAndAppsRequest, GetRolesAndAppsResponse> listAppsClient;
 		try {
-			Log.d("ConcertRemocon", "List apps service client created [" + listService + "]");
-			listAppsClient = connectedNode.newServiceClient(listService, GetRolesAndApps._TYPE);
+			Log.d("ConcertRemocon", "List apps service client created [" + GET_ROLES_AND_APPS_SRV + "]");
+			listAppsClient = connectedNode.newServiceClient(GET_ROLES_AND_APPS_SRV, GetRolesAndApps._TYPE);
 		} catch (ServiceNotFoundException e) {
-            Log.w("ConcertRemocon", "List apps service not found [" + listService + "]");
+            Log.w("ConcertRemocon", "List apps service not found [" + GET_ROLES_AND_APPS_SRV + "]");
 			throw new RosRuntimeException(e);
 		}
 		final GetRolesAndAppsRequest request = listAppsClient.newMessage();
@@ -123,16 +122,16 @@ public class AppsManager extends AbstractNodeMain {
         request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
 
 		listAppsClient.call(request, listServiceResponseListener);
-		Log.d("ConcertRemocon", "List apps service call done [" + listService + "]");
+		Log.d("ConcertRemocon", "List apps service call done [" + GET_ROLES_AND_APPS_SRV + "]");
 	}
 
     public void requestApp() {
         ServiceClient<RequestInteractionRequest, RequestInteractionResponse> requestAppClient;
         try {
-            Log.d("ConcertRemocon", "Request app service client created [" + requestService + "]");
-            requestAppClient = connectedNode.newServiceClient(requestService, RequestInteraction._TYPE);
+            Log.d("ConcertRemocon", "Request app service client created [" + REQUEST_INTERACTION_SRV + "]");
+            requestAppClient = connectedNode.newServiceClient(REQUEST_INTERACTION_SRV, RequestInteraction._TYPE);
         } catch (ServiceNotFoundException e) {
-            Log.w("ConcertRemocon", "Request app service not found [" + requestService + "]");
+            Log.w("ConcertRemocon", "Request app service not found [" + REQUEST_INTERACTION_SRV + "]");
             throw new RosRuntimeException(e);
         }
         final RequestInteractionRequest request = requestAppClient.newMessage();
@@ -143,7 +142,7 @@ public class AppsManager extends AbstractNodeMain {
         request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
 
         requestAppClient.call(request, requestServiceResponseListener);
-        Log.d("ConcertRemocon", "Request app service call done [" + requestService + "]");
+        Log.d("ConcertRemocon", "Request app service call done [" + REQUEST_INTERACTION_SRV + "]");
     }
 
     @Override
