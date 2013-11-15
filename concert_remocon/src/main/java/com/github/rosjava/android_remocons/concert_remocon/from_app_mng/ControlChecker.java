@@ -44,7 +44,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 
-import com.github.rosjava.android_apps.application_management.ConcertId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 
 /**
  * Threaded control checker. Checks to see if the software is running and in a valid state.
@@ -105,17 +105,17 @@ public class ControlChecker {
     this.doStart = true;
   }
   /**
-   * Start the checker thread with the given concertId. If the thread is
+   * Start the checker thread with the given masterId. If the thread is
    * already running, kill it first and then start anew. Returns immediately.
    */
-  public void beginChecking(ConcertId concertId) {
+  public void beginChecking(MasterId masterId) {
     stopChecking();
     //If there's no wifi tag in the concert id, skip this step
-    if (concertId.getControlUri() == null) {
+    if (masterId.getControlUri() == null) {
       concertReadyCallback.handleSuccess();
       return;
     }
-    checkerThread = new CheckerThread(concertId);
+    checkerThread = new CheckerThread(masterId);
     checkerThread.start();
   }
   /** Stop the checker thread. */
@@ -125,9 +125,9 @@ public class ControlChecker {
     }
   }
   private class CheckerThread extends Thread {
-    private ConcertId concertId;
-    public CheckerThread(ConcertId concertId) {
-      this.concertId = concertId;
+    private MasterId masterId;
+    public CheckerThread(MasterId masterId) {
+      this.masterId = masterId;
       setDaemon(true);
       // don't require callers to explicitly kill all the old checker threads.
       setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
@@ -165,7 +165,7 @@ public class ControlChecker {
     final String VALID_USER = "applications";
     final String NO_USER = "None";
     private String getActiveUser() {
-        String page = getPage(concertId.getControlUri() + "?action=GET_STATE");
+        String page = getPage(masterId.getControlUri() + "?action=GET_STATE");
         if (page == null) {
           return null;
         }
@@ -201,7 +201,7 @@ public class ControlChecker {
           if (badUser) {
             if (evictionCallback.doEviction(activeUser)) { //Prompt
               Log.d("ControlChecker", "Stopping concert");
-              getPage(concertId.getControlUri() + "?action=STOP_CONCERT");
+              getPage(masterId.getControlUri() + "?action=STOP_CONCERT");
             } else {
               failureCallback.handleFailure("Need to evict current user inorder to connect");
               return;
@@ -212,7 +212,7 @@ public class ControlChecker {
               startCallback.handleStarting();
             }
             Log.d("ControlChecker", "Starting concert");
-            getPage(concertId.getControlUri() + "?action=START_CONCERT");
+            getPage(masterId.getControlUri() + "?action=START_CONCERT");
            
             int i = 0;
            
@@ -233,7 +233,7 @@ public class ControlChecker {
         }
       } catch (Throwable ex) {
         Log.e("ControlChecker", "Exception while checking control URI "
-              + concertId.getControlUri(), ex);
+              + masterId.getControlUri(), ex);
         failureCallback.handleFailure(ex.toString());
       }
     }

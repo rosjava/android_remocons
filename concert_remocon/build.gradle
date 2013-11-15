@@ -24,6 +24,7 @@
 */
 
 dependencies {
+  compile project(':common_tools')
   compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
   compile 'org.ros.rosjava_bootstrap:message_generation:[0.1,0.2)'
   compile 'org.ros.rosjava_messages:concert_msgs:[0.7,0.8)'
@@ -32,7 +33,6 @@ dependencies {
   compile 'com.github.rosjava.zeroconf_jmdns_suite:jmdns:[0.1,0.2)'
   compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
   compile 'com.github.rosjava.android_extras:zxing:[0.1,0.2)'
-  compile 'com.github.rosjava.android_apps:application_management:[0.1,0.2)'
   // Already included in application_management; gradle complains if doubly included
   //  compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
 }

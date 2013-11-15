@@ -68,10 +68,10 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_apps.application_management.ConcertId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.LaunchAppDialog;
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.AlertDialogWrapper;
@@ -264,9 +264,9 @@ public class ConcertRemocon extends RosActivity {
             concertDescription = (ConcertDescription) intent
                     .getSerializableExtra(ConcertDescription.UNIQUE_KEY);
             validatedConcert = false;
-            validateConcert(concertDescription.getConcertId());
+            validateConcert(concertDescription.getMasterId());
 
-            uri = new URI(concertDescription.getConcertId().getMasterUri());
+            uri = new URI(concertDescription.getMasterId().getMasterUri());
         } catch (URISyntaxException e) {
             throw new RosRuntimeException(e);
         }
@@ -374,7 +374,7 @@ public class ConcertRemocon extends RosActivity {
         }
 	}
 
-	public void validateConcert(final ConcertId id) {
+	public void validateConcert(final MasterId id) {
         // TODO:  why built here?  and why recreate a builder, if wrapper already has?
         launchAppDialog = new LaunchAppDialog(this);
         wifiDialog = new AlertDialogWrapper(this, new AlertDialog.Builder(this)

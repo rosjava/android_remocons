@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon.from_app_mng;
+package com.github.rosjava.android_remocons.common_tools;
 
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
@@ -39,7 +39,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-import com.github.rosjava.android_apps.application_management.ConcertId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 
 /**
  * Threaded WiFi checker. Checks and tests if the WiFi is configured properly and if not, connects to the correct network.
@@ -48,7 +48,7 @@ import com.github.rosjava.android_apps.application_management.ConcertId;
  */
 public class WifiChecker {
   public interface SuccessHandler {
-    /** Called on success with a description of the concert that got checked. */
+    /** Called on success with a description of the master that got checked. */
     void handleSuccess();
   }
   public interface FailureHandler {
@@ -73,17 +73,17 @@ public class WifiChecker {
     this.reconnectionCallback = reconnectionCallback;
   }
   /**
-   * Start the checker thread with the given concertId. If the thread is
+   * Start the checker thread with the given masterId. If the thread is
    * already running, kill it first and then start anew. Returns immediately.
    */
-  public void beginChecking(ConcertId concertId, WifiManager manager) {
+  public void beginChecking(MasterId masterId, WifiManager manager) {
     stopChecking();
-    //If there's no wifi tag in the concert id, skip this step
-    if (concertId.getWifi() == null) {
+    //If there's no wifi tag in the master id, skip this step
+    if (masterId.getWifi() == null) {
       foundWiFiCallback.handleSuccess();
       return;
     }
-    checkerThread = new CheckerThread(concertId, manager);
+    checkerThread = new CheckerThread(masterId, manager);
     checkerThread.start();
   }
   /** Stop the checker thread. */
@@ -92,9 +92,9 @@ public class WifiChecker {
       checkerThread.interrupt();
     }
   }
-  public static boolean wifiValid(ConcertId concertId, WifiManager wifiManager) {
+  public static boolean wifiValid(MasterId masterId, WifiManager wifiManager) {
     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-    if (concertId.getWifi() == null) { //Does not matter what wifi network, always valid.
+    if (masterId.getWifi() == null) { //Does not matter what wifi network, always valid.
       return true;
     }
     if (wifiManager.isWifiEnabled()) {
@@ -102,8 +102,8 @@ public class WifiChecker {
         Log.d("WiFiChecker", "WiFi Info: " + wifiInfo.toString() + " IP " + wifiInfo.getIpAddress());
         if (wifiInfo.getSSID() != null && wifiInfo.getIpAddress() != 0
             && wifiInfo.getSupplicantState() == SupplicantState.COMPLETED) {
-          String concert_SSID = "\"" + concertId.getWifi() + "\"";
-          if (wifiInfo.getSSID().equals(concert_SSID)) {
+          String master_SSID = "\"" + masterId.getWifi() + "\"";
+          if (wifiInfo.getSSID().equals(master_SSID)) {
             return true;
           }
         }
@@ -112,10 +112,10 @@ public class WifiChecker {
     return false;
   }
   private class CheckerThread extends Thread {
-    private ConcertId concertId;
+    private MasterId masterId;
     private WifiManager wifiManager;
-    public CheckerThread(ConcertId concertId, WifiManager wifi) {
-      this.concertId = concertId;
+    public CheckerThread(MasterId masterId, WifiManager wifi) {
+      this.masterId = masterId;
       this.wifiManager = wifi;
       setDaemon(true);
       // don't require callers to explicitly kill all the old checker threads.
@@ -127,14 +127,14 @@ public class WifiChecker {
       });
     }
     private boolean wifiValid() {
-      return WifiChecker.wifiValid(concertId, wifiManager);
+      return WifiChecker.wifiValid(masterId, wifiManager);
     }
     @Override
     public void run() {
       try {
         if (wifiValid()) {
           foundWiFiCallback.handleSuccess();
-        } else if (reconnectionCallback.doReconnection(wifiManager.getConnectionInfo().getSSID(), concertId.getWifi())) {
+        } else if (reconnectionCallback.doReconnection(wifiManager.getConnectionInfo().getSSID(), masterId.getWifi())) {
           Log.d("WiFiChecker", "Wait for networking");
           wifiManager.setWifiEnabled(true);
           int i = 0;
@@ -150,7 +150,7 @@ public class WifiChecker {
           int n = -1;
           int priority = -1;
           WifiConfiguration wc = null;
-          String SSID = "\"" + concertId.getWifi() + "\"";
+          String SSID = "\"" + masterId.getWifi() + "\"";
           for (WifiConfiguration test : wifiManager.getConfiguredNetworks()) {
             Log.d("WiFiChecker", "WIFI " + test.toString());
             if (test.priority > priority) {
@@ -173,9 +173,9 @@ public class WifiChecker {
           if (n == -1) {
             Log.d("WiFiChecker", "WIFI Unknown");
             wc = new WifiConfiguration();
-            wc.SSID = "\"" + concertId.getWifi() + "\"";
-            if (concertId.getWifiPassword() != null) {
-              wc.preSharedKey  = "\"" + concertId.getWifiPassword() + "\"";
+            wc.SSID = "\"" + masterId.getWifi() + "\"";
+            if (masterId.getWifiPassword() != null) {
+              wc.preSharedKey  = "\"" + masterId.getWifiPassword() + "\"";
             } else {
               wc.preSharedKey = null;
             }
@@ -227,7 +227,7 @@ public class WifiChecker {
         }
       } catch (Throwable ex) {
         Log.e("RosAndroid", "Exception while searching for WiFi for "
-              + concertId.getWifi(), ex);
+              + masterId.getWifi(), ex);
         failureCallback.handleFailure(ex.toString());
       }
     }

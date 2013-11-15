@@ -14,5 +14,8 @@
  * the License.
  */
 
+include 'common_tools'
 include 'robot_remocon'
 include 'concert_remocon'
+include 'headless_launcher'
+include 'rocon_nfc_writer'

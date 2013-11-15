@@ -47,7 +47,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import com.github.rosjava.android_apps.application_management.ConcertId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.ListenerNode;
 
@@ -90,23 +90,23 @@ public class ConcertChecker {
     }
 
     /**
-     * Start the checker thread with the given concertId. If the thread is
+     * Start the checker thread with the given masterId. If the thread is
      * already running, kill it first and then start anew. Returns immediately.
      */
-    public void beginChecking(ConcertId concertId) {
+    public void beginChecking(MasterId masterId) {
         stopChecking();
-        if (concertId.getMasterUri() == null) {
+        if (masterId.getMasterUri() == null) {
             failureCallback.handleFailure("empty concert URI");
             return;
         }
         URI uri;
         try {
-            uri = new URI(concertId.getMasterUri());
+            uri = new URI(masterId.getMasterUri());
         } catch (URISyntaxException e) {
             failureCallback.handleFailure("invalid concert URI");
             return;
         }
-        checkerThread = new CheckerThread(concertId, uri);
+        checkerThread = new CheckerThread(masterId, uri);
         checkerThread.start();
     }
 
@@ -121,11 +121,11 @@ public class ConcertChecker {
 
     private class CheckerThread extends Thread {
         private URI concertUri;
-        private ConcertId concertId;
+        private MasterId masterId;
 
-        public CheckerThread(ConcertId concertId, URI concertUri) {
+        public CheckerThread(MasterId masterId, URI concertUri) {
             this.concertUri = concertUri;
-            this.concertId = concertId;
+            this.masterId = masterId;
             setDaemon(true);
             // don't require callers to explicitly kill all the old checker threads.
             setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
@@ -177,7 +177,7 @@ public class ConcertChecker {
 
                 // configure concert description
                 Date timeLastSeen = new Date();
-                ConcertDescription description = new ConcertDescription(concertId, concertName, concertDesc, concertIcon, timeLastSeen);
+                ConcertDescription description = new ConcertDescription(masterId, concertName, concertDesc, concertIcon, timeLastSeen);
                 Log.i("ConcertRemocon", "Concert is available");
                 description.setConnectionStatus(ConcertDescription.OK);
                 description.setUserRoles(readRolesTopic.getLastMessage());

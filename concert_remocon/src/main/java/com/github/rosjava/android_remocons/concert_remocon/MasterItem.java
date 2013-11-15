@@ -50,7 +50,7 @@ import android.net.wifi.WifiManager;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertChecker;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.WifiChecker;
+import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -77,16 +77,16 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
     this.parentMca = parentMca;
     this.description = concertDescription;
     this.description.setConnectionStatus(ConcertDescription.CONNECTING);
-    if (WifiChecker.wifiValid(this.description.getConcertId(),
+    if (WifiChecker.wifiValid(this.description.getMasterId(),
             (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
       checker = new ConcertChecker(this, this);
-      if (this.description.getConcertId().getControlUri() != null) {
+      if (this.description.getMasterId().getControlUri() != null) {
         control = true;
         controlChecker = new ControlChecker(this, this);
-        controlChecker.beginChecking(this.description.getConcertId());
+        controlChecker.beginChecking(this.description.getMasterId());
       } else {
         control = false;
-        checker.beginChecking(this.description.getConcertId());
+        checker.beginChecking(this.description.getMasterId());
       }
     } else {
       errorReason = "Wrong WiFi Network";
@@ -100,7 +100,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
   @Override
   public void handleSuccess() {
     control = false;
-    checker.beginChecking(this.description.getConcertId());
+    checker.beginChecking(this.description.getMasterId());
   }
   @Override
   public void receive(ConcertDescription concertDescription) {
@@ -175,7 +175,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
     }
     TextView tv;
     tv = (TextView) view.findViewById(R.id.uri);
-    tv.setText(description.getConcertId().toString());
+    tv.setText(description.getMasterId().toString());
     tv = (TextView) view.findViewById(R.id.name);
     tv.setText(description.getConcertFriendlyName());
     tv = (TextView) view.findViewById(R.id.status);

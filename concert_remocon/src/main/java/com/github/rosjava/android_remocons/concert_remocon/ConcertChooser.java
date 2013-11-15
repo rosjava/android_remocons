@@ -68,7 +68,7 @@ import android.widget.Toast;
 
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertsContentProvider;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_apps.application_management.ConcertId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.concert_remocon.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.google.zxing.IntentIntegrator;
@@ -210,17 +210,17 @@ public class ConcertChooser extends Activity {
 		}
 	}
 
-	private void addMaster(ConcertId concertId) {
-		addMaster(concertId, false);
+	private void addMaster(MasterId masterId) {
+		addMaster(masterId, false);
 	}
 
-	private void addMaster(ConcertId concertId, boolean connectToDuplicates) {
-		Log.i("MasterChooserActivity", "adding master to the concert master chooser [" + concertId.toString() + "]");
-		if (concertId == null || concertId.getMasterUri() == null) {
+	private void addMaster(MasterId masterId, boolean connectToDuplicates) {
+		Log.i("MasterChooserActivity", "adding master to the concert master chooser [" + masterId.toString() + "]");
+		if (masterId == null || masterId.getMasterUri() == null) {
 		} else {
 			for (int i = 0; i < concerts.toArray().length; i++) {
 				ConcertDescription concert = concerts.get(i);
-				if (concert.getConcertId().equals(concertId)) {
+				if (concert.getMasterId().equals(masterId)) {
 					if (connectToDuplicates) {
 						choose(i);
 						return;
@@ -232,8 +232,8 @@ public class ConcertChooser extends Activity {
 				}
 			}
 			Log.i("MasterChooserActivity", "creating concert description: "
-					+ concertId.toString());
-			concerts.add(ConcertDescription.createUnknown(concertId));
+					+ masterId.toString());
+			concerts.add(ConcertDescription.createUnknown(masterId));
 			Log.i("MasterChooserActivity", "description created");
 			onConcertsChanged();
 		}
@@ -320,7 +320,7 @@ public class ConcertChooser extends Activity {
                 Yaml yaml = new Yaml();
                 Map<String, Object> data = (Map<String, Object>) yaml.load(scanned_data);
                 Log.d("ConcertRemocon", "ConcertChooser OBJECT: " + data.toString());
-                addMaster(new ConcertId(data), false);
+                addMaster(new MasterId(data), false);
             } catch (Exception e) {
                 Toast.makeText(this,
                         "Invalid concert description: " + e.getMessage(),
@@ -395,7 +395,7 @@ public class ConcertChooser extends Activity {
 				for (int i = 0; i < concerts.size(); i++) {
 					name = Factory.getInstance().newSpannable(
 							concerts.get(i).getConcertName() + newline
-									+ concerts.get(i).getConcertId());
+									+ concerts.get(i).getMasterId());
 					name.setSpan(new ForegroundColorSpan(0xff888888), concerts
 							.get(i).getConcertName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -507,7 +507,7 @@ public class ConcertChooser extends Activity {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("URL", newMasterUri);
             try {
-                addMaster(new ConcertId(data));
+                addMaster(new MasterId(data));
             } catch (Exception e) {
                 Toast.makeText(ConcertChooser.this, "Invalid Parameters.",
                         Toast.LENGTH_SHORT).show();
@@ -543,7 +543,7 @@ public class ConcertChooser extends Activity {
 				data.put("WIFIPW", newWifiPassword);
 			}
 			try {
-				addMaster(new ConcertId(data));
+				addMaster(new MasterId(data));
 			} catch (Exception e) {
 				Toast.makeText(ConcertChooser.this, "Invalid Parameters.",
 						Toast.LENGTH_SHORT).show();
