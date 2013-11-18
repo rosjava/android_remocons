@@ -2,7 +2,6 @@ package com.github.rosjava.android_remocons.headless_launcher;
 
 
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -11,9 +10,6 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
@@ -22,10 +18,12 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.common_tools.Util;
-import com.github.rosjava.android_remocons.common_tools.RoconNfcManager;
+import com.github.rosjava.android_remocons.common_tools.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.WifiChecker;
+import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 
@@ -41,7 +39,8 @@ public class NfcLauncherActivity extends Activity {
         GET_NFC_APP_INFO,
         GET_APP_CONFIG,
         REQUEST_PERMIT,
-        LAUNCH_APP;
+        LAUNCH_APP,
+        ABORT_LAUNCH;
 
         public Step next() {
             return this.ordinal() < Step.values().length - 1
@@ -58,6 +57,7 @@ public class NfcLauncherActivity extends Activity {
     private short  extraData;
     private MasterId masterId;
     private Vibrator vibrator;
+    private ConcertDescription concert;
 
     /** Called when the activity is first created. */
 	@Override
@@ -72,13 +72,13 @@ public class NfcLauncherActivity extends Activity {
         try {
             vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(500);
-            Toast.makeText(this, getString(R.string.app_name) + " started", Toast.LENGTH_LONG).show();
+            toast(getString(R.string.app_name) + " started", Toast.LENGTH_LONG);
 
             Intent intent = getIntent();
             String action = intent.getAction();
             Log.d("NfcLaunch", action + " action started");
 
-            RoconNfcManager nfcManager = new RoconNfcManager(this);
+            NfcManager nfcManager = new NfcManager(this);
             nfcManager.onNewIntent(intent);
 
             if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action) == false)
@@ -121,18 +121,18 @@ public class NfcLauncherActivity extends Activity {
             final WifiChecker wc = new WifiChecker(
                 new WifiChecker.SuccessHandler() {
                     public void handleSuccess() {
-                        Log.i("NfcLaunch", "Connected to " + ssid);
-                        toast("Connected to " + ssid, Toast.LENGTH_LONG);
+//                        Log.i("NfcLaunch", "Connected to " + ssid);
+//                        toast("Connected to " + ssid, Toast.LENGTH_LONG);
                         launchStep = launchStep.next();
                     }
                 },
                 new WifiChecker.FailureHandler() {
                     public void handleFailure(String reason) {
-                        final String reason2 = reason;
-                        Log.e("NfcLaunch", "Cannot connect to " + ssid + ". Aborting app launch");
-                        toast("Cannot connect to " + ssid, Toast.LENGTH_LONG);
-                        toast("Aborting application launch", Toast.LENGTH_LONG);
-                        finish();
+//                        Log.e("NfcLaunch", "Cannot connect to " + ssid + ". Aborting app launch");
+//                        toast("Cannot connect to " + ssid, Toast.LENGTH_LONG);
+//                        toast("Aborting application launch", Toast.LENGTH_LONG);
+//                        finish();
+                        launchStep = Step.ABORT_LAUNCH;
                     }
                 },
                 new WifiChecker.ReconnectionHandler() {
@@ -151,14 +151,45 @@ public class NfcLauncherActivity extends Activity {
                     }
                 }
             );
-            Toast.makeText(this, "Connecting to " + ssid + "...", Toast.LENGTH_LONG).show();
+            toast("Connecting to " + ssid + "...", Toast.LENGTH_LONG);
             wc.beginChecking(masterId, (WifiManager) getSystemService(WIFI_SERVICE));
 
             if (waitFor(Step.VALIDATE_CONCERT, 15) == false) {
-                throw new Exception("Cannot connect to " + ssid + " after 15 s");
+                throw new Exception("Cannot connect to " + ssid + ". Aborting app launch");
             }
+            Log.i("NfcLaunch", "Connected to " + ssid);
+            toast("Connected to " + ssid, Toast.LENGTH_LONG);
 
 	    	//** Step 3. Validate the concert: check for specific topics on masterUri
+            final ConcertChecker cc = new ConcertChecker(
+                new ConcertChecker.ConcertDescriptionReceiver() {
+                    public void receive(ConcertDescription concertDescription) {
+                        concert = concertDescription;
+                        if ( concert.getConnectionStatus() == ConcertDescription.UNAVAILABLE ) {
+                            // Check that it's not busy
+                            Log.e("NfcLaunch", "Concert is unavailable: busy serving another remote controller");
+                            launchStep = Step.ABORT_LAUNCH;
+                        } else {
+                            launchStep = launchStep.next();
+                        }
+                    }
+                },
+                new ConcertChecker.FailureHandler() {
+                    public void handleFailure(String reason) {
+                        Log.e("NfcLaunch", "Cannot contact ROS master: " + reason);
+                        launchStep = Step.ABORT_LAUNCH;
+                    }
+                }
+            );
+            Toast.makeText(this, "Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_LONG).show();
+            cc.beginChecking(masterId);
+
+            if (waitFor(Step.GET_NFC_APP_INFO, 10) == false) {
+                throw new Exception("Cannot connect to " + masterId.getMasterUri() + ". Aborting app launch");
+            }
+            Log.i("NfcLaunch", "Concert " + masterId.getMasterUri() + " up and running");
+            toast("Concert " + masterId.getMasterUri() + " up and running", Toast.LENGTH_LONG);
+
             int kk = 0;
 
 //	    	wifiManager.startScan();
@@ -168,6 +199,7 @@ public class NfcLauncherActivity extends Activity {
             // This step starts after completion of the wifi scan
         }
         catch (Exception e) {
+            // TODO make and "error sound"
             Log.e("NfcLaunch", e.getMessage());
             toast(e.getMessage(), Toast.LENGTH_LONG);
             finish();
@@ -196,11 +228,11 @@ public class NfcLauncherActivity extends Activity {
         AsyncTask<Void, Void, Boolean> asyncTask = new AsyncTask<Void, Void, Boolean>() {
             @Override
             protected Boolean doInBackground(Void... params) {
-                while (step != launchStep) {
+                while ((launchStep != step) && (launchStep != Step.ABORT_LAUNCH)) {
                     try { Thread.sleep(200); }
                     catch (InterruptedException e) { return false; }
                 }
-                return true;
+                return (launchStep == step); // returns false on ABORT_LAUNCH or InterruptedException
             }
         }.execute();
         try {
