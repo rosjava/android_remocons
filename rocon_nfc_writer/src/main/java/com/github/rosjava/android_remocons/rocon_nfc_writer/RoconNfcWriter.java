@@ -13,8 +13,8 @@ import android.widget.Toast;
 
 import java.security.InvalidParameterException;
 
+import com.github.rosjava.android_remocons.common_tools.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.Util;
-import com.github.rosjava.android_remocons.common_tools.RoconNfcManager;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 
@@ -50,7 +50,7 @@ public class RoconNfcWriter extends Activity {
     private Button buttonWrite;
     private TextView messageText;
 
-    private RoconNfcManager mNfcManager;
+    private NfcManager mNfcManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +84,7 @@ public class RoconNfcWriter extends Activity {
         editExtraData.setText(extraData);
         editAppRecord.setText(appRecord);
 
-        mNfcManager = new RoconNfcManager(this);
+        mNfcManager = new NfcManager(this);
     }
 
     @Override

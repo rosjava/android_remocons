@@ -32,7 +32,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 
-public class RoconNfcManager {
+public class NfcManager {
 
     private Context mContext = null;
     private PendingIntent mPendingIntent = null;
@@ -42,7 +42,7 @@ public class RoconNfcManager {
     private NfcAdapter mNfcAdapter = null;
     private String mCurrentNdefString = "";
 
-    public RoconNfcManager(Context context) {
+    public NfcManager(Context context) {
         // TODO Auto-generated constructor stub
         mContext = context;
         mNfcAdapter = NfcAdapter.getDefaultAdapter(mContext);
