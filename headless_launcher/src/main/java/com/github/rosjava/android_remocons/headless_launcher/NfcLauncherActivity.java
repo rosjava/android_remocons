@@ -56,7 +56,12 @@ public class NfcLauncherActivity extends Activity {
                     : null;
         }
     }
-    private Step   launchStep = Step.STARTUP;
+
+    private Step     launchStep = Step.STARTUP;
+    private Toast    lastToast;
+    private Vibrator vibrator;
+    private NfcManager nfcManager;
+
     private String ssid;
     private String password;
     private String masterHost;
@@ -64,18 +69,14 @@ public class NfcLauncherActivity extends Activity {
     private short  nfcAppId;
     private short  extraData;
     private MasterId masterId;
-    private Vibrator vibrator;
+    private String role;
+    private concert_msgs.RemoconApp app;
     private ConcertDescription concert;
 
-    /** Called when the activity is first created. */
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
-	    //setContentView(R.layout.nfc_reader);
-
-//	    wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-//	    wifiFilter = new IntentFilter();
-//	    wifiFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
 
         try {
             vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
@@ -86,7 +87,7 @@ public class NfcLauncherActivity extends Activity {
             String action = intent.getAction();
             Log.d("NfcLaunch", action + " action started");
 
-            NfcManager nfcManager = new NfcManager(this);
+            nfcManager = new NfcManager(this);
             nfcManager.onNewIntent(intent);
 
             if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action) == false)
@@ -96,37 +97,87 @@ public class NfcLauncherActivity extends Activity {
             }
 
             //** Step 1. Parsing NFC Data
-            ByteBuffer bb = ByteBuffer.wrap(nfcManager.getPayload());
+            parseNFCData();
 
-            byte[] payload = nfcManager.getPayload();
-            if (payload.length != NFC_PAYLOAD_LENGTH + 3) // 1 byte for status and 2 lang bytes
-            {
-                throw new Exception("Payload doesn't match expected length: "
-                            + payload.length +" != " + NFC_PAYLOAD_LENGTH);
-            }
-
-            int offset = 3; // skip 1 byte for status and 2 lang bytes
-            ssid       = Util.toString(payload, offset, NFC_SSID_FIELD_LENGTH).trim();
-            offset    += NFC_SSID_FIELD_LENGTH;
-            password   = Util.toString(payload, offset, NFC_PASSWORD_FIELD_LENGTH).trim();
-            offset    += NFC_PASSWORD_FIELD_LENGTH;
-            masterHost = Util.toString(payload, offset, NFC_MASTER_HOST_FIELD_LENGTH).trim();
-            offset    += NFC_MASTER_HOST_FIELD_LENGTH;
-            masterPort = Util.toShort(payload, offset, NFC_MASTER_PORT_FIELD_LENGTH);
-            offset    += NFC_MASTER_PORT_FIELD_LENGTH;
-            nfcAppId   = Util.toShort(payload, offset, NFC_NFC_APP_ID_FIELD_LENGTH);
-            offset    += NFC_NFC_APP_ID_FIELD_LENGTH;
-            extraData  = Util.toShort(payload, offset, NFC_EXTRA_DATA_FIELD_LENGTH);
-
-            launchStep = launchStep.next();
+            Log.i("NfcLaunch", "NFC tag read");
+            toast("NFC tag read", Toast.LENGTH_SHORT);
 
             //** Step 2. Connect to SSID
-            String masterUri  = "http://" + masterHost + ":" + masterPort;
-            String controlUri = masterUri; // not needed
-            String encryption = "WPA2";    // not needed
-            masterId = new MasterId(masterUri, controlUri, ssid, encryption, password);
+            connectToSSID();
 
-            final WifiChecker wc = new WifiChecker(
+            Log.i("NfcLaunch", "Connected to " + ssid);
+            toast("Connected to " + ssid, Toast.LENGTH_SHORT);
+
+	    	//** Step 3. Validate the concert: check for specific topics on masterUri
+            checkConcert();
+
+            Log.i("NfcLaunch", "Concert " + masterId.getMasterUri() + " up and running");
+            toast("Concert " + masterId.getMasterUri() + " up and running", Toast.LENGTH_SHORT);
+
+            //** Step 4. Retrieve app basic info given its NFC app id
+            getAppConfig();
+
+            Log.i("NfcLaunch", app.getDisplayName() + " configuration received from concert");
+            toast(app.getDisplayName() + " configuration received from concert", Toast.LENGTH_SHORT);
+
+            //** Step 5. Request permission to use the app
+            getUsePermit();
+
+            Log.i("NfcLaunch", app.getDisplayName() + " ready to launch!");
+            toast(app.getDisplayName() + " ready to launch!", Toast.LENGTH_SHORT);
+
+            //** Step 6. Launch the app!
+            launchApp();
+        }
+        catch (Exception e) {
+            // TODO make and "error sound"
+            Log.e("NfcLaunch", e.getMessage());
+            toast(e.getMessage(), Toast.LENGTH_LONG);
+            finish();
+        }
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+	}
+
+    private void parseNFCData() throws Exception {
+        byte[] payload = nfcManager.getPayload();
+        if (payload.length != NFC_PAYLOAD_LENGTH + 3) // 1 byte for status and 2 lang bytes
+        {
+            throw new Exception("Payload doesn't match expected length: "
+                    + payload.length +" != " + NFC_PAYLOAD_LENGTH);
+        }
+
+        int offset = 3; // skip 1 byte for status and 2 lang bytes
+        ssid       = Util.toString(payload, offset, NFC_SSID_FIELD_LENGTH).trim();
+        offset    += NFC_SSID_FIELD_LENGTH;
+        password   = Util.toString(payload, offset, NFC_PASSWORD_FIELD_LENGTH).trim();
+        offset    += NFC_PASSWORD_FIELD_LENGTH;
+        masterHost = Util.toString(payload, offset, NFC_MASTER_HOST_FIELD_LENGTH).trim();
+        offset    += NFC_MASTER_HOST_FIELD_LENGTH;
+        masterPort = Util.toShort(payload, offset, NFC_MASTER_PORT_FIELD_LENGTH);
+        offset    += NFC_MASTER_PORT_FIELD_LENGTH;
+        nfcAppId   = Util.toShort(payload, offset, NFC_NFC_APP_ID_FIELD_LENGTH);
+        offset    += NFC_NFC_APP_ID_FIELD_LENGTH;
+        extraData  = Util.toShort(payload, offset, NFC_EXTRA_DATA_FIELD_LENGTH);
+
+        launchStep = launchStep.next();
+    }
+
+    private void connectToSSID() throws Exception {
+        String masterUri  = "http://" + masterHost + ":" + masterPort;
+        String controlUri = masterUri; // not needed
+        String encryption = "WPA2";    // not needed
+        masterId = new MasterId(masterUri, controlUri, ssid, encryption, password);
+
+        final WifiChecker wc = new WifiChecker(
                 new WifiChecker.SuccessHandler() {
                     public void handleSuccess() {
                         launchStep = launchStep.next();
@@ -151,18 +202,17 @@ public class NfcLauncherActivity extends Activity {
                         return true;
                     }
                 }
-            );
-            toast("Connecting to " + ssid + "...", Toast.LENGTH_SHORT);
-            wc.beginChecking(masterId, (WifiManager) getSystemService(WIFI_SERVICE));
+        );
+        toast("Connecting to " + ssid + "...", Toast.LENGTH_SHORT);
+        wc.beginChecking(masterId, (WifiManager) getSystemService(WIFI_SERVICE));
 
-            if (waitFor(Step.VALIDATE_CONCERT, 15) == false) {
-                throw new Exception("Cannot connect to " + ssid + ". Aborting app launch");
-            }
-            Log.i("NfcLaunch", "Connected to " + ssid);
-            toast("Connected to " + ssid, Toast.LENGTH_SHORT);
+        if (waitFor(Step.VALIDATE_CONCERT, 15) == false) {
+            throw new Exception("Cannot connect to " + ssid + ". Aborting app launch");
+        }
+    }
 
-	    	//** Step 3. Validate the concert: check for specific topics on masterUri
-            final ConcertChecker cc = new ConcertChecker(
+    private void checkConcert() throws Exception {
+        final ConcertChecker cc = new ConcertChecker(
                 new ConcertChecker.ConcertDescriptionReceiver() {
                     public void receive(ConcertDescription concertDescription) {
                         concert = concertDescription;
@@ -181,105 +231,89 @@ public class NfcLauncherActivity extends Activity {
                         launchStep = Step.ABORT_LAUNCH;
                     }
                 }
-            );
-            toast("Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_SHORT);
-            cc.beginChecking(masterId);
+        );
+        toast("Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_SHORT);
+        cc.beginChecking(masterId);
 
-            if (waitFor(Step.GET_NFC_APP_INFO, 10) == false) {
-                throw new Exception("Cannot connect to " + masterId.getMasterUri() + ". Aborting app launch");
+        if (waitFor(Step.GET_NFC_APP_INFO, 10) == false) {
+            throw new Exception("Cannot connect to " + masterId.getMasterUri() + ". Aborting app launch");
+        }
+    }
+
+    private void getAppConfig() throws Exception {
+        //concert_msgs.GetAppInfo appInfo;  request.setAppId(nfcAppId);
+        MessageDefinitionReflectionProvider messageDefinitionProvider = new MessageDefinitionReflectionProvider();
+        DefaultMessageFactory messageFactory = new DefaultMessageFactory(messageDefinitionProvider);
+        app = messageFactory.newFromType(concert_msgs.RemoconApp._TYPE);
+        app.setName("http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html");
+        app.setParameters("{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}");
+        app.setServiceName("cybernetic_piracy");
+        app.setDisplayName("Cafe Dorothy");
+
+        String appURI  = "http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html";
+        role = "Pirate";
+        String appName = "Cafe Dorothy";
+        rocon_std_msgs.Remapping remaps;
+        String service = "cybernetic_piracy";
+//String params = "{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}";
+        launchStep = launchStep.next();
+
+        // Add the extra data integer we got from the NFC tag as a new parameter for the app
+        // Useful when we want to tailor app behavior depending to the tag that launched it
+        String params = app.getParameters();
+        params = params.substring(0, params.lastIndexOf('}')) + ", 'extra_data':" + String.valueOf(extraData) + "}";
+        app.setParameters(params);
+
+        if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
+            throw new Exception("Cannot get app info for id " + nfcAppId + ". Aborting app launch");
+        }
+    }
+
+    private void getUsePermit() throws Exception {
+        AppsManager am = new AppsManager(new AppsManager.FailureHandler() {
+            public void handleFailure(String reason) {
+                Log.e("NfcLaunch", "Cannot request app use: " + reason);
+                launchStep = Step.ABORT_LAUNCH;
             }
-            Log.i("NfcLaunch", "Concert " + masterId.getMasterUri() + " up and running");
-            toast("Concert " + masterId.getMasterUri() + " up and running", Toast.LENGTH_SHORT);
-
-            //** Step 4. Retrieve app basic info given its NFC app id
-            //concert_msgs.GetAppInfo appInfo;  request.setAppId(nfcAppId);
-MessageDefinitionReflectionProvider messageDefinitionProvider = new MessageDefinitionReflectionProvider();
-DefaultMessageFactory messageFactory = new DefaultMessageFactory(messageDefinitionProvider);
-concert_msgs.RemoconApp app = messageFactory.newFromType(concert_msgs.RemoconApp._TYPE);
-app.setName("http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html");
-app.setParameters("{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}");
-app.setServiceName("cybernetic_piracy");
-app.setDisplayName("Cafe Dorothy");
-
-String appURI  = "http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html";
-String role = "Pirate";
-String appName = "Cafe Dorothy";
-rocon_std_msgs.Remapping remaps;
-String service = "cybernetic_piracy";
-String params = "{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}";
-launchStep = launchStep.next();
-
-            if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
-                throw new Exception("Cannot get app info for id " + nfcAppId + ". Aborting app launch");
-            }
-            Log.i("NfcLaunch", app.getDisplayName() + " configuration received from concert");
-            toast(app.getDisplayName() + " configuration received from concert", Toast.LENGTH_SHORT);
-
-
-            //** Step 5. Request permission to use the app
-            AppsManager am = new AppsManager(new AppsManager.FailureHandler() {
-                public void handleFailure(String reason) {
-                    Log.e("NfcLaunch", "Cannot request app use: " + reason);
+        });
+        am.setupRequestService(new ServiceResponseListener<RequestInteractionResponse>() {
+            @Override
+            public void onSuccess(concert_msgs.RequestInteractionResponse response) {
+                if (response.getResult() == true) {
+                    launchStep = launchStep.next();
+                } else {
+                    Log.i("NfcLaunch", "Concert deny app use. " + response.getMessage());
+                    toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_SHORT);
                     launchStep = Step.ABORT_LAUNCH;
                 }
-            });
-            am.setupRequestService(new ServiceResponseListener<RequestInteractionResponse>() {
-                @Override
-                public void onSuccess(concert_msgs.RequestInteractionResponse response) {
-                    if (response.getResult() == true) {
-                        launchStep = launchStep.next();
-                    } else {
-                        Log.i("NfcLaunch", "Concert deny app use. " + response.getMessage());
-                        toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_SHORT);
-                        launchStep = Step.ABORT_LAUNCH;
-                    }
-                }
-
-                @Override
-                public void onFailure(RemoteException e) {
-                    Log.e("NfcLaunch", "Request app use failed. " + e.getMessage());
-                    launchStep = Step.ABORT_LAUNCH;
-                }
-            });
-            am.requestAppUse(masterId, role, app);
-            toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
-
-            if (waitFor(Step.LAUNCH_APP, 10) == false) {
-                throw new Exception("Cannot get permission to use " + app.getDisplayName() + ". Aborting app launch");
             }
-            Log.i("NfcLaunch", app.getDisplayName() + " ready to launch!");
-            toast(app.getDisplayName() + " ready to launch!", Toast.LENGTH_SHORT);
 
+            @Override
+            public void onFailure(RemoteException e) {
+                Log.e("NfcLaunch", "Request app use failed. " + e.getMessage());
+                launchStep = Step.ABORT_LAUNCH;
+            }
+        });
+        am.requestAppUse(masterId, role, app);
+        toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
 
-            //** Step 6. Launch the app!
-            AppLauncher.Result result = AppLauncher.launch(this, concert, app);
-            if (result == AppLauncher.Result.SUCCESS) {
-                Log.i("NfcLaunch", app.getDisplayName() + " successfully launched");
-                toast(app.getDisplayName() + " successfully launched; have fun!", Toast.LENGTH_SHORT);
-            }
-            else {
-                // I could also show an "app not-installed" dialog and ask for going to play store to download the
-                // missing app, but... this would stop to be a headless launcher! But maybe is a good idea, anyway
-                throw new Exception("Launch " + app.getDisplayName() + " failed. " + result.message);
-            }
+        if (waitFor(Step.LAUNCH_APP, 10) == false) {
+            throw new Exception("Cannot get permission to use " + app.getDisplayName() + ". Aborting app launch");
         }
-        catch (Exception e) {
-            // TODO make and "error sound"
-            Log.e("NfcLaunch", e.getMessage());
-            toast(e.getMessage(), Toast.LENGTH_LONG);
-            finish();
-        }
-	}
+    }
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-	}
-	
-	@Override
-	protected void onPause() {
-		super.onPause();
-	}
+    private void launchApp() throws Exception {
+        AppLauncher.Result result = AppLauncher.launch(this, concert, app);
+        if (result == AppLauncher.Result.SUCCESS) {
+            Log.i("NfcLaunch", app.getDisplayName() + " successfully launched");
+            toast(app.getDisplayName() + " successfully launched; have fun!", Toast.LENGTH_SHORT);
+        }
+        else {
+            // I could also show an "app not-installed" dialog and ask for going to play store to download the
+            // missing app, but... this would stop to be a headless launcher! But maybe is a good idea, anyway
+            throw new Exception("Launch " + app.getDisplayName() + " failed. " + result.message);
+        }
+    }
 
     private boolean waitFor(final Step step, final int timeout) {
         AsyncTask<Void, Void, Boolean> asyncTask = new AsyncTask<Void, Void, Boolean>() {
@@ -310,7 +344,11 @@ launchStep = launchStep.next();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(NfcLauncherActivity.this, message, length).show();
+                // We overwrite only short duration toast, as the long ones are normally important
+                if ((lastToast != null) && (lastToast.getDuration() == Toast.LENGTH_SHORT))
+                    lastToast.cancel();
+                lastToast = Toast.makeText(getBaseContext(), message, length);
+                lastToast.show();
             }
         });
     }
