@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_remocons.common_tools.AppLauncher;
 import com.github.rosjava.android_remocons.common_tools.AppsManager;
 import com.github.rosjava.android_remocons.common_tools.Util;
 import com.github.rosjava.android_remocons.common_tools.NfcManager;
@@ -79,7 +80,7 @@ public class NfcLauncherActivity extends Activity {
         try {
             vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(500);
-            toast(getString(R.string.app_name) + " started", Toast.LENGTH_LONG);
+            toast(getString(R.string.app_name) + " started", Toast.LENGTH_SHORT);
 
             Intent intent = getIntent();
             String action = intent.getAction();
@@ -128,17 +129,11 @@ public class NfcLauncherActivity extends Activity {
             final WifiChecker wc = new WifiChecker(
                 new WifiChecker.SuccessHandler() {
                     public void handleSuccess() {
-//                        Log.i("NfcLaunch", "Connected to " + ssid);
-//                        toast("Connected to " + ssid, Toast.LENGTH_LONG);
                         launchStep = launchStep.next();
                     }
                 },
                 new WifiChecker.FailureHandler() {
                     public void handleFailure(String reason) {
-//                        Log.e("NfcLaunch", "Cannot connect to " + ssid + ". Aborting app launch");
-//                        toast("Cannot connect to " + ssid, Toast.LENGTH_LONG);
-//                        toast("Aborting application launch", Toast.LENGTH_LONG);
-//                        finish();
                         launchStep = Step.ABORT_LAUNCH;
                     }
                 },
@@ -150,22 +145,21 @@ public class NfcLauncherActivity extends Activity {
 //                            wifiDialog.setMessage("To use this concert, you must switch wifi networks. Do you want to switch from "
 //                                    + from + " to " + to + "?");
 //                        }
-                        // TODO should I ask for permit? maybe it's a bit rude tu switch network without asking!
+                        // TODO should I ask for permit? maybe it's a bit rude to switch network without asking!
                         Log.i("NfcLaunch", "Switching from " + from + " to " + to);
-                        toast("Switching from " + from + " to " + to, Toast.LENGTH_LONG);
-
+                        toast("Switching from " + from + " to " + to, Toast.LENGTH_SHORT);
                         return true;
                     }
                 }
             );
-            toast("Connecting to " + ssid + "...", Toast.LENGTH_LONG);
+            toast("Connecting to " + ssid + "...", Toast.LENGTH_SHORT);
             wc.beginChecking(masterId, (WifiManager) getSystemService(WIFI_SERVICE));
 
             if (waitFor(Step.VALIDATE_CONCERT, 15) == false) {
                 throw new Exception("Cannot connect to " + ssid + ". Aborting app launch");
             }
             Log.i("NfcLaunch", "Connected to " + ssid);
-            toast("Connected to " + ssid, Toast.LENGTH_LONG);
+            toast("Connected to " + ssid, Toast.LENGTH_SHORT);
 
 	    	//** Step 3. Validate the concert: check for specific topics on masterUri
             final ConcertChecker cc = new ConcertChecker(
@@ -188,14 +182,14 @@ public class NfcLauncherActivity extends Activity {
                     }
                 }
             );
-            toast("Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_LONG);
+            toast("Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_SHORT);
             cc.beginChecking(masterId);
 
             if (waitFor(Step.GET_NFC_APP_INFO, 10) == false) {
                 throw new Exception("Cannot connect to " + masterId.getMasterUri() + ". Aborting app launch");
             }
             Log.i("NfcLaunch", "Concert " + masterId.getMasterUri() + " up and running");
-            toast("Concert " + masterId.getMasterUri() + " up and running", Toast.LENGTH_LONG);
+            toast("Concert " + masterId.getMasterUri() + " up and running", Toast.LENGTH_SHORT);
 
             //** Step 4. Retrieve app basic info given its NFC app id
             //concert_msgs.GetAppInfo appInfo;  request.setAppId(nfcAppId);
@@ -219,7 +213,7 @@ launchStep = launchStep.next();
                 throw new Exception("Cannot get app info for id " + nfcAppId + ". Aborting app launch");
             }
             Log.i("NfcLaunch", app.getDisplayName() + " configuration received from concert");
-            toast(app.getDisplayName() + " configuration received from concert", Toast.LENGTH_LONG);
+            toast(app.getDisplayName() + " configuration received from concert", Toast.LENGTH_SHORT);
 
 
             //** Step 5. Request permission to use the app
@@ -234,10 +228,9 @@ launchStep = launchStep.next();
                 public void onSuccess(concert_msgs.RequestInteractionResponse response) {
                     if (response.getResult() == true) {
                         launchStep = launchStep.next();
-                    }
-                    else {
+                    } else {
                         Log.i("NfcLaunch", "Concert deny app use. " + response.getMessage());
-                        toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_LONG);
+                        toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_SHORT);
                         launchStep = Step.ABORT_LAUNCH;
                     }
                 }
@@ -249,22 +242,26 @@ launchStep = launchStep.next();
                 }
             });
             am.requestAppUse(masterId, role, app);
-            toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_LONG);
+            toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
 
             if (waitFor(Step.LAUNCH_APP, 10) == false) {
                 throw new Exception("Cannot get permission to use " + app.getDisplayName() + ". Aborting app launch");
             }
             Log.i("NfcLaunch", app.getDisplayName() + " ready to launch!");
-            toast(app.getDisplayName() + " ready to launch!", Toast.LENGTH_LONG);
+            toast(app.getDisplayName() + " ready to launch!", Toast.LENGTH_SHORT);
 
 
-            int kk = 0;
-
-//	    	wifiManager.startScan();
-//	    	configs = wifiManager.getConfiguredNetworks() ;
-
-            //** Step 4. Try to connect to wireless network (ssid/password)
-            // This step starts after completion of the wifi scan
+            //** Step 6. Launch the app!
+            AppLauncher.Result result = AppLauncher.launch(this, concert, app);
+            if (result == AppLauncher.Result.SUCCESS) {
+                Log.i("NfcLaunch", app.getDisplayName() + " successfully launched");
+                toast(app.getDisplayName() + " successfully launched; have fun!", Toast.LENGTH_SHORT);
+            }
+            else {
+                // I could also show an "app not-installed" dialog and ask for going to play store to download the
+                // missing app, but... this would stop to be a headless launcher! But maybe is a good idea, anyway
+                throw new Exception("Launch " + app.getDisplayName() + " failed. " + result.message);
+            }
         }
         catch (Exception e) {
             // TODO make and "error sound"
@@ -276,20 +273,12 @@ launchStep = launchStep.next();
 
 	@Override
 	protected void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
-//		if(wifiFilter != null)
-//    		registerReceiver(wifiEventReceiver, wifiFilter);
 	}
 	
 	@Override
 	protected void onPause() {
-		// TODO Auto-generated method stub
 		super.onPause();
-//		if(wifiFilter != null)
-//    		unregisterReceiver(wifiEventReceiver);
-//
-//		finish();
 	}
 
     private boolean waitFor(final Step step, final int timeout) {
@@ -316,93 +305,6 @@ launchStep = launchStep.next();
             return false;
         }
     }
-	private BroadcastReceiver wifiEventReceiver = new BroadcastReceiver() {
-
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			// TODO Auto-generated method stub
-
-            int i = 3;
-//			if(intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-//				//** Step 4.
-//				scanResults = wifiManager.getScanResults();
-//				if(connecting == false) {
-//					connecting = true ;
-//					wifiConnect() ;
-//
-//					Intent rocon_intent = new Intent();///NfcLauncherActivity.this, RoconMainActivity.class);
-////					rocon_intent.putExtra("table", nfc_table);
-////					rocon_intent.putExtra("weblink", nfc_weblink);
-////					rocon_intent.putExtra("masteruri", nfc_masteruri);
-//
-//					startActivity(rocon_intent);
-//				}
-//			}
-		}
-	};
-		
-	
-//	private void wifiConnect()
-//	{
-//		Toast.makeText(this, "wifiConnect()", Toast.LENGTH_SHORT).show();
-//
-//		scanResults = wifiManager.getScanResults();
-//		if(scanResults == null || scanResults.size() == 0) {
-//			Toast.makeText(this, "No access point is found.", Toast.LENGTH_SHORT).show();
-//			return ;
-//		}
-//
-//		ScanResult foundResult = null ;
-//		for(ScanResult result : scanResults){
-//			if(ssid.equals(result.SSID)) {
-//				foundResult = result ;
-//				break ;
-//			}
-//		}
-//
-//		if( foundResult == null ) {
-//			Toast.makeText(this, "Sorry!" + ssid + " is not found!", Toast.LENGTH_SHORT).show();
-//			return ;
-//		}
-//
-//		configs = wifiManager.getConfiguredNetworks() ;
-//
-//		for(WifiConfiguration config : configs){
-//			if(("\"" + ssid + "\"").equals(config.SSID)) {
-//				wifiManager.enableNetwork(config.networkId, true);
-//				return ;
-//			}
-//		}
-//
-//		WifiConfiguration config = new WifiConfiguration() ;
-//		config.SSID = "\"" + foundResult.SSID + "\"" ;
-//		config.priority = 40 ;
-//
-//		if(foundResult.capabilities.contains("WPA")) {
-//			config.status = WifiConfiguration.Status.ENABLED ;
-//			config.preSharedKey = "\"" + password + "\"" ;
-//		} else if(foundResult.capabilities.contains("WEB")){
-//			config.wepKeys[0] = "\"" + password + "\"" ;
-//			config.wepTxKeyIndex = 0 ;
-//		} else {
-//			config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-//		}
-//
-//		int newId = wifiManager.addNetwork(config);
-//		if(newId < 0) {
-//			Toast.makeText(this, "Sorry! Fail to add network " + ssid, Toast.LENGTH_SHORT).show();
-//			return ;
-//		}
-//		else {
-//			if(wifiManager.enableNetwork(newId, true)) {
-//				Toast.makeText(this, "Trying to connect to " + config.SSID, Toast.LENGTH_SHORT).show();
-//				wifiManager.saveConfiguration();
-//			}
-//			else {
-//				Toast.makeText(this, "Sorry! Fail to connect to " + ssid, Toast.LENGTH_SHORT).show();
-//			}
-//		}
-//	}
 
     private void toast(final String message, final int length) {
         runOnUiThread(new Runnable() {
