@@ -41,9 +41,11 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -174,12 +176,12 @@ public class ConcertRemocon extends RosActivity {
                 Log.e("ConcertRemocon", "Failure on apps manager: " + reason);
             }
         });
-        appsManager.setupGetAppsService(new ServiceResponseListener<concert_msgs.GetRolesAndAppsResponse> () {
+        appsManager.setupGetAppsService(new ServiceResponseListener<concert_msgs.GetRolesAndAppsResponse>() {
             @Override
             public void onSuccess(concert_msgs.GetRolesAndAppsResponse response) {
                 List<RoleAppList> apps = response.getData();
                 if (apps.size() > 0) {
-                    availableAppsCache = (ArrayList<RemoconApp>)apps.get(0).getRemoconApps();
+                    availableAppsCache = (ArrayList<RemoconApp>) apps.get(0).getRemoconApps();
                     Log.i("ConcertRemocon", "RoleAppList Publication: " + availableAppsCache.size() + " apps");
                     runOnUiThread(new Runnable() {
                         @Override
@@ -188,8 +190,7 @@ public class ConcertRemocon extends RosActivity {
                             progressDialog.dismiss();
                         }
                     });
-                }
-                else {
+                } else {
                     // TODO: maybe I should notify the user... he will think something is wrong!
                     Log.w("ConcertRemocon", "RoleAppList Publication: No concert apps for " + userRole);
                 }
@@ -211,7 +212,7 @@ public class ConcertRemocon extends RosActivity {
                 Preconditions.checkNotNull(selectedApp);
 
                 final boolean allowed = response.getResult();
-                final String   reason = response.getMessage();
+                final String reason = response.getMessage();
 
                 launchAppDialog.setup(selectedApp, allowed, reason);
                 progressDialog.dismiss();
@@ -219,13 +220,60 @@ public class ConcertRemocon extends RosActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (AppLauncher.launch(ConcertRemocon.this, selectedApp, getMasterUri(),
-                                    concertDescription) == true) {
+                            AppLauncher.Result result =
+                                    AppLauncher.launch(ConcertRemocon.this, concertDescription, selectedApp);
+                            if (result == AppLauncher.Result.SUCCESS) {
                                 // App successfully launched! Notify the concert and finish this activity
                                 statusPublisher.update(true, selectedApp.getName());
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
-                        };
+                            else if (result == AppLauncher.Result.NOT_INSTALLED) {
+                                // Show an "app not-installed" dialog and ask for going to play store to download the missing app
+                                Log.i("ConcertRemocon", "Showing not-installed dialog.");
+
+                                final String installPackage =
+                                        selectedApp.getName().substring(0, selectedApp.getName().lastIndexOf("."));
+
+                                AlertDialog.Builder dialog = new AlertDialog.Builder(ConcertRemocon.this);
+                                dialog.setIcon(R.drawable.playstore_icon_small);
+                                dialog.setTitle("Android app not installed.");
+                                dialog.setMessage("This concert app requires a client user interface app, but the applicable app"
+                                                + " is not installed. Would you like to install the app from the market place?");
+                                dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(DialogInterface dlog, int i) {
+                                        Uri uri = Uri.parse("market://details?id=" + installPackage);
+                                        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                        ConcertRemocon.this.startActivity(intent);
+                                    }
+                                });
+                                dialog.setNegativeButton("No", new DialogInterface.OnClickListener()
+                                {
+                                    @Override
+                                    public void onClick(DialogInterface dlog, int i) {
+                                        dlog.dismiss();
+                                    }
+                                });
+                                dialog.show();
+                            }
+                            else {
+                                AlertDialog.Builder dialog = new AlertDialog.Builder(ConcertRemocon.this);
+                                dialog.setIcon(R.drawable.failure_small);
+                                dialog.setTitle("Cannot start app");
+                                dialog.setMessage(result.message);
+                                dialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dlog, int i) {
+                                        // nothing todo?
+                                    }
+                                });
+                                dialog.show();
+                            }
+
+                        }
+
+                        ;
                     });
                 }
             }
@@ -503,6 +551,8 @@ public class ConcertRemocon extends RosActivity {
 
 	protected void updateAppList(final ArrayList<RemoconApp> apps, final String role) {
 		Log.d("ConcertRemocon", "updating app list gridview");
+        selectedApp = null;
+
 		GridView gridview = (GridView) findViewById(R.id.gridview);
 		AppAdapter appAdapter = new AppAdapter(ConcertRemocon.this, apps);
 		gridview.setAdapter(appAdapter);

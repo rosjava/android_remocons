@@ -60,33 +60,45 @@ import com.github.rosjava.android_apps.application_management.ConcertDescription
 
 
 /**
- * A rewrite of robot_remocon/AppLauncher to work with concerts. Also extended to start web apps.
+ * A rewrite of robot_remocon/AppLauncher that...
+ *  - works with concerts
+ *  - can start web apps
+ *  - headless; only reports error codes
  *
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
 public class AppLauncher {
 
+    public enum Result {
+        SUCCESS,
+        NOT_INSTALLED,
+        CANNOT_CONNECT,
+        MALFORMED_URI,
+        CONNECT_TIMEOUT,
+        OTHER_ERROR;
+
+        public String message;
+
+        Result withMsg(String message) {
+            this.message = message;
+            return this;
+        }
+    }
+
     /**
      * Launch a client app for the given concert app.
      */
-    static public boolean launch(final Activity parentActivity, concert_msgs.RemoconApp app,
-                                 URI masterUri, ConcertDescription currentConcert) {  // TODO  uri is also in concert (as str)!
+    static public Result launch(final Activity parent, final ConcertDescription concert,
+                                final concert_msgs.RemoconApp app) {
 
-//        if (parentActivity instanceof ConcertRemocon) {
-//            ((ConcertRemocon) parentActivity).onAppClicked(app);
-//        } else {
-//            Log.i("ConcertRemocon", "Could not launch because parent is not an appchooser");
-//            return false;
-//        }
-
-        Log.i("ConcertRemocon", "launching concert app " + app.getDisplayName() + " on service " + app.getServiceName());
+        Log.i("AppLaunch", "launching concert app " + app.getDisplayName() + " on service " + app.getServiceName());
 
         // On android apps, app name will be an intent action, while for web apps it will be its URL
         if (Patterns.WEB_URL.matcher(app.getName()).matches() == true) {
-            return launchWebApp(parentActivity, app, masterUri, currentConcert);
+            return launchWebApp(parent, concert, app);
         }
         else {
-            return launchAndroidApp(parentActivity, app, masterUri, currentConcert);
+            return launchAndroidApp(parent, concert, app);
         }
     }
 
@@ -94,8 +106,8 @@ public class AppLauncher {
     /**
      * Launch a client android app for the given concert app.
      */
-    static public boolean launchAndroidApp(final Activity parentActivity, concert_msgs.RemoconApp app,
-                                           URI masterUri, ConcertDescription currentConcert) {
+    static private Result launchAndroidApp(final Activity parent, final ConcertDescription concert,
+                                           final concert_msgs.RemoconApp app) {
 
         // Create the Intent from rapp's name, pass it parameters and remaps and start it
         String appName = app.getName();
@@ -103,9 +115,9 @@ public class AppLauncher {
 
         // Copy all app data to "extra" data in the intent.
         intent.putExtra(AppsManager_BAK.PACKAGE + ".concert_app_name", appName);
-        intent.putExtra(ConcertDescription.UNIQUE_KEY, currentConcert);
-        intent.putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon");
-        intent.putExtra("ChooserURI", masterUri.toString());
+        intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
+        intent.putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon"); // TODO must be a RoconConstant!
+        intent.putExtra("ChooserURI", concert.getMasterUri());
         intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
 
         // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
@@ -121,50 +133,21 @@ public class AppLauncher {
 //      intent.putExtra("PairedManagerActivity", "com.github.concertics_in_concert.rocon_android.concert_remocon.ConcertRemocon");
 
         try {
-            Log.i("ConcertRemocon", "trying to start activity (action: " + appName + " )");
-            parentActivity.startActivity(intent);
-            return true;
+            Log.i("AppLaunch", "trying to start activity (action: " + appName + " )");
+            parent.startActivity(intent);
+            return Result.SUCCESS;
         } catch (ActivityNotFoundException e) {
-            Log.i("ConcertRemocon", "activity not found for action: " + appName);
+            Log.i("AppLaunch", "activity not found for action: " + appName);
         }
-
-        final String installPackage = appName.substring(0, appName.lastIndexOf("."));
-
-        Log.i("ConcertRemocon", "Showing not-installed dialog.");
-
-        // Show an "app not-installed" dialog and ask for going to play store to download the missing app
-        AlertDialog.Builder dialog = new AlertDialog.Builder(parentActivity);
-        dialog.setTitle("Android app not installed.");
-        dialog.setMessage("This concert app requires a client user interface app, but the applicable app"
-                        + " is not installed. Would you like to install the app from the market place?");
-        dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dlog, int i) {
-                Uri uri = Uri.parse("market://details?id=" + installPackage);
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                parentActivity.startActivity(intent);
-            }
-        }
-
-        );
-        dialog.setNegativeButton("No", new DialogInterface.OnClickListener()
-        {
-            @Override
-            public void onClick(DialogInterface dlog, int i) {
-                dlog.dismiss();
-            }
-        });
-        dialog.show();
-        return false;
+        return Result.NOT_INSTALLED.withMsg("Android app not installed");
     }
 
 
     /**
      * Launch a client web app for the given concert app.
      */
-    static public boolean launchWebApp(final Activity parentActivity, concert_msgs.RemoconApp app,
-                                       URI masterUri, ConcertDescription currentConcert) {
+    static private Result launchWebApp(final Activity parent, final ConcertDescription concert,
+                                       final concert_msgs.RemoconApp app) {
         try
         {
             // Validate the URL before starting anything
@@ -186,13 +169,12 @@ public class AppLauncher {
             }.execute(appURL);
             String result = asyncTask.get(5, TimeUnit.SECONDS);
             if (result == null || (result.startsWith("OK") == false && result.startsWith("ok") == false)) {
-                showErrorDialog(parentActivity, "Cannot start web app", result);
-                return false;
+                return Result.CANNOT_CONNECT.withMsg(result);
             }
 
             // We pass concert URL, parameters and remaps as URL parameters
             String appUriStr = app.getName();
-            appUriStr += "?" + "MasterURI=" + masterUri.toString();
+            appUriStr += "?" + "MasterURI=" + concert.getMasterUri();
             if ((app.getParameters() != null) && (app.getParameters().length() > 0)) {
                 appUriStr += "&" + "params=" + URLEncoder.encode(app.getParameters());
             }
@@ -214,47 +196,28 @@ public class AppLauncher {
             // Create an action view intent and pass rapp's name + extra information as URI
             Intent intent = new Intent(Intent.ACTION_VIEW, appURI);
 
-            Log.i("ConcertRemocon", "trying to start web app (URI: " + appUriStr + ")");
-            parentActivity.startActivity(intent);
-            return true;
+            Log.i("AppLaunch", "trying to start web app (URI: " + appUriStr + ")");
+            parent.startActivity(intent);
+            return Result.SUCCESS;
         }
         catch (URISyntaxException e) {
-            showErrorDialog(parentActivity, "Cannot start web app", "Cannot convert URL into URI:\n" + e.getMessage());
-            return false;
+            return Result.MALFORMED_URI.withMsg("Cannot convert URL into URI. " + e.getMessage());
         }
         catch (MalformedURLException e)
         {
-            showErrorDialog(parentActivity, "Cannot start web app", "App URL is not valid:\n" + e.getMessage());
-            return false;
+            return Result.MALFORMED_URI.withMsg("App URL is not valid. " + e.getMessage());
         }
         catch (ActivityNotFoundException e) {
             // This cannot happen for a web site, right? must mean that I have no web browser!
-            showErrorDialog(parentActivity, "Cannot start web app", "activity not found for view action???");
-            return false;
+            return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
         }
         catch (TimeoutException e)
         {
-            showErrorDialog(parentActivity, "Cannot start web app", "Timeout waiting for app");
-            return false;
+            return Result.CONNECT_TIMEOUT.withMsg("Timeout waiting for app");
         }
         catch (Exception e)
         {
-            showErrorDialog(parentActivity, "Cannot start web app", e.getMessage());
-            return false;
+            return Result.OTHER_ERROR.withMsg(e.getMessage());
         }
-    }
-
-    private static void showErrorDialog(final Activity parentActivity, String title, String message) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(parentActivity);
-//        dialog.setIcon(R.drawable.failure_small);
-        dialog.setTitle(title);
-        dialog.setMessage(message);
-        dialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dlog, int i) {
-                // nothing todo?
-            }
-        });
-        dialog.show();
     }
 }
