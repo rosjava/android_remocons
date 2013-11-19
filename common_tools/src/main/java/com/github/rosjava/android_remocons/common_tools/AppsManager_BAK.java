@@ -15,11 +15,10 @@
  * the License.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.common_tools;
 
 import android.util.Log;
 
-import com.github.rosjava.android_remocons.concert_remocon.StatusPublisher;
 import com.google.common.base.Preconditions;
 
 import org.ros.exception.RosRuntimeException;
@@ -62,7 +61,7 @@ import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
  *
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
-public class AppsManager extends AbstractNodeMain {
+public class AppsManager_BAK extends AbstractNodeMain {
 
     // unique identifier to key string variables between activities.
     // TODO I make it compatible current apps; not needed if we rewrite as concert apps
@@ -80,7 +79,7 @@ public class AppsManager extends AbstractNodeMain {
 
 	private ConnectedNode connectedNode;
 
-	public AppsManager(final String userRole) {
+	public AppsManager_BAK(final String userRole) {
         Preconditions.checkNotNull(userRole);
 
         this.userRole = userRole;
@@ -119,7 +118,7 @@ public class AppsManager extends AbstractNodeMain {
 		final GetRolesAndAppsRequest request = listAppsClient.newMessage();
 
         request.getRoles().add(userRole);
-        request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
+        request.setPlatformInfo(ANDROID_PLATFORM_INFO);
 
 		listAppsClient.call(request, listServiceResponseListener);
 		Log.d("ConcertRemocon", "List apps service call done [" + GET_ROLES_AND_APPS_SRV + "]");
@@ -139,7 +138,7 @@ public class AppsManager extends AbstractNodeMain {
         request.setRole(userRole);
         request.setApplication(selectedApp.getName());
         request.setServiceName(selectedApp.getServiceName());
-        request.setPlatformInfo(StatusPublisher.getInstance().getPlatformInfo());
+        request.setPlatformInfo(ANDROID_PLATFORM_INFO);
 
         requestAppClient.call(request, requestServiceResponseListener);
         Log.d("ConcertRemocon", "Request app service call done [" + REQUEST_INTERACTION_SRV + "]");

@@ -41,7 +41,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name="AppLauncher" />
+        <service android:name="com.github.rosjava.android_remocons.common_tools.AppLauncher" />
         <service android:name="org.ros.android.NodeMainExecutorService" >
             <intent-filter>
                 <action android:name="org.ros.android.NodeMainExecutorService" />

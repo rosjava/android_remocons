@@ -1,11 +1,16 @@
 package com.github.rosjava.android_remocons.common_tools;
 
+import org.ros.internal.message.DefaultMessageFactory;
+import org.ros.internal.message.definition.MessageDefinitionReflectionProvider;
+
+import rocon_std_msgs.PlatformInfo;
+
 /**
  * General Rocon Android apps constants and topic/parameter/service names
  *
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
-public interface RoconConstants {
+public class RoconConstants {
     public static final int NFC_SSID_FIELD_LENGTH           =  16;
     public static final int NFC_PASSWORD_FIELD_LENGTH       =  16;
     public static final int NFC_MASTER_HOST_FIELD_LENGTH    =  16;
@@ -22,4 +27,20 @@ public interface RoconConstants {
 
     public static final String GET_ROLES_AND_APPS_SRV  = "/concert/interactions/get_roles_and_apps";
     public static final String REQUEST_INTERACTION_SRV = "/concert/interactions/request_interaction";
+
+    public static final rocon_std_msgs.PlatformInfo ANDROID_PLATFORM_INFO = makePlatformInfo();
+
+    private static rocon_std_msgs.PlatformInfo makePlatformInfo() {
+        MessageDefinitionReflectionProvider messageDefinitionProvider = new MessageDefinitionReflectionProvider();
+        DefaultMessageFactory messageFactory = new DefaultMessageFactory(messageDefinitionProvider);
+        rocon_std_msgs.PlatformInfo platformInfo = messageFactory.newFromType(rocon_std_msgs.PlatformInfo._TYPE);
+    
+        platformInfo.setOs(PlatformInfo.OS_ANDROID);
+        platformInfo.setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
+        platformInfo.setPlatform(PlatformInfo.PLATFORM_TABLET);
+        platformInfo.setSystem(PlatformInfo.SYSTEM_ROSJAVA);
+        platformInfo.setName(PlatformInfo.NAME_ANY);
+        
+        return platformInfo;
+    }
 }

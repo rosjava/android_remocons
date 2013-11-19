@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.common_tools;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -72,12 +72,12 @@ public class AppLauncher {
     static public boolean launch(final Activity parentActivity, concert_msgs.RemoconApp app,
                                  URI masterUri, ConcertDescription currentConcert) {  // TODO  uri is also in concert (as str)!
 
-        if (parentActivity instanceof ConcertRemocon) {
-            ((ConcertRemocon) parentActivity).onAppClicked(app);
-        } else {
-            Log.i("ConcertRemocon", "Could not launch because parent is not an appchooser");
-            return false;
-        }
+//        if (parentActivity instanceof ConcertRemocon) {
+//            ((ConcertRemocon) parentActivity).onAppClicked(app);
+//        } else {
+//            Log.i("ConcertRemocon", "Could not launch because parent is not an appchooser");
+//            return false;
+//        }
 
         Log.i("ConcertRemocon", "launching concert app " + app.getDisplayName() + " on service " + app.getServiceName());
 
@@ -102,7 +102,7 @@ public class AppLauncher {
         Intent intent = new Intent(appName);
 
         // Copy all app data to "extra" data in the intent.
-        intent.putExtra(AppsManager.PACKAGE + ".concert_app_name", appName);
+        intent.putExtra(AppsManager_BAK.PACKAGE + ".concert_app_name", appName);
         intent.putExtra(ConcertDescription.UNIQUE_KEY, currentConcert);
         intent.putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon");
         intent.putExtra("ChooserURI", masterUri.toString());
@@ -246,7 +246,7 @@ public class AppLauncher {
 
     private static void showErrorDialog(final Activity parentActivity, String title, String message) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(parentActivity);
-        dialog.setIcon(R.drawable.failure_small);
+//        dialog.setIcon(R.drawable.failure_small);
         dialog.setTitle(title);
         dialog.setMessage(message);
         dialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {

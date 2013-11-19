@@ -69,6 +69,8 @@ import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_remocons.common_tools.AppLauncher;
+import com.github.rosjava.android_remocons.common_tools.AppsManager;
 import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.WifiChecker;
@@ -76,6 +78,7 @@ import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.LaunchAppDialog;
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.AlertDialogWrapper;
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.ProgressDialogWrapper;
+import com.google.common.base.Preconditions;
 
 import concert_msgs.RemoconApp;
 import concert_msgs.RoleAppList;
@@ -90,9 +93,9 @@ public class ConcertRemocon extends RosActivity {
     /* startActivityForResult Request Codes */
 	private static final int CONCERT_MASTER_CHOOSER_REQUEST_CODE = 1;
 
+    private RemoconApp selectedApp;
     private String concertAppName = null;
     private String defaultConcertAppName = null;
-    private String defaultConcertName = null;
     private ConcertDescription concertDescription;
     private NodeMainExecutor nodeMainExecutor;
     private NodeConfiguration nodeConfiguration;
@@ -166,11 +169,15 @@ public class ConcertRemocon extends RosActivity {
                 .newNonLoopback().getHostAddress(), getMasterUri());
 
         final String userRole = concertDescription.getCurrentRole();
-        appsManager = new AppsManager(userRole);
+        appsManager = new AppsManager(new AppsManager.FailureHandler() {
+            public void handleFailure(String reason) {
+                Log.e("ConcertRemocon", "Failure on apps manager: " + reason);
+            }
+        });
         appsManager.setListService(new ServiceResponseListener<concert_msgs.GetRolesAndAppsResponse> () {
             @Override
             public void onSuccess(concert_msgs.GetRolesAndAppsResponse response) {
-                nodeMainExecutor.shutdownNodeMain(appsManager);
+  //              nodeMainExecutor.shutdownNodeMain(appsManager);
 
                 List<RoleAppList> apps = response.getData();
                 if (apps.size() > 0) {
@@ -179,7 +186,7 @@ public class ConcertRemocon extends RosActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            updateAppList(availableAppsCache);
+                            updateAppList(availableAppsCache, userRole);
                             progressDialog.dismiss();
                         }
                     });
@@ -195,7 +202,7 @@ public class ConcertRemocon extends RosActivity {
             @Override
             public void onFailure(RemoteException e) {
                 progressDialog.dismiss();
-                nodeMainExecutor.shutdownNodeMain(appsManager);
+    //            nodeMainExecutor.shutdownNodeMain(appsManager);
                 Log.e("ConcertRemocon", "Retrive rapps for role " + userRole + " failed: " + e.getMessage());
             }
 
@@ -204,22 +211,22 @@ public class ConcertRemocon extends RosActivity {
         appsManager.setRequestService(new ServiceResponseListener<concert_msgs.RequestInteractionResponse>() {
             @Override
             public void onSuccess(concert_msgs.RequestInteractionResponse response) {
-                nodeMainExecutor.shutdownNodeMain(appsManager);
+                Preconditions.checkNotNull(selectedApp);
+      //          nodeMainExecutor.shutdownNodeMain(appsManager);
 
-                final RemoconApp  app = appsManager.getSelectedApp();
                 final boolean allowed = response.getResult();
                 final String   reason = response.getMessage();
 
-                launchAppDialog.setup(app, allowed, reason);
+                launchAppDialog.setup(selectedApp, allowed, reason);
                 progressDialog.dismiss();
                 if (launchAppDialog.show()) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (AppLauncher.launch(ConcertRemocon.this, app, getMasterUri(),
-                                                   concertDescription) == true) {
+                            if (AppLauncher.launch(ConcertRemocon.this, selectedApp, getMasterUri(),
+                                    concertDescription) == true) {
                                 // App successfully launched! Notify the concert and finish this activity
-                                statusPublisher.update(true, app.getName());
+                                statusPublisher.update(true, selectedApp.getName());
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
                         };
@@ -230,14 +237,14 @@ public class ConcertRemocon extends RosActivity {
             @Override
             public void onFailure(RemoteException e) {
                 progressDialog.dismiss();
-                nodeMainExecutor.shutdownNodeMain(appsManager);
+//                nodeMainExecutor.shutdownNodeMain(appsManager);
                 Log.e("ConcertRemocon", "Retrive rapps for role " + userRole + " failed: " + e.getMessage());
             }
         });
 
-        appsManager.setAction(AppsManager.ACTION_LIST_APPS);
+        appsManager.getAppsForRole(concertDescription.getMasterId(), userRole);
         progressDialog.show("Getting apps...", "Waiting for concert apps for " + userRole + " role");
-        nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("list_apps_srv_node"));
+//        nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("list_apps_srv_node"));
 
         if (! statusPublisher.isInitialized()) {
             // If we come back from an app, it should be already initialized, so call execute again would crash
@@ -500,7 +507,7 @@ public class ConcertRemocon extends RosActivity {
 
 	}
 
-	protected void updateAppList(final ArrayList<RemoconApp> apps) {
+	protected void updateAppList(final ArrayList<RemoconApp> apps, final String role) {
 		Log.d("ConcertRemocon", "updating app list gridview");
 		GridView gridview = (GridView) findViewById(R.id.gridview);
 		AppAdapter appAdapter = new AppAdapter(ConcertRemocon.this, apps);
@@ -509,13 +516,11 @@ public class ConcertRemocon extends RosActivity {
 		gridview.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                RemoconApp app = apps.get(position);
-
-                progressDialog.show("Requesting app...", "Requesting permission to use "+ app.getDisplayName());
-
-                appsManager.setSelectedApp(apps.get(position));
-                appsManager.setAction(AppsManager.ACTION_REQUEST_APP);
-                nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("request_app_srv_node"));
+                selectedApp = apps.get(position);
+                progressDialog.show("Requesting app...", "Requesting permission to use "
+                                   + selectedApp.getDisplayName());
+                appsManager.requestAppUse(concertDescription.getMasterId(), role, selectedApp);
+//                nodeMainExecutor.execute(appsManager, nodeConfiguration.setNodeName("request_app_srv_node"));
 			}
 		});
 		Log.d("ConcertRemocon", "app list gridview updated");
@@ -534,9 +539,9 @@ public class ConcertRemocon extends RosActivity {
      * or the button provided in the ConcertRemocon activity.
      */
     public void leaveConcertClicked(View view) {
-        if (appsManager != null) {
-            nodeMainExecutor.shutdownNodeMain(appsManager);
-        }
+//        if (appsManager != null) {
+//            nodeMainExecutor.shutdownNodeMain(appsManager);
+//        }
 
         availableAppsCache.clear();
         startActivityForResult(new Intent(this, ConcertChooser.class),

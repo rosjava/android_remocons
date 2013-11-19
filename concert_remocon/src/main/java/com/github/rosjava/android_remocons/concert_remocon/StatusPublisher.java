@@ -15,6 +15,8 @@ import java.util.UUID;
 import concert_msgs.RemoconStatus;
 import rocon_std_msgs.PlatformInfo;
 
+import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  *
@@ -65,11 +67,13 @@ public class StatusPublisher implements NodeMain {
 
         // Prepare and publish default status; platform info and uuid remain for the whole session
         status = publisher.newMessage();
-        status.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);
-        status.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
-        status.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
-        status.getPlatformInfo().setSystem(PlatformInfo.SYSTEM_ROSJAVA);
+        status.setPlatformInfo(ANDROID_PLATFORM_INFO);
         status.getPlatformInfo().setName(REMOCON_NAME);
+//        status.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);
+//        status.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
+//        status.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
+//        status.getPlatformInfo().setSystem(PlatformInfo..SYSTEM_ROSJAVA);
+//        status.getPlatformInfo().setName(REMOCON_NAME);
 //        status.getUuid().getUuid().setByte(0, 0);//REMOCON_UUID.getBytes());
         status.setUuid(REMOCON_UUID);  // TODO hack!  uuid is a byte[16] array but like this it fails msg delivery! must be cause the weird rosjava version of byte[] reserves 255 bytes buffer
         status.setRunningApp(false);
@@ -97,12 +101,6 @@ public class StatusPublisher implements NodeMain {
     @Override
     public void onError(Node node, Throwable throwable) {
         Log.e("ConcertRemocon", "Remocon status publisher error: " + throwable.getMessage());
-    }
-
-    public PlatformInfo getPlatformInfo() {
-        Preconditions.checkArgument(initialized, "Remocon status publisher not initialized");
-
-        return status.getPlatformInfo();
     }
 
     public void update(boolean runningApp, String appName) {
