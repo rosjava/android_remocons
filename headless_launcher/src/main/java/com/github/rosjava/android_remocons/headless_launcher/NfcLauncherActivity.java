@@ -20,10 +20,18 @@ import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_remocons.common_tools.AppsManager;
 import com.github.rosjava.android_remocons.common_tools.Util;
 import com.github.rosjava.android_remocons.common_tools.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
+
+import org.ros.exception.RemoteException;
+import org.ros.internal.message.DefaultMessageFactory;
+import org.ros.internal.message.definition.MessageDefinitionReflectionProvider;
+import org.ros.node.service.ServiceResponseListener;
+
+import concert_msgs.RequestInteractionResponse;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 
@@ -37,7 +45,6 @@ public class NfcLauncherActivity extends Activity {
         CONNECT_TO_SSID,
         VALIDATE_CONCERT,
         GET_NFC_APP_INFO,
-        GET_APP_CONFIG,
         REQUEST_PERMIT,
         LAUNCH_APP,
         ABORT_LAUNCH;
@@ -47,7 +54,7 @@ public class NfcLauncherActivity extends Activity {
                     ? Step.values()[this.ordinal() + 1]
                     : null;
         }
-    };
+    }
     private Step   launchStep = Step.STARTUP;
     private String ssid;
     private String password;
@@ -181,7 +188,7 @@ public class NfcLauncherActivity extends Activity {
                     }
                 }
             );
-            Toast.makeText(this, "Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_LONG).show();
+            toast("Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_LONG);
             cc.beginChecking(masterId);
 
             if (waitFor(Step.GET_NFC_APP_INFO, 10) == false) {
@@ -189,6 +196,67 @@ public class NfcLauncherActivity extends Activity {
             }
             Log.i("NfcLaunch", "Concert " + masterId.getMasterUri() + " up and running");
             toast("Concert " + masterId.getMasterUri() + " up and running", Toast.LENGTH_LONG);
+
+            //** Step 4. Retrieve app basic info given its NFC app id
+            //concert_msgs.GetAppInfo appInfo;  request.setAppId(nfcAppId);
+MessageDefinitionReflectionProvider messageDefinitionProvider = new MessageDefinitionReflectionProvider();
+DefaultMessageFactory messageFactory = new DefaultMessageFactory(messageDefinitionProvider);
+concert_msgs.RemoconApp app = messageFactory.newFromType(concert_msgs.RemoconApp._TYPE);
+app.setName("http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html");
+app.setParameters("{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}");
+app.setServiceName("cybernetic_piracy");
+app.setDisplayName("Cafe Dorothy");
+
+String appURI  = "http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html";
+String role = "Pirate";
+String appName = "Cafe Dorothy";
+rocon_std_msgs.Remapping remaps;
+String service = "cybernetic_piracy";
+String params = "{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}";
+launchStep = launchStep.next();
+
+            if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
+                throw new Exception("Cannot get app info for id " + nfcAppId + ". Aborting app launch");
+            }
+            Log.i("NfcLaunch", app.getDisplayName() + " configuration received from concert");
+            toast(app.getDisplayName() + " configuration received from concert", Toast.LENGTH_LONG);
+
+
+            //** Step 5. Request permission to use the app
+            AppsManager am = new AppsManager(new AppsManager.FailureHandler() {
+                public void handleFailure(String reason) {
+                    Log.e("NfcLaunch", "Cannot request app use: " + reason);
+                    launchStep = Step.ABORT_LAUNCH;
+                }
+            });
+            am.setupRequestService(new ServiceResponseListener<RequestInteractionResponse>() {
+                @Override
+                public void onSuccess(concert_msgs.RequestInteractionResponse response) {
+                    if (response.getResult() == true) {
+                        launchStep = launchStep.next();
+                    }
+                    else {
+                        Log.i("NfcLaunch", "Concert deny app use. " + response.getMessage());
+                        toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_LONG);
+                        launchStep = Step.ABORT_LAUNCH;
+                    }
+                }
+
+                @Override
+                public void onFailure(RemoteException e) {
+                    Log.e("NfcLaunch", "Request app use failed. " + e.getMessage());
+                    launchStep = Step.ABORT_LAUNCH;
+                }
+            });
+            am.requestAppUse(masterId, role, app);
+            toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_LONG);
+
+            if (waitFor(Step.LAUNCH_APP, 10) == false) {
+                throw new Exception("Cannot get permission to use " + app.getDisplayName() + ". Aborting app launch");
+            }
+            Log.i("NfcLaunch", app.getDisplayName() + " ready to launch!");
+            toast(app.getDisplayName() + " ready to launch!", Toast.LENGTH_LONG);
+
 
             int kk = 0;
 
