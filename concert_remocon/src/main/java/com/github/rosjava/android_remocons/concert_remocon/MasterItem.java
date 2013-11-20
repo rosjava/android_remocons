@@ -48,137 +48,137 @@ import android.widget.TextView;
 import android.net.wifi.WifiManager;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- * Data class behind view of one item in the list of ROS Masters. Gets created
- * with a master URI and a local host name, then starts a {@link com.github.rosjava.android_remocons.concert_remocon.from_app_mng.MasterChecker}
+ * Data class behind view of one item in the list of ROS Masters. Gets created with a master URI and a
+ * local host name, then starts a {@link com.github.rosjava.android_remocons.common_tools.ConcertChecker}
  * to look up concert name and type.
  *
  * @author hersh@willowgarage.com
  */
 public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
-                                   ConcertChecker.FailureHandler,
-                                   ControlChecker.SuccessHandler,
-                                   ControlChecker.FailureHandler {
-  private ControlChecker controlChecker;
-  private ConcertChecker checker;
-  private View view;
-  private ConcertDescription description;
-  private ConcertChooser parentMca;
-  private String errorReason;
-  private boolean control;
-  public MasterItem(ConcertDescription concertDescription, ConcertChooser parentMca) {
-    errorReason = "";
-    this.parentMca = parentMca;
-    this.description = concertDescription;
-    this.description.setConnectionStatus(ConcertDescription.CONNECTING);
-    if (WifiChecker.wifiValid(this.description.getMasterId(),
-            (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
-      checker = new ConcertChecker(this, this);
-      if (this.description.getMasterId().getControlUri() != null) {
-        control = true;
-        controlChecker = new ControlChecker(this, this);
-        controlChecker.beginChecking(this.description.getMasterId());
-      } else {
+        ConcertChecker.FailureHandler {
+    private ConcertChecker checker;
+    private View view;
+    private ConcertDescription description;
+    private ConcertChooser parentMca;
+    private String errorReason;
+    private boolean control;
+
+    public MasterItem(ConcertDescription concertDescription, ConcertChooser parentMca) {
+        errorReason = "";
+        this.parentMca = parentMca;
+        this.description = concertDescription;
+        this.description.setConnectionStatus(ConcertDescription.CONNECTING);
+        if (WifiChecker.wifiValid(this.description.getMasterId(),
+                (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
+            checker = new ConcertChecker(this, this);
+            if (this.description.getMasterId().getControlUri() != null) {
+                control = true;
+            } else {
+                control = false;
+                checker.beginChecking(this.description.getMasterId());
+            }
+        } else {
+            errorReason = "Wrong WiFi Network";
+            description.setConnectionStatus(ConcertDescription.WIFI);
+            safePopulateView();
+        }
+    }
+
+    public boolean isOk() {
+        return this.description.getConnectionStatus().equals(ConcertDescription.OK);
+    }
+
+    public void handleSuccess() {
         control = false;
         checker.beginChecking(this.description.getMasterId());
-      }
-    } else {
-      errorReason = "Wrong WiFi Network";
-      description.setConnectionStatus(ConcertDescription.WIFI);
-      safePopulateView();
     }
-  }
-  public boolean isOk() {
-    return this.description.getConnectionStatus().equals(ConcertDescription.OK);
-  }
-  @Override
-  public void handleSuccess() {
-    control = false;
-    checker.beginChecking(this.description.getMasterId());
-  }
-  @Override
-  public void receive(ConcertDescription concertDescription) {
-    description.copyFrom(concertDescription);
-    safePopulateView();
-  }
-  @Override
-  public void handleFailure(String reason) {
-    errorReason = reason;
-    description.setConnectionStatus(control ? ConcertDescription.CONTROL : ConcertDescription.ERROR);
-    safePopulateView();
-  }
-  public View getView(Context context, View convert_view, ViewGroup parent) {
-    LayoutInflater inflater = (LayoutInflater) context
-        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-    // Using convert_view here seems to cause the wrong view to show
-    // up sometimes, so I'm always making new ones.
-    view = inflater.inflate(R.layout.master_item, null);
-    populateView();
-    return view;
-  }
-  private void safePopulateView() {
-    if (view != null) {
-      final ConcertChooser mca = parentMca;
-      view.post(new Runnable() {
-        @Override
-        public void run() {
-          populateView();
-          mca.writeConcertList();
+
+    @Override
+    public void receive(ConcertDescription concertDescription) {
+        description.copyFrom(concertDescription);
+        safePopulateView();
+    }
+
+    @Override
+    public void handleFailure(String reason) {
+        errorReason = reason;
+        description.setConnectionStatus(control ? ConcertDescription.CONTROL : ConcertDescription.ERROR);
+        safePopulateView();
+    }
+
+    public View getView(Context context, View convert_view, ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) context
+                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        // Using convert_view here seems to cause the wrong view to show
+        // up sometimes, so I'm always making new ones.
+        view = inflater.inflate(R.layout.master_item, null);
+        populateView();
+        return view;
+    }
+
+    private void safePopulateView() {
+        if (view != null) {
+            final ConcertChooser mca = parentMca;
+            view.post(new Runnable() {
+                @Override
+                public void run() {
+                    populateView();
+                    mca.writeConcertList();
+                }
+            });
         }
-      });
     }
-  }
-  
-  private void populateView() {
-    Log.i("MasterItem", "connection status = " + description.getConnectionStatus());
-    boolean isOk = description.getConnectionStatus().equals(ConcertDescription.OK);
-    boolean isUnavailable = description.getConnectionStatus().equals(ConcertDescription.UNAVAILABLE);
-    boolean isControl = description.getConnectionStatus().equals(ConcertDescription.CONTROL);
-    boolean isWifi = description.getConnectionStatus().equals(ConcertDescription.WIFI);
-    boolean isError = description.getConnectionStatus().equals(ConcertDescription.ERROR);
-    boolean isConnecting = description.getConnectionStatus().equals(ConcertDescription.CONNECTING);
-    ProgressBar progress = (ProgressBar) view.findViewById(R.id.progress_circle);
-    progress.setIndeterminate(true);
-    progress.setVisibility(isConnecting ? View.VISIBLE : View.GONE );
-    ImageView errorImage = (ImageView) view.findViewById(R.id.error_icon);
-    errorImage.setVisibility( isError ? View.VISIBLE : View.GONE );
-    ImageView iv = (ImageView) view.findViewById(R.id.concert_icon);
-    iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
-    if (isWifi) {
-      iv.setImageResource(R.drawable.wifi_question_mark);
-    } else if ( description.getConcertIconData() == null ) {
-        iv.setImageResource(R.drawable.question_mark);
-    } else if( description.getConcertIconData().array().length > 0 && description.getConcertIconFormat() != null &&
-            (description.getConcertIconFormat().equals("jpeg") || description.getConcertIconFormat().equals("png")) ) {
-      ChannelBuffer buffer = description.getConcertIconData();
-      Bitmap iconBitmap = BitmapFactory.decodeByteArray(buffer.array(), buffer.arrayOffset(), buffer.readableBytes());
-      if( iconBitmap != null ) {
-        iv.setImageBitmap(iconBitmap);
-      } else {
-          iv.setImageResource(R.drawable.question_mark);
-      }
-    } else {
-      iv.setImageResource(R.drawable.question_mark);
+
+    private void populateView() {
+        Log.i("MasterItem", "connection status = " + description.getConnectionStatus());
+        boolean isOk = description.getConnectionStatus().equals(ConcertDescription.OK);
+        boolean isUnavailable = description.getConnectionStatus().equals(ConcertDescription.UNAVAILABLE);
+        boolean isControl = description.getConnectionStatus().equals(ConcertDescription.CONTROL);
+        boolean isWifi = description.getConnectionStatus().equals(ConcertDescription.WIFI);
+        boolean isError = description.getConnectionStatus().equals(ConcertDescription.ERROR);
+        boolean isConnecting = description.getConnectionStatus().equals(ConcertDescription.CONNECTING);
+        ProgressBar progress = (ProgressBar) view.findViewById(R.id.progress_circle);
+        progress.setIndeterminate(true);
+        progress.setVisibility(isConnecting ? View.VISIBLE : View.GONE);
+        ImageView errorImage = (ImageView) view.findViewById(R.id.error_icon);
+        errorImage.setVisibility(isError ? View.VISIBLE : View.GONE);
+        ImageView iv = (ImageView) view.findViewById(R.id.concert_icon);
+        iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
+        if (isWifi) {
+            iv.setImageResource(R.drawable.wifi_question_mark);
+        } else if (description.getConcertIconData() == null) {
+            iv.setImageResource(R.drawable.question_mark);
+        } else if (description.getConcertIconData().array().length > 0 && description.getConcertIconFormat() != null &&
+                (description.getConcertIconFormat().equals("jpeg") || description.getConcertIconFormat().equals("png"))) {
+            ChannelBuffer buffer = description.getConcertIconData();
+            Bitmap iconBitmap = BitmapFactory.decodeByteArray(buffer.array(), buffer.arrayOffset(), buffer.readableBytes());
+            if (iconBitmap != null) {
+                iv.setImageBitmap(iconBitmap);
+            } else {
+                iv.setImageResource(R.drawable.question_mark);
+            }
+        } else {
+            iv.setImageResource(R.drawable.question_mark);
+        }
+        if (isUnavailable) {
+            // Be nice to do alpha here, but that is api 16 and we are targeting 10.
+            ColorMatrix matrix = new ColorMatrix();
+            matrix.setSaturation(0); //0 means grayscale
+            ColorMatrixColorFilter cf = new ColorMatrixColorFilter(matrix);
+            iv.setColorFilter(cf);
+        }
+        TextView tv;
+        tv = (TextView) view.findViewById(R.id.uri);
+        tv.setText(description.getMasterId().toString());
+        tv = (TextView) view.findViewById(R.id.name);
+        tv.setText(description.getConcertFriendlyName());
+        tv = (TextView) view.findViewById(R.id.status);
+        tv.setText(errorReason);
     }
-    if ( isUnavailable ) {
-      // Be nice to do alpha here, but that is api 16 and we are targeting 10.
-      ColorMatrix matrix = new ColorMatrix();
-      matrix.setSaturation(0); //0 means grayscale
-      ColorMatrixColorFilter cf = new ColorMatrixColorFilter(matrix);
-      iv.setColorFilter(cf);
-    }
-    TextView tv;
-    tv = (TextView) view.findViewById(R.id.uri);
-    tv.setText(description.getMasterId().toString());
-    tv = (TextView) view.findViewById(R.id.name);
-    tv.setText(description.getConcertFriendlyName());
-    tv = (TextView) view.findViewById(R.id.status);
-    tv.setText(errorReason);
-  }
 }
