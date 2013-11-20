@@ -3,6 +3,8 @@
  *
  * Copyright (c) 2011, Willow Garage, Inc.
  * Copyright (c) 2013, OSRF.
+ * Copyright (c) 2013, Yujin Robot.
+ *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -59,6 +61,7 @@ import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
  *
  * @author hersh@willowgarage.com
  * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)
+ * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
 public class ConcertChecker {
     public interface ConcertDescriptionReceiver {
@@ -182,7 +185,7 @@ public class ConcertChecker {
                 description.setUserRoles(readRolesTopic.getLastMessage());
                 foundConcertCallback.receive(description);
                 return;
-            } catch ( RuntimeException e) {
+            } catch (RuntimeException e) {
                 // thrown if concert could not be found in the getParam call (from java.net.ConnectException)
                 Log.w("ConcertRemocon", "could not find concert [" + concertUri + "][" + e.toString() + "]");
                 failureCallback.handleFailure(e.toString());
