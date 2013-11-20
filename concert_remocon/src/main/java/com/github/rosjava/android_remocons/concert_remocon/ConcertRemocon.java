@@ -41,7 +41,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -73,7 +72,6 @@ import com.github.rosjava.android_apps.application_management.ConcertDescription
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.common_tools.AppLauncher;
 import com.github.rosjava.android_remocons.common_tools.AppsManager;
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ControlChecker;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 
@@ -99,7 +97,6 @@ public class ConcertRemocon extends RosActivity {
     private String concertAppName = null;
     private String defaultConcertAppName = null;
     private ConcertDescription concertDescription;
-    private NodeMainExecutor nodeMainExecutor;
     private NodeConfiguration nodeConfiguration;
 	private ArrayList<RemoconApp> availableAppsCache;
     private TextView concertNameView;
@@ -119,7 +116,7 @@ public class ConcertRemocon extends RosActivity {
       By default we assume the remocon has just launched independently, however
       it can be launched upon the closure of one of its children applications.
      */
-    private boolean fromApplication = false;  // true if it is a remocon activity getting control from a closing application
+    private boolean fromApplication = false;  // true if it is a remocon activity getting control from a closing app
 
     public ConcertRemocon() {
         super("ConcertRemocon", "ConcertRemocon");
@@ -141,36 +138,19 @@ public class ConcertRemocon extends RosActivity {
         concertAppName = getIntent().getStringExtra(AppsManager.PACKAGE + ".concert_app_name");
         if (concertAppName == null) {
             concertAppName = defaultConcertAppName;
-        } else if (concertAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
+        }
+        else if (concertAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
             Log.i("ConcertRemocon", "reinitialising from a closing remocon application");
             statusPublisher.update(false, null);
             fromApplication = true;
-        } else {
+        }
+        else {
             // DJS: do we need anything here? I think the first two cases cover everything
         }
 
 		concertNameView = (TextView) findViewById(R.id.concert_name_view);
-	}
 
-    /**
-     * This gets processed as soon as the application returns it
-     * with a uri - this is either as a result of the master chooser
-     * or as in the case when it has been relaunched by an application,
-     * from intents set by the application.
-     *
-     * Here we configure the remocon environment for a particular concert,
-     * listing apps and providing the required triggers for interacting
-     * with that concert.
-     *
-     * @param nodeMainExecutor
-     */
-	@Override
-	protected void init(final NodeMainExecutor nodeMainExecutor) {
-        this.nodeMainExecutor = nodeMainExecutor;
-        nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
-                .newNonLoopback().getHostAddress(), getMasterUri());
-
-        final String userRole = concertDescription.getCurrentRole();
+        // Prepare the app manager; we do here instead of on init to keep using the same instance when switching roles
         appsManager = new AppsManager(new AppsManager.FailureHandler() {
             public void handleFailure(String reason) {
                 Log.e("ConcertRemocon", "Failure on apps manager: " + reason);
@@ -186,13 +166,13 @@ public class ConcertRemocon extends RosActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            updateAppList(availableAppsCache, userRole);
+                            updateAppList(availableAppsCache, concertDescription.getCurrentRole());
                             progressDialog.dismiss();
                         }
                     });
                 } else {
                     // TODO: maybe I should notify the user... he will think something is wrong!
-                    Log.w("ConcertRemocon", "RoleAppList Publication: No concert apps for " + userRole);
+                    Log.w("ConcertRemocon", "No suitable concert apps for " + concertDescription.getCurrentRole());
                 }
 
                 availableAppsCacheTime = System.currentTimeMillis();
@@ -201,7 +181,8 @@ public class ConcertRemocon extends RosActivity {
             @Override
             public void onFailure(RemoteException e) {
                 progressDialog.dismiss();
-                Log.e("ConcertRemocon", "Retrive rapps for role " + userRole + " failed: " + e.getMessage());
+                Log.e("ConcertRemocon", "Retrive rapps for role "
+                        + concertDescription.getCurrentRole() + " failed: " + e.getMessage());
             }
 
         });
@@ -228,7 +209,7 @@ public class ConcertRemocon extends RosActivity {
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
                             else if (result == AppLauncher.Result.NOT_INSTALLED) {
-                                // Show an "app not-installed" dialog and ask for going to play store to download the missing app
+                                // App not installed; ask for going to play store to download the missing app
                                 Log.i("ConcertRemocon", "Showing not-installed dialog.");
 
                                 final String installPackage =
@@ -237,8 +218,9 @@ public class ConcertRemocon extends RosActivity {
                                 AlertDialog.Builder dialog = new AlertDialog.Builder(ConcertRemocon.this);
                                 dialog.setIcon(R.drawable.playstore_icon_small);
                                 dialog.setTitle("Android app not installed.");
-                                dialog.setMessage("This concert app requires a client user interface app, but the applicable app"
-                                                + " is not installed. Would you like to install the app from the market place?");
+                                dialog.setMessage("This concert app requires a client user interface app,"
+                                        + " but the applicable app is not installed.\n"
+                                        + " Would you like to install the app from the market place?");
                                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener()
                                 {
                                     @Override
@@ -281,16 +263,36 @@ public class ConcertRemocon extends RosActivity {
             @Override
             public void onFailure(RemoteException e) {
                 progressDialog.dismiss();
-                Log.e("ConcertRemocon", "Retrive rapps for role " + userRole + " failed: " + e.getMessage());
+                Log.e("ConcertRemocon", "Retrive rapps for role "
+                        + concertDescription.getCurrentRole() + " failed: " + e.getMessage());
             }
         });
+	}
 
-        appsManager.getAppsForRole(concertDescription.getMasterId(), userRole);
-        progressDialog.show("Getting apps...", "Waiting for concert apps for " + userRole + " role");
+    /**
+     * This gets processed as soon as the application returns it
+     * with a uri - this is either as a result of the master chooser
+     * or as in the case when it has been relaunched by an application,
+     * from intents set by the application.
+     *
+     * Here we configure the remocon environment for a particular concert,
+     * listing apps and providing the required triggers for interacting
+     * with that concert.
+     *
+     * @param nodeMainExecutor
+     */
+	@Override
+	protected void init(final NodeMainExecutor nodeMainExecutor) {
+        nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
+                .newNonLoopback().getHostAddress(), getMasterUri());
+
+        appsManager.getAppsForRole(concertDescription.getMasterId(), concertDescription.getCurrentRole());
+        progressDialog.show("Getting apps...",
+                "Waiting for concert apps for " + concertDescription.getCurrentRole() + " role");
 
         if (! statusPublisher.isInitialized()) {
             // If we come back from an app, it should be already initialized, so call execute again would crash
-            nodeMainExecutor.execute(statusPublisher, nodeConfiguration.setNodeName(StatusPublisher.NODE_NAME));
+            nodeMainExecutorService.execute(statusPublisher, nodeConfiguration.setNodeName(StatusPublisher.NODE_NAME));
         }
     }
 
@@ -414,11 +416,13 @@ public class ConcertRemocon extends RosActivity {
 					ConcertChooser.class),
 					CONCERT_MASTER_CHOOSER_REQUEST_CODE);
 		} else {
+            Log.i("ConcertRemocon", "Come back from closing remocon app...");
             if (getIntent().hasExtra(ConcertDescription.UNIQUE_KEY)) {
                 init(getIntent());
-                Log.i("ConcertRemocon", "closing remocon application and successfully retrieved the concert description via intents.");
+                Log.i("ConcertRemocon", "Successfully retrieved concert description from the intent");
             } else {
-                Log.e("ConcertRemocon", "closing remocon application didn't return the concert description - *spank*.");
+                Log.e("ConcertRemocon", "Closing remocon app didn't return the concert description");
+                // We are fucked-up in this case... TODO: recover or close all
             }
         }
 	}
@@ -439,9 +443,8 @@ public class ConcertRemocon extends RosActivity {
 				new AlertDialog.Builder(this).setTitle("Change Wifi?")
 						.setCancelable(false), "Yes", "No");
 
-		// Run a set of checkers in series.
-		// The last step - ensure the master is up.
-		final ConcertChecker mc = new ConcertChecker(
+		// Run a set of checkers in series. The last step must ensure the master is up.
+		final ConcertChecker cc = new ConcertChecker(
 				new ConcertChecker.ConcertDescriptionReceiver() {
 					public void receive(ConcertDescription concertDescription) {
                         progressDialog.dismiss();
@@ -473,43 +476,6 @@ public class ConcertRemocon extends RosActivity {
 					}
 				});
 
-		// Ensure the concert is in a good state
-		final ControlChecker cc = new ControlChecker(
-				new ControlChecker.SuccessHandler() {
-					public void handleSuccess() {
-                        progressDialog.show("Connecting...", "Connecting to ROS master");
-						mc.beginChecking(id);
-					}
-				}, new ControlChecker.FailureHandler() {
-					public void handleFailure(String reason) {
-						final String reason2 = reason;
-                        progressDialog.dismiss();
-						errorDialog.show("Cannot connect to control concert: " + reason2);
-						errorDialog.dismiss();
-						finish();
-
-					}
-				}, new ControlChecker.EvictionHandler() {
-					public boolean doEviction(String current, String message) {
-                        progressDialog.dismiss();
-						String m = (message != null)?" The user says: \"" + message + "\"":"";
-						evictDialog.setMessage(current
-							+ " is running custom software on this concert. Do you want to evict this user?" + m);
-						progressDialog.show("Connecting...", "Deactivating concert");
-						return evictDialog.show();
-					}
-
-					@Override
-					public boolean doEviction(String user) {
-						// TODO Auto-generated method stub
-						return false;
-					}
-				}, new ControlChecker.StartHandler() {
-					public void handleStarting() {
-                        progressDialog.show("Connecting...", "Starting concert");
-					}
-				});
-
 		// Ensure that the correct WiFi network is selected.
 		final WifiChecker wc = new WifiChecker(
 				new WifiChecker.SuccessHandler() {
@@ -529,10 +495,11 @@ public class ConcertRemocon extends RosActivity {
 					public boolean doReconnection(String from, String to) {
                         progressDialog.dismiss();
 						if (from == null) {
-							wifiDialog.setMessage("To use this concert, you must connect to a wifi network. You are currently not connected to a wifi network. Would you like to connect to the correct wireless network?");
+							wifiDialog.setMessage("To use this concert, you must connect to " + to
+                                    + "\nDo you want to connect to " + to + "?");
 						} else {
-							wifiDialog.setMessage("To use this concert, you must switch wifi networks. Do you want to switch from "
-											+ from + " to " + to + "?");
+							wifiDialog.setMessage("To use this concert, you must switch wifi networks"
+									+ "\nDo you want to switch from " + from + " to " + to + "?");
 						}
 
                         progressDialog.show("Checking...", "Switching wifi networks");
@@ -541,12 +508,6 @@ public class ConcertRemocon extends RosActivity {
 				});
 		progressDialog.show("Connecting...", "Checking wifi connection");
 		wc.beginChecking(id, (WifiManager) getSystemService(WIFI_SERVICE));
-	}
-
-    public void onAppClicked(final RemoconApp app) {
-
-		// TODO do I need this?
-
 	}
 
 	protected void updateAppList(final ArrayList<RemoconApp> apps, final String role) {
@@ -586,7 +547,9 @@ public class ConcertRemocon extends RosActivity {
         startActivityForResult(new Intent(this, ConcertChooser.class),
                 CONCERT_MASTER_CHOOSER_REQUEST_CODE);
 
-        nodeMainExecutor.shutdownNodeMain(statusPublisher);
+        nodeMainExecutorService.shutdownNodeMain(statusPublisher);
+
+        appsManager.shutdown();
     }
 
 	@Override
