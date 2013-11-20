@@ -66,7 +66,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertsContentProvider;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.concert_remocon.zeroconf.MasterSearcher;
@@ -110,7 +109,7 @@ public class ConcertChooser extends Activity {
 	private void readConcertList() {
 		String str = null;
 		Cursor c = getContentResolver().query(
-				ConcertsContentProvider.CONTENT_URI, null, null, null, null);
+				ConcertsDatabase.CONTENT_URI, null, null, null, null);
 		if (c == null) {
 			concerts = new ArrayList<ConcertDescription>();
 			Log.e("ConcertRemocon", "concert master chooser provider failed!!!");
@@ -119,7 +118,7 @@ public class ConcertChooser extends Activity {
 		if (c.getCount() > 0) {
 			c.moveToFirst();
 			str = c.getString(c
-					.getColumnIndex(ConcertsContentProvider.TABLE_COLUMN));
+					.getColumnIndex(ConcertsDatabase.TABLE_COLUMN));
 			Log.i("ConcertRemocon", "concert master chooser found a concert: " + str);
 		}
 		if (str != null) {
@@ -139,10 +138,10 @@ public class ConcertChooser extends Activity {
 			txt = yaml.dump(concert);
 		}
 		ContentValues cv = new ContentValues();
-		cv.put(ConcertsContentProvider.TABLE_COLUMN, txt);
+		cv.put(ConcertsDatabase.TABLE_COLUMN, txt);
 		Uri newEmp = getContentResolver().insert(
-				ConcertsContentProvider.CONTENT_URI, cv);
-		if (newEmp != ConcertsContentProvider.CONTENT_URI) {
+				ConcertsDatabase.CONTENT_URI, cv);
+		if (newEmp != ConcertsDatabase.CONTENT_URI) {
 			Log.e("ConcertRemocon", "concert master chooser could not save concert, non-equal URI's");
 		}
 	}
