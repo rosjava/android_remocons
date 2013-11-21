@@ -126,7 +126,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="NFC app id : "
+            android:text="App hash : "
             android:textColor="#000000"
             android:width="80dp" />
         <EditText
@@ -141,7 +141,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="(2 bytes)"
+            android:text="(4 bytes)"
             android:textColor="#000000"
             android:paddingStart="10dp" />
     </LinearLayout>
@@ -182,7 +182,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="App record : (58 chars)"
+            android:text="App record : (56 chars)"
             android:textColor="#000000"
             android:width="80dp" />
         <EditText

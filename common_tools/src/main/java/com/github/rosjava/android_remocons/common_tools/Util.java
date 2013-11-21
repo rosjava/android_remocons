@@ -60,23 +60,24 @@ public class Util {
         return new String(result);
     }
 
-    public static short toShort(byte[] input, int offset, int count) {
-        if ((offset + count) > input.length)
+    public static short toShort(byte[] input, int offset) {
+        if ((offset + 2) > input.length)
             throw new ArrayIndexOutOfBoundsException("Requested chunk exceeds byte array limits");
 
-        return (short) (input[offset + 1] & 0xFF | (input[offset] & 0xFF) << 8);
+        return (short) (input[offset + 1] & 0xFF |
+                       (input[offset + 0] & 0xFF) << 8);
     }
 
 
-// TODO with a loop    public static int toInteger(byte[] input, short offset, byte count) {
-//        if ((offset + count) > input.length)
-//            throw new ArrayIndexOutOfBoundsException("Requested chunk exceeds byte array limits");
-//
-//        return   input[3] & 0xFF |
-//                (input[2] & 0xFF) << 8 |
-//                (input[1] & 0xFF) << 16 |
-//                (input[0] & 0xFF) << 24;
-//    }
+    public static int toInteger(byte[] input, int offset) {
+        if ((offset + 4) > input.length)
+            throw new ArrayIndexOutOfBoundsException("Requested chunk exceeds byte array limits");
+
+        return   input[offset + 3] & 0xFF        |
+                (input[offset + 2] & 0xFF) << 8  |
+                (input[offset + 1] & 0xFF) << 16 |
+                (input[offset + 0] & 0xFF) << 24;
+    }
 
     public static byte[] toFixSizeBytes(String input, int length, byte padding) {
         if (input.length() > length)
@@ -87,6 +88,17 @@ public class Util {
         byte[] source = input.getBytes();
         for (int i = 0; i < length; i++)
             result[i] = i < source.length ? source[i] : padding;
+
+        return result;
+    }
+
+    public static byte[] toBytes(int input)
+    {
+        byte[] result = new byte[4];
+        result[0] = (byte) (input >> 24);
+        result[1] = (byte) (input >> 16);
+        result[2] = (byte) (input >> 8);
+        result[3] = (byte) (input);
 
         return result;
     }

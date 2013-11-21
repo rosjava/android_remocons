@@ -66,7 +66,7 @@ public class NfcLauncherActivity extends Activity {
     private String password;
     private String masterHost;
     private short  masterPort;
-    private short  nfcAppId;
+    private int    appHash;
     private short  extraData;
     private MasterId masterId;
     private String role;
@@ -114,7 +114,7 @@ public class NfcLauncherActivity extends Activity {
             Log.i("NfcLaunch", "Concert " + masterId.getMasterUri() + " up and running");
             toast("Concert " + masterId.getMasterUri() + " up and running", Toast.LENGTH_SHORT);
 
-            //** Step 4. Retrieve app basic info given its NFC app id
+            //** Step 4. Retrieve app basic info given its app hash
             getAppConfig();
 
             Log.i("NfcLaunch", app.getDisplayName() + " configuration received from concert");
@@ -128,6 +128,9 @@ public class NfcLauncherActivity extends Activity {
 
             //** Step 6. Launch the app!
             launchApp();
+
+            //** Terminate this app
+            finish();
         }
         catch (Exception e) {
             // TODO make and "error sound"
@@ -162,11 +165,11 @@ public class NfcLauncherActivity extends Activity {
         offset    += NFC_PASSWORD_FIELD_LENGTH;
         masterHost = Util.toString(payload, offset, NFC_MASTER_HOST_FIELD_LENGTH).trim();
         offset    += NFC_MASTER_HOST_FIELD_LENGTH;
-        masterPort = Util.toShort(payload, offset, NFC_MASTER_PORT_FIELD_LENGTH);
+        masterPort = Util.toShort(payload, offset);
         offset    += NFC_MASTER_PORT_FIELD_LENGTH;
-        nfcAppId   = Util.toShort(payload, offset, NFC_NFC_APP_ID_FIELD_LENGTH);
-        offset    += NFC_NFC_APP_ID_FIELD_LENGTH;
-        extraData  = Util.toShort(payload, offset, NFC_EXTRA_DATA_FIELD_LENGTH);
+        appHash    = Util.toInteger(payload, offset);
+        offset    += NFC_APP_HASH_FIELD_LENGTH;
+        extraData  = Util.toShort(payload, offset);
 
         launchStep = launchStep.next();
     }
@@ -241,7 +244,7 @@ public class NfcLauncherActivity extends Activity {
     }
 
     private void getAppConfig() throws Exception {
-        //concert_msgs.GetAppInfo appInfo;  request.setAppId(nfcAppId);
+        //concert_msgs.GetAppInfo appInfo;  request.setAppId(appHash);
         MessageDefinitionReflectionProvider messageDefinitionProvider = new MessageDefinitionReflectionProvider();
         DefaultMessageFactory messageFactory = new DefaultMessageFactory(messageDefinitionProvider);
         app = messageFactory.newFromType(concert_msgs.RemoconApp._TYPE);
@@ -265,7 +268,7 @@ public class NfcLauncherActivity extends Activity {
         app.setParameters(params);
 
         if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
-            throw new Exception("Cannot get app info for id " + nfcAppId + ". Aborting app launch");
+            throw new Exception("Cannot get app info for hash " + appHash + ". Aborting app launch");
         }
     }
 
@@ -298,6 +301,7 @@ public class NfcLauncherActivity extends Activity {
         toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
 
         if (waitFor(Step.LAUNCH_APP, 10) == false) {
+            am.shutdown();
             throw new Exception("Cannot get permission to use " + app.getDisplayName() + ". Aborting app launch");
         }
     }

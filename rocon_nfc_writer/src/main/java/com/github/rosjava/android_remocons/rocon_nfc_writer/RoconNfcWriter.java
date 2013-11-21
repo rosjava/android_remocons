@@ -27,7 +27,7 @@ public class RoconNfcWriter extends Activity {
     private static final String PREFS_KEY_PSWD = "PSWD_KEY"; // password
     private static final String PREFS_KEY_HOST = "HOST_KEY"; // master URI host
     private static final String PREFS_KEY_PORT = "PORT_KEY"; // master URI port
-    private static final String PREFS_KEY_NAID = "NAID_KEY"; // NFC app ID
+    private static final String PREFS_KEY_HASH = "HASH_KEY"; // app hash code
     private static final String PREFS_KEY_DATA = "DATA_KEY"; // extra (app specific) data
     private static final String PREFS_KEY_AAR  =  "AAR_KEY"; // AAR (Android Application Record)
 
@@ -35,7 +35,7 @@ public class RoconNfcWriter extends Activity {
     private String password;
     private String masterHost;
     private String masterPort;
-    private String nfcAppId;
+    private String appHash;
     private String extraData;
     private String appRecord;
 
@@ -43,7 +43,7 @@ public class RoconNfcWriter extends Activity {
     private EditText editPassword;
     private EditText editMasterHost;
     private EditText editMasterPort;
-    private EditText editNfcAppId;
+    private EditText editAppHash;
     private EditText editExtraData;
     private EditText editAppRecord;
 
@@ -57,13 +57,13 @@ public class RoconNfcWriter extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        editSsid = (EditText) findViewById(R.id.ssid);
-        editPassword = (EditText) findViewById(R.id.pasword);
+        editSsid       = (EditText) findViewById(R.id.ssid);
+        editPassword   = (EditText) findViewById(R.id.pasword);
         editMasterHost = (EditText) findViewById(R.id.master_host);
         editMasterPort = (EditText) findViewById(R.id.master_port);
-        editNfcAppId = (EditText) findViewById(R.id.nfc_app_id);
-        editExtraData = (EditText) findViewById(R.id.extra_data);
-        editAppRecord = (EditText) findViewById(R.id.app_record);
+        editAppHash    = (EditText) findViewById(R.id.nfc_app_id);
+        editExtraData  = (EditText) findViewById(R.id.extra_data);
+        editAppRecord  = (EditText) findViewById(R.id.app_record);
 
         buttonWrite = (Button) findViewById(R.id.nfc_write);
         messageText = (TextView) findViewById(R.id.message);
@@ -72,7 +72,7 @@ public class RoconNfcWriter extends Activity {
         password   = getPreferences(MODE_PRIVATE).getString(PREFS_KEY_PSWD, editPassword.getText().toString());
         masterHost = getPreferences(MODE_PRIVATE).getString(PREFS_KEY_HOST, editMasterHost.getText().toString());
         masterPort = getPreferences(MODE_PRIVATE).getString(PREFS_KEY_PORT, editMasterPort.getText().toString());
-        nfcAppId   = getPreferences(MODE_PRIVATE).getString(PREFS_KEY_NAID, editNfcAppId.getText().toString());
+        appHash    = getPreferences(MODE_PRIVATE).getString(PREFS_KEY_HASH, editAppHash.getText().toString());
         extraData  = getPreferences(MODE_PRIVATE).getString(PREFS_KEY_DATA, editExtraData.getText().toString());
         appRecord  = getPreferences(MODE_PRIVATE).getString(PREFS_KEY_AAR,  editAppRecord.getText().toString());
 
@@ -80,7 +80,7 @@ public class RoconNfcWriter extends Activity {
         editPassword.setText(password);
         editMasterHost.setText(masterHost);
         editMasterPort.setText(masterPort);
-        editNfcAppId.setText(nfcAppId);
+        editAppHash.setText(appHash);
         editExtraData.setText(extraData);
         editAppRecord.setText(appRecord);
 
@@ -133,7 +133,7 @@ public class RoconNfcWriter extends Activity {
             password   = editPassword.getText().toString();
             masterHost = editMasterHost.getText().toString();
             masterPort = editMasterPort.getText().toString();
-            nfcAppId   = editNfcAppId.getText().toString();
+            appHash    = editAppHash.getText().toString();
             extraData  = editExtraData.getText().toString();
             appRecord  = editAppRecord.getText().toString();
 
@@ -144,7 +144,7 @@ public class RoconNfcWriter extends Activity {
                                          Util.toFixSizeBytes(password, NFC_PASSWORD_FIELD_LENGTH, (byte)0),
                                          Util.toFixSizeBytes(masterHost, NFC_MASTER_HOST_FIELD_LENGTH, (byte)0),
                                          Util.toBytes(Short.decode(masterPort)),
-                                         Util.toBytes(Short.decode(nfcAppId)),
+                                         Util.toBytes(Integer.decode(appHash)),
                                          Util.toBytes(Short.decode(extraData)));
 
                 // Max payload size of our Ultralight C NFC tags is 137 bytes, so...
@@ -152,11 +152,11 @@ public class RoconNfcWriter extends Activity {
                 //   pwd              16 bytes
                 //   host             16 bytes
                 //   port              2 bytes
-                //   nfcid             2 bytes
+                //   hash              4 bytes
                 //   data              2 bytes
-                //   TOTAL            54 bytes
+                //   TOTAL            56 bytes
                 // payload language and status byte require 3 bytes more
-                // AAR header needs 22 bytes, so AR max size is 58 bytes
+                // AAR header needs 22 bytes, so AR max size is 56 bytes
 
                 boolean success = mNfcManager.writeTextNdefMessage(content, appRecord);
 
@@ -174,7 +174,7 @@ public class RoconNfcWriter extends Activity {
                 editor.putString(PREFS_KEY_PSWD, password);
                 editor.putString(PREFS_KEY_HOST, masterHost);
                 editor.putString(PREFS_KEY_PORT, masterPort);
-                editor.putString(PREFS_KEY_NAID, nfcAppId);
+                editor.putString(PREFS_KEY_HASH, appHash);
                 editor.putString(PREFS_KEY_DATA, extraData);
                 editor.putString(PREFS_KEY_AAR,  appRecord);
                 editor.commit();

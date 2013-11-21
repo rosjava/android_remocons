@@ -15,10 +15,10 @@ public class RoconConstants {
     public static final int NFC_PASSWORD_FIELD_LENGTH       =  16;
     public static final int NFC_MASTER_HOST_FIELD_LENGTH    =  16;
     public static final int NFC_MASTER_PORT_FIELD_LENGTH    =   2;
-    public static final int NFC_NFC_APP_ID_FIELD_LENGTH     =   2;
+    public static final int NFC_APP_HASH_FIELD_LENGTH       =   4;
     public static final int NFC_EXTRA_DATA_FIELD_LENGTH     =   2;
-    public static final int NFC_APP_RECORD_FIELD_LENGTH     =  58;
-    public static final int NFC_PAYLOAD_LENGTH              =  54; // 16 + 16 + 16 + 2 + 2 + 2
+    public static final int NFC_APP_RECORD_FIELD_LENGTH     =  56;
+    public static final int NFC_PAYLOAD_LENGTH              =  56; // 16 + 16 + 16 + 2 + 4 + 2
     public static final int NFC_ULTRALIGHT_C_MAX_LENGTH     = 137;
 
     public static final String CONCERT_NAME_PARAM      = "/concert/name";
