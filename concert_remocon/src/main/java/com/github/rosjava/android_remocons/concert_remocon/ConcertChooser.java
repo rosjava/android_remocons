@@ -393,13 +393,12 @@ public class ConcertChooser extends Activity {
 				Spannable name;
 				for (int i = 0; i < concerts.size(); i++) {
 					name = Factory.getInstance().newSpannable(
-							concerts.get(i).getConcertName() + newline
-									+ concerts.get(i).getMasterId());
-					name.setSpan(new ForegroundColorSpan(0xff888888), concerts
-							.get(i).getConcertName().length(), name.length(),
+							concerts.get(i).getMasterName() + newline + concerts.get(i).getMasterId());
+					name.setSpan(new ForegroundColorSpan(0xff888888),
+                            concerts.get(i).getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-					name.setSpan(new RelativeSizeSpan(0.8f), concerts.get(i)
-							.getConcertName().length(), name.length(),
+					name.setSpan(new RelativeSizeSpan(0.8f),
+                            concerts.get(i).getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					concert_names[i] = name;
 				}
@@ -426,17 +425,13 @@ public class ConcertChooser extends Activity {
 			builder = new AlertDialog.Builder(this);
 			builder.setTitle("Scanning on the local network...");
 			LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			listView = (ListView) layoutInflater.inflate(
-					R.layout.zeroconf_master_list, null);
+			listView = (ListView) layoutInflater.inflate(R.layout.zeroconf_master_list, null);
 			masterSearcher = new MasterSearcher(this, listView);
 			builder.setView(listView);
-			builder.setPositiveButton("Select",
-					new SearchConcertDialogButtonClickHandler());
-			builder.setNegativeButton("Cancel",
-					new SearchConcertDialogButtonClickHandler());
+			builder.setPositiveButton("Select", new SearchConcertDialogButtonClickHandler());
+			builder.setNegativeButton("Cancel", new SearchConcertDialogButtonClickHandler());
 			dialog = builder.create();
 			dialog.setOnKeyListener(new DialogKeyListener());
-
 			break;
 		default:
 			dialog = null;

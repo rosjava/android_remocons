@@ -45,6 +45,7 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.ConcertAppActivity;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
 
 import rocon_app_manager_msgs.PairingClient;
@@ -114,7 +115,7 @@ public class AppLauncher {
     for (int i = 0; i < appropriateAndroidApps.size(); i++) {
       ClientAppData appData = appropriateAndroidApps.get(i);
       Intent intent = appData.createIntent();
-      intent.putExtra(AppManager.PACKAGE + ".robot_app_name", app.getName());
+      intent.putExtra(AppManager.PACKAGE + "." + ConcertAppActivity.AppMode.PAIRED + "_app_name", app.getName());
       intent.putExtra(RobotDescription.UNIQUE_KEY, currentRobot);
       intent.putExtra("ChooserURI", uri.toString());
       intent.putExtra("runningNodes", runningNodes);

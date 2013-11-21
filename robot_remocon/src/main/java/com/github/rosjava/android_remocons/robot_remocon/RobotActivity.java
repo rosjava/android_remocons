@@ -37,6 +37,7 @@ import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.ConcertAppActivity;
 import com.github.rosjava.android_apps.application_management.Dashboard;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
 import com.github.rosjava.android_apps.application_management.RobotNameResolver;
@@ -129,7 +130,7 @@ public abstract class RobotActivity extends RosActivity {
 		}
 
 		robotAppName = getIntent().getStringExtra(
-				AppManager.PACKAGE + ".robot_app_name");
+				AppManager.PACKAGE + "." + ConcertAppActivity.AppMode.PAIRED + "_app_name");
 		if (robotAppName == null) {
 			robotAppName = defaultRobotAppName;
         } else if (robotAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime

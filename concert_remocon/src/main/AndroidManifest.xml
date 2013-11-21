@@ -15,7 +15,7 @@
 
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
         <provider
-            android:name="com.github.rosjava.android_remocons.concert_remocon.from_app_mng.ConcertsContentProvider"
+            android:name=".ConcertsDatabase"
             android:authorities="com.github.rosjava.android_remocons.concert_remocon"
         />
         <activity android:name=".ConcertRemocon"

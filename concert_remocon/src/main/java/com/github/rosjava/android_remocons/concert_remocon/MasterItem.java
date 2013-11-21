@@ -152,11 +152,11 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
         iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
         if (isWifi) {
             iv.setImageResource(R.drawable.wifi_question_mark);
-        } else if (description.getConcertIconData() == null) {
+        } else if (description.getMasterIconData() == null) {
             iv.setImageResource(R.drawable.question_mark);
-        } else if (description.getConcertIconData().array().length > 0 && description.getConcertIconFormat() != null &&
-                (description.getConcertIconFormat().equals("jpeg") || description.getConcertIconFormat().equals("png"))) {
-            ChannelBuffer buffer = description.getConcertIconData();
+        } else if (description.getMasterIconData().array().length > 0 && description.getMasterIconFormat() != null &&
+                (description.getMasterIconFormat().equals("jpeg") || description.getMasterIconFormat().equals("png"))) {
+            ChannelBuffer buffer = description.getMasterIconData();
             Bitmap iconBitmap = BitmapFactory.decodeByteArray(buffer.array(), buffer.arrayOffset(), buffer.readableBytes());
             if (iconBitmap != null) {
                 iv.setImageBitmap(iconBitmap);
@@ -177,7 +177,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
         tv = (TextView) view.findViewById(R.id.uri);
         tv.setText(description.getMasterId().toString());
         tv = (TextView) view.findViewById(R.id.name);
-        tv.setText(description.getConcertFriendlyName());
+        tv.setText(description.getMasterFriendlyName());
         tv = (TextView) view.findViewById(R.id.status);
         tv.setText(errorReason);
     }
