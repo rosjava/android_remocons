@@ -70,6 +70,7 @@ import com.github.rosjava.android_apps.application_management.ConcertDescription
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.concert_remocon.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
+
 import com.google.zxing.IntentIntegrator;
 import com.google.zxing.IntentResult;
 
@@ -117,13 +118,19 @@ public class ConcertChooser extends Activity {
 		}
 		if (c.getCount() > 0) {
 			c.moveToFirst();
-			str = c.getString(c
-					.getColumnIndex(ConcertsDatabase.TABLE_COLUMN));
+			str = c.getString(c.getColumnIndex(ConcertsDatabase.TABLE_COLUMN));
 			Log.i("ConcertRemocon", "concert master chooser found a concert: " + str);
 		}
 		if (str != null) {
 			Yaml yaml = new Yaml();
-			concerts = (List<ConcertDescription>) yaml.load(str);
+
+            // TODO can we load/save individual MasterIds? more elegant
+            List<MasterId> masters = (List<MasterId>) yaml.load(str);
+            concerts = new ArrayList<ConcertDescription>(masters.size());
+            for (MasterId master: masters) {
+                concerts.add(ConcertDescription.createUnknown(master));
+            }
+			//concerts = (List<ConcertDescription>) yaml.load(str);
 		} else {
 			concerts = new ArrayList<ConcertDescription>();
 		}
@@ -133,14 +140,18 @@ public class ConcertChooser extends Activity {
 		Log.i("ConcertRemocon", "concert master chooser saving concert...");
 		Yaml yaml = new Yaml();
 		String txt = null;
-		final List<ConcertDescription> concert = concerts; // Avoid race conditions
-		if (concert != null) {
-			txt = yaml.dump(concert);
+//		final List<ConcertDescription> concert = concerts; // Avoid race conditions
+        List<MasterId> masters = new ArrayList<MasterId>(concerts.size());
+        for (ConcertDescription concert: concerts) {
+            masters.add(concert.getMasterId());
+        }
+
+        if (masters != null) {
+			txt = yaml.dump(masters);
 		}
 		ContentValues cv = new ContentValues();
 		cv.put(ConcertsDatabase.TABLE_COLUMN, txt);
-		Uri newEmp = getContentResolver().insert(
-				ConcertsDatabase.CONTENT_URI, cv);
+		Uri newEmp = getContentResolver().insert(ConcertsDatabase.CONTENT_URI, cv);
 		if (newEmp != ConcertsDatabase.CONTENT_URI) {
 			Log.e("ConcertRemocon", "concert master chooser could not save concert, non-equal URI's");
 		}
@@ -177,7 +188,7 @@ public class ConcertChooser extends Activity {
 	private void choose(int position) {
 		ConcertDescription concert = concerts.get(position);
 		if (concert == null || concert.getConnectionStatus() == null
-				|| concert.getConnectionStatus().equals(concert.ERROR)) {
+				|| concert.getConnectionStatus().equals(ConcertDescription.ERROR)) {
 			AlertDialog d = new AlertDialog.Builder(ConcertChooser.this)
 					.setTitle("Error!")
 					.setCancelable(false)
@@ -189,7 +200,7 @@ public class ConcertChooser extends Activity {
 								}
 							}).create();
 			d.show();
-        } else if ( concert.getConnectionStatus().equals(concert.UNAVAILABLE) ) {
+        } else if ( concert.getConnectionStatus().equals(ConcertDescription.UNAVAILABLE) ) {
             AlertDialog d = new AlertDialog.Builder(ConcertChooser.this)
                     .setTitle("Concert Unavailable!")
                     .setCancelable(false)
@@ -265,7 +276,7 @@ public class ConcertChooser extends Activity {
 		while (iter.hasNext()) {
 			ConcertDescription concert = iter.next();
 			if (concert == null || concert.getConnectionStatus() == null
-					|| concert.getConnectionStatus().equals(concert.ERROR)) {
+					|| concert.getConnectionStatus().equals(ConcertDescription.ERROR)) {
 				Log.i("ConcertRemocon", "concert master chooser removing concert with connection status '"
 						+ concert.getConnectionStatus() + "'");
 				iter.remove();

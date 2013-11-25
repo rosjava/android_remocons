@@ -112,7 +112,10 @@ public class AppsManager extends AbstractNodeMain {
     }
 
     public void shutdown() {
-        nodeMainExecutorService.shutdownNodeMain(this);
+        if (nodeMainExecutorService != null)
+            nodeMainExecutorService.shutdownNodeMain(this);
+        else
+            Log.w("AppsMng", "Shutting down an uninitialized apps manager");
     }
 
     public void getAppsForRole(MasterId masterId, final String role) {

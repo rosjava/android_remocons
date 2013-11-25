@@ -220,9 +220,9 @@ public class ConcertRemocon extends RosActivity {
                                 AlertDialog.Builder dialog = new AlertDialog.Builder(ConcertRemocon.this);
                                 dialog.setIcon(R.drawable.playstore_icon_small);
                                 dialog.setTitle("Android app not installed.");
-                                dialog.setMessage("This concert app requires a client user interface app,"
-                                        + " but the applicable app is not installed.\n"
-                                        + " Would you like to install the app from the market place?");
+                                dialog.setMessage("This concert app requires a client user interface app, "
+                                        + "but the applicable app is not installed.\n"
+                                        + "Would you like to install the app from the market place?");
                                 dialog.setPositiveButton("Yes", new DialogInterface.OnClickListener()
                                 {
                                     @Override
@@ -314,12 +314,14 @@ public class ConcertRemocon extends RosActivity {
     void init(Intent intent) {
         URI uri;
         try {
-            concertDescription = (ConcertDescription) intent
-                    .getSerializableExtra(ConcertDescription.UNIQUE_KEY);
+            concertDescription = (ConcertDescription) intent.getSerializableExtra(ConcertDescription.UNIQUE_KEY);
             validatedConcert = false;
             validateConcert(concertDescription.getMasterId());
 
             uri = new URI(concertDescription.getMasterId().getMasterUri());
+        } catch (ClassCastException e) {
+            Log.e("ConcertRemocon", "Cannot get concert description from intent. " + e.getMessage());
+            throw new RosRuntimeException(e);
         } catch (URISyntaxException e) {
             throw new RosRuntimeException(e);
         }
