@@ -57,7 +57,7 @@ import android.util.Log;
 import android.util.Patterns;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.ConcertAppActivity;
+import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 
 
@@ -116,7 +116,7 @@ public class AppLauncher {
         Intent intent = new Intent(appName);
 
         // Copy all app data to "extra" data in the intent.
-        intent.putExtra(AppManager.PACKAGE + "." + ConcertAppActivity.AppMode.CONCERT + "_app_name", appName);
+        intent.putExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.CONCERT + "_app_name", appName);
         intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
         intent.putExtra("RemoconActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon"); // TODO must be a RoconConstant!
         intent.putExtra("RemoconURI", concert.getMasterUri());  // TODO we don't need this for concerts!!! can I remove????
