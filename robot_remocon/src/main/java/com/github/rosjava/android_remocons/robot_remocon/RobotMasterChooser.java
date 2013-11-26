@@ -65,7 +65,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.RobotId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_apps.application_management.RobotsContentProvider;
 import com.github.rosjava.android_remocons.robot_remocon.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
@@ -99,13 +99,14 @@ public class RobotMasterChooser extends Activity {
 	private boolean[] selections;
 	private MasterSearcher masterSearcher;
 	private ListView listView;
+    private Yaml yaml = new Yaml();
 
 	public RobotMasterChooser() {
 		robots = new ArrayList<RobotDescription>();
 	}
 
 	private void readRobotList() {
-		String str = null;
+    	String str = null;
 		Cursor c = getContentResolver().query(
 				RobotsContentProvider.CONTENT_URI, null, null, null, null);
 		if (c == null) {
@@ -113,23 +114,21 @@ public class RobotMasterChooser extends Activity {
 			Log.e("RobotRemocon", "robot master chooser provider failed!!!");
 			return;
 		}
-		if (c.getCount() > 0) {
-			c.moveToFirst();
-			str = c.getString(c
-					.getColumnIndex(RobotsContentProvider.TABLE_COLUMN));
-			Log.i("RobotRemocon", "robot master chooser found a robot: " + str);
-		}
+        if (c.getCount() > 0) {
+            c.moveToFirst();
+            str = c.getString(c.getColumnIndex(RobotsContentProvider.TABLE_COLUMN));
+            Log.i("RobotRemocon", "robot master chooser found a robot: " + str);
+        }
 		if (str != null) {
-			Yaml yaml = new Yaml();
 			robots = (List<RobotDescription>) yaml.load(str);
-		} else {
+		}
+        else {
 			robots = new ArrayList<RobotDescription>();
 		}
 	}
 
 	public void writeRobotList() {
 		Log.i("RobotRemocon", "robot master chooser saving robot...");
-		Yaml yaml = new Yaml();
 		String txt = null;
 		final List<RobotDescription> robot = robots; // Avoid race conditions
 		if (robot != null) {
@@ -208,17 +207,17 @@ public class RobotMasterChooser extends Activity {
 		}
 	}
 
-	private void addMaster(RobotId robotId) {
-		addMaster(robotId, false);
+	private void addMaster(MasterId masterId) {
+		addMaster(masterId, false);
 	}
 
-	private void addMaster(RobotId robotId, boolean connectToDuplicates) {
-		Log.i("MasterChooserActivity", "adding master to the robot master chooser [" + robotId.toString() + "]");
-		if (robotId == null || robotId.getMasterUri() == null) {
+	private void addMaster(MasterId masterId, boolean connectToDuplicates) {
+		Log.i("MasterChooserActivity", "adding master to the robot master chooser [" + masterId.toString() + "]");
+		if (masterId == null || masterId.getMasterUri() == null) {
 		} else {
 			for (int i = 0; i < robots.toArray().length; i++) {
 				RobotDescription robot = robots.get(i);
-				if (robot.getRobotId().equals(robotId)) {
+				if (robot.getMasterId().equals(masterId)) {
 					if (connectToDuplicates) {
 						choose(i);
 						return;
@@ -230,8 +229,8 @@ public class RobotMasterChooser extends Activity {
 				}
 			}
 			Log.i("MasterChooserActivity", "creating robot description: "
-					+ robotId.toString());
-			robots.add(RobotDescription.createUnknown(robotId));
+					+ masterId.toString());
+			robots.add(RobotDescription.createUnknown(masterId));
 			Log.i("MasterChooserActivity", "description created");
 			onRobotsChanged();
 		}
@@ -318,7 +317,7 @@ public class RobotMasterChooser extends Activity {
                 Yaml yaml = new Yaml();
                 Map<String, Object> data = (Map<String, Object>) yaml.load(scanned_data);
                 Log.d("RobotRemocon", "RobotMasterChooser OBJECT: " + data.toString());
-                addMaster(new RobotId(data), false);
+                addMaster(new MasterId(data), false);
             } catch (Exception e) {
                 Toast.makeText(this,
                         "Invalid robot description: " + e.getMessage(),
@@ -392,13 +391,13 @@ public class RobotMasterChooser extends Activity {
 				Spannable name;
 				for (int i = 0; i < robots.size(); i++) {
 					name = Factory.getInstance().newSpannable(
-							robots.get(i).getRobotName() + newline
-									+ robots.get(i).getRobotId());
+							robots.get(i).getMasterName() + newline
+									+ robots.get(i).getMasterId());
 					name.setSpan(new ForegroundColorSpan(0xff888888), robots
-							.get(i).getRobotName().length(), name.length(),
+							.get(i).getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					name.setSpan(new RelativeSizeSpan(0.8f), robots.get(i)
-							.getRobotName().length(), name.length(),
+							.getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					robot_names[i] = name;
 				}
@@ -505,7 +504,7 @@ public class RobotMasterChooser extends Activity {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("URL", newMasterUri);
             try {
-                addMaster(new RobotId(data));
+                addMaster(new MasterId(data));
             } catch (Exception e) {
                 Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
                         Toast.LENGTH_SHORT).show();
@@ -541,7 +540,7 @@ public class RobotMasterChooser extends Activity {
 				data.put("WIFIPW", newWifiPassword);
 			}
 			try {
-				addMaster(new RobotId(data));
+				addMaster(new MasterId(data));
 			} catch (Exception e) {
 				Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
 						Toast.LENGTH_SHORT).show();

@@ -67,7 +67,7 @@ import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.AppManager;
 import com.github.rosjava.android_apps.application_management.ControlChecker;
 import com.github.rosjava.android_apps.application_management.MasterChecker;
-import com.github.rosjava.android_apps.application_management.RobotId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
 import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
@@ -330,13 +330,12 @@ public class RobotRemocon extends RobotActivity {
             robotDescription = (RobotDescription) intent
                     .getSerializableExtra(RobotDescription.UNIQUE_KEY);
 
-            robotNameResolver.setRobotName(robotDescription
-                    .getRobotName());
+            robotNameResolver.setMasterName(robotDescription.getMasterName());
 
             validatedRobot = false;
-            validateRobot(robotDescription.getRobotId());
+            validateRobot(robotDescription.getMasterId());
 
-            uri = new URI(robotDescription.getRobotId()
+            uri = new URI(robotDescription.getMasterId()
                     .getMasterUri());
         } catch (URISyntaxException e) {
             throw new RosRuntimeException(e);
@@ -406,7 +405,7 @@ public class RobotRemocon extends RobotActivity {
         }
 	}
 
-	public void validateRobot(final RobotId id) {
+	public void validateRobot(final MasterId id) {
 		wifiDialog = new AlertDialogWrapper(this, new AlertDialog.Builder(this)
 				.setTitle("Change Wifi?").setCancelable(false), "Yes", "No");
 		evictDialog = new AlertDialogWrapper(this,
@@ -450,7 +449,7 @@ public class RobotRemocon extends RobotActivity {
                                 } catch (URISyntaxException e) {
                                     return; // should handle this
                                 }
-                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName());
+                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName());
                                 nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
                                 Boolean result = client.waitForResponse();
                                 nodeMainExecutorService.shutdownNodeMain(client);
@@ -748,7 +747,7 @@ public class RobotRemocon extends RobotActivity {
 
 	public void chooseNewMasterClicked(View view) {
         // uninvite ourselves
-        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName(), Boolean.TRUE);
+        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName(), Boolean.TRUE);
         nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
         Boolean result = client.waitForResponse();
         nodeMainExecutorService.shutdownNodeMain(client);

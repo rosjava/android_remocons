@@ -37,10 +37,10 @@ import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.ConcertAppActivity;
+import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.Dashboard;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.RobotNameResolver;
+import com.github.rosjava.android_apps.application_management.MasterNameResolver;
 
 import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
 
@@ -75,7 +75,7 @@ public abstract class RobotActivity extends RosActivity {
 	private Dashboard dashboard = null;
 	protected NodeConfiguration nodeConfiguration;
     protected NodeMainExecutor nodeMainExecutor;
-	protected RobotNameResolver robotNameResolver;
+	protected MasterNameResolver robotNameResolver;
 	protected RobotDescription robotDescription;
     protected PairingApplicationNamePublisher pairingApplicationNamePublisher = null;
 
@@ -123,14 +123,14 @@ public abstract class RobotActivity extends RosActivity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(mainWindowId);
 
-		robotNameResolver = new RobotNameResolver();
+		robotNameResolver = new MasterNameResolver();
 
 		if (defaultRobotName != null) {
-			robotNameResolver.setRobotName(defaultRobotName);
+			robotNameResolver.setMasterName(defaultRobotName);
 		}
 
 		robotAppName = getIntent().getStringExtra(
-				AppManager.PACKAGE + "." + ConcertAppActivity.AppMode.PAIRED + "_app_name");
+				AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name");
 		if (robotAppName == null) {
 			robotAppName = defaultRobotAppName;
         } else if (robotAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
@@ -168,7 +168,7 @@ public abstract class RobotActivity extends RosActivity {
         // robotDescription will get set by the robot master chooser as it exits
         // or passed back as an intent from a closing remocon application.
         // It should never be null!
-        robotNameResolver.setRobot(robotDescription);
+        robotNameResolver.setMaster(robotDescription);
         dashboard.setRobotName(robotDescription.getRobotType());
         pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Robot Remocon");
         nodeMainExecutor.execute(pairingApplicationNamePublisher,
@@ -189,11 +189,11 @@ public abstract class RobotActivity extends RosActivity {
 	}
 
 	protected NameResolver getRobotNameSpaceResolver() {
-		return robotNameResolver.getRobotNameSpace();
+		return robotNameResolver.getMasterNameSpace();
 	}
 
     protected String getRobotNameSpace() {
-        return robotNameResolver.getRobotNameSpace().getNamespace().toString();
+        return robotNameResolver.getMasterNameSpace().getNamespace().toString();
     }
 
 	protected void stopApp() {
