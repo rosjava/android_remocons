@@ -39,6 +39,9 @@ import org.ros.node.service.ServiceResponseListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import concert_msgs.GetApp;
+import concert_msgs.GetAppRequest;
+import concert_msgs.GetAppResponse;
 import concert_msgs.GetRolesAndApps;
 import concert_msgs.GetRolesAndAppsRequest;
 import concert_msgs.GetRolesAndAppsResponse;
@@ -79,9 +82,10 @@ public class AppsManager extends AbstractNodeMain {
     public static final String PACKAGE = com.github.rosjava.android_apps.application_management.AppManager.PACKAGE;
 
     public enum Action {
-        NONE, GET_APPS_FOR_ROLE, REQUEST_APP_USE
+        NONE, GET_APPS_FOR_ROLE, GET_APP_INFO, REQUEST_APP_USE
     };
 
+    private int app_hash;
     private String role;
     private Action action = Action.NONE;
  	private concert_msgs.RemoconApp app;
@@ -91,6 +95,7 @@ public class AppsManager extends AbstractNodeMain {
     private FailureHandler failureCallback;
 	private ServiceResponseListener<RequestInteractionResponse> requestServiceResponseListener;
 	private ServiceResponseListener<GetRolesAndAppsResponse>    getAppsServiceResponseListener;
+    private ServiceResponseListener<GetAppResponse>             appInfoServiceResponseListener;
 
 
 	public AppsManager(FailureHandler failureCallback) {
@@ -103,6 +108,10 @@ public class AppsManager extends AbstractNodeMain {
 
     public void setupGetAppsService(ServiceResponseListener<GetRolesAndAppsResponse> serviceResponseListener) {
         this.getAppsServiceResponseListener = serviceResponseListener;
+    }
+
+    public void setupAppInfoService(ServiceResponseListener<GetAppResponse> serviceResponseListener) {
+        this.appInfoServiceResponseListener = serviceResponseListener;
     }
 
     @Override
@@ -118,7 +127,7 @@ public class AppsManager extends AbstractNodeMain {
             Log.w("AppsMng", "Shutting down an uninitialized apps manager");
     }
 
-    public void getAppsForRole(MasterId masterId, final String role) {
+    public void getAppsForRole(final MasterId masterId, final String role) {
         this.action = Action.GET_APPS_FOR_ROLE;
         this.role = role;
 
@@ -141,7 +150,7 @@ public class AppsManager extends AbstractNodeMain {
         }
     }
 
-    public void requestAppUse(MasterId masterId, final String role, final concert_msgs.RemoconApp app) {
+    public void requestAppUse(final MasterId masterId, final String role, final concert_msgs.RemoconApp app) {
         this.action = Action.REQUEST_APP_USE;
         this.role = role;
         this.app  = app;
@@ -165,43 +174,86 @@ public class AppsManager extends AbstractNodeMain {
         }
     }
 
+    public void getAppInfo(final MasterId masterId, final int hash) {
+        this.action = Action.GET_APP_INFO;
+        this.app_hash = hash;
+
+        // If this is the first action requested, we need a connected node, what must be done in a different thread
+        // The requested action will be executed once we have a connected node (this object itself) in onStart method
+        if (this.connectedNode == null) {
+            Log.d("AppsMng", "First action requested (" + this.action + "). Starting node...");
+            new ConnectNodeThread(masterId).start();
+        }
+        else {
+            // But we don't need all this if we already executed an action, and so have a connected node. Anyway,
+            // we must execute any action asynchronously to avoid the android.os.NetworkOnMainThreadException
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    getAppInfo();
+                    return null;
+                }
+            }.execute();  // TODO: can we use this to incorporate a timeout to service calls?
+        }
+    }
+
     private void getAppsForRole() {
-        // call get_roles_and_apps service
-        ServiceClient<GetRolesAndAppsRequest, GetRolesAndAppsResponse> listAppsClient;
+        // call get_roles_and_apps concert service
+        ServiceClient<GetRolesAndAppsRequest, GetRolesAndAppsResponse> srvClient;
         try {
             Log.d("AppsMng", "List apps service client created [" + GET_ROLES_AND_APPS_SRV + "]");
-            listAppsClient = connectedNode.newServiceClient(GET_ROLES_AND_APPS_SRV, GetRolesAndApps._TYPE);
+            srvClient = connectedNode.newServiceClient(GET_ROLES_AND_APPS_SRV, GetRolesAndApps._TYPE);
         } catch (ServiceNotFoundException e) {
             Log.w("AppsMng", "List apps service not found [" + GET_ROLES_AND_APPS_SRV + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
-        final GetRolesAndAppsRequest request = listAppsClient.newMessage();
+        final GetRolesAndAppsRequest request = srvClient.newMessage();
 
         request.getRoles().add(role);
         request.setPlatformInfo(ANDROID_PLATFORM_INFO);
 
-        listAppsClient.call(request, getAppsServiceResponseListener);
+        srvClient.call(request, getAppsServiceResponseListener);
         Log.d("AppsMng", "List apps service call done [" + GET_ROLES_AND_APPS_SRV + "]");
     }
 
     private void requestAppUse() {
-        ServiceClient<RequestInteractionRequest, RequestInteractionResponse> requestAppClient;
+        // call request_interaction concert service
+        ServiceClient<RequestInteractionRequest, RequestInteractionResponse> srvClient;
         try {
             Log.d("AppsMng", "Request app service client created [" + REQUEST_INTERACTION_SRV + "]");
-            requestAppClient = connectedNode.newServiceClient(REQUEST_INTERACTION_SRV, RequestInteraction._TYPE);
+            srvClient = connectedNode.newServiceClient(REQUEST_INTERACTION_SRV, RequestInteraction._TYPE);
         } catch (ServiceNotFoundException e) {
             Log.w("AppsMng", "Request app service not found [" + REQUEST_INTERACTION_SRV + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
-        final RequestInteractionRequest request = requestAppClient.newMessage();
+        final RequestInteractionRequest request = srvClient.newMessage();
 
         request.setRole(role);
         request.setApplication(app.getName());
         request.setServiceName(app.getServiceName());
         request.setPlatformInfo(ANDROID_PLATFORM_INFO);
 
-        requestAppClient.call(request, requestServiceResponseListener);
+        srvClient.call(request, requestServiceResponseListener);
         Log.d("AppsMng", "Request app service call done [" + REQUEST_INTERACTION_SRV + "]");
+    }
+
+    private void getAppInfo() {
+        // call get_app concert service
+        ServiceClient<GetAppRequest, GetAppResponse> srvClient;
+        try {
+            Log.d("AppsMng", "Get app info service client created [" + GET_APP_INFO_SRV + "]");
+            srvClient = connectedNode.newServiceClient(GET_APP_INFO_SRV, GetApp._TYPE);
+        } catch (ServiceNotFoundException e) {
+            Log.w("AppsMng", "Get app info not found [" + GET_APP_INFO_SRV + "]");
+            throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
+        }
+        final GetAppRequest request = srvClient.newMessage();
+
+        request.setHash(app_hash);
+        request.setPlatformInfo(ANDROID_PLATFORM_INFO);
+
+        srvClient.call(request, appInfoServiceResponseListener);
+        Log.d("AppsMng", "Get app info service call done [" + GET_APP_INFO_SRV + "]");
     }
 
     /**
@@ -283,6 +335,9 @@ public class AppsManager extends AbstractNodeMain {
                 break;
             case GET_APPS_FOR_ROLE:
                 getAppsForRole();
+                break;
+            case GET_APP_INFO:
+                getAppInfo();
                 break;
             default:
                 Log.w("AppsMng", "Unrecogniced action requested: " + action);

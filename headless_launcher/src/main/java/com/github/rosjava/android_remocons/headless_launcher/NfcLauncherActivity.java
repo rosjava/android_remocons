@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
@@ -31,8 +30,6 @@ import org.ros.exception.RemoteException;
 import org.ros.internal.message.DefaultMessageFactory;
 import org.ros.internal.message.definition.MessageDefinitionReflectionProvider;
 import org.ros.node.service.ServiceResponseListener;
-
-import concert_msgs.RequestInteractionResponse;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 
@@ -69,7 +66,6 @@ public class NfcLauncherActivity extends Activity {
     private int    appHash;
     private short  extraData;
     private MasterId masterId;
-    private String role;
     private concert_msgs.RemoconApp app;
     private ConcertDescription concert;
 
@@ -193,12 +189,6 @@ public class NfcLauncherActivity extends Activity {
                 },
                 new WifiChecker.ReconnectionHandler() {
                     public boolean doReconnection(String from, String to) {
-//                        if (from == null) {
-//                            wifiDialog.setMessage("To use this concert, you must connect to a wifi network. You are currently not connected to a wifi network. Would you like to connect to the correct wireless network?");
-//                        } else {
-//                            wifiDialog.setMessage("To use this concert, you must switch wifi networks. Do you want to switch from "
-//                                    + from + " to " + to + "?");
-//                        }
                         // TODO should I ask for permit? maybe it's a bit rude to switch network without asking!
                         Log.i("NfcLaunch", "Switching from " + from + " to " + to);
                         toast("Switching from " + from + " to " + to, Toast.LENGTH_SHORT);
@@ -244,32 +234,43 @@ public class NfcLauncherActivity extends Activity {
     }
 
     private void getAppConfig() throws Exception {
-        //concert_msgs.GetAppInfo appInfo;  request.setAppId(appHash);
-        MessageDefinitionReflectionProvider messageDefinitionProvider = new MessageDefinitionReflectionProvider();
-        DefaultMessageFactory messageFactory = new DefaultMessageFactory(messageDefinitionProvider);
-        app = messageFactory.newFromType(concert_msgs.RemoconApp._TYPE);
-        app.setName("http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html");
-        app.setParameters("{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}");
-        app.setServiceName("cybernetic_piracy");
-        app.setDisplayName("Cafe Dorothy");
+        AppsManager am = new AppsManager(new AppsManager.FailureHandler() {
+            public void handleFailure(String reason) {
+                Log.e("NfcLaunch", "Cannot get app info: " + reason);
+                launchStep = Step.ABORT_LAUNCH;
+            }
+        });
+        am.setupAppInfoService(new ServiceResponseListener<concert_msgs.GetAppResponse>() {
+            @Override
+            public void onSuccess(concert_msgs.GetAppResponse response) {
+                if (response.getResult() == true) {
+                    app = response.getApp();
+                    launchStep = launchStep.next();
+                } else {
+                    Log.i("NfcLaunch", "App with hash " + appHash + " not found in concert");
+                    launchStep = Step.ABORT_LAUNCH;
+                }
+            }
 
-        String appURI  = "http://chimek.yujinrobot.com/dorothy/dorothy_web_menu.html";
-        role = "Pirate";
-        String appName = "Cafe Dorothy";
-        rocon_std_msgs.Remapping remaps;
-        String service = "cybernetic_piracy";
-//String params = "{'masterip':'192.168.10.233','bridgeport':9090,'tableid':3}";
-        launchStep = launchStep.next();
+            @Override
+            public void onFailure(RemoteException e) {
+                Log.e("NfcLaunch", "Get app info failed. " + e.getMessage());
+                launchStep = Step.ABORT_LAUNCH;
+            }
+        });
+        am.getAppInfo(masterId, appHash);
+        toast("Requesting app info for hash " + appHash + "...", Toast.LENGTH_SHORT);
+
+        if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
+            am.shutdown();
+            throw new Exception("Cannot get app info for hash " + appHash + ". Aborting app launch");
+        }
 
         // Add the extra data integer we got from the NFC tag as a new parameter for the app
         // Useful when we want to tailor app behavior depending to the tag that launched it
         String params = app.getParameters();
         params = params.substring(0, params.lastIndexOf('}')) + ", 'extra_data':" + String.valueOf(extraData) + "}";
         app.setParameters(params);
-
-        if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
-            throw new Exception("Cannot get app info for hash " + appHash + ". Aborting app launch");
-        }
     }
 
     private void getUsePermit() throws Exception {
@@ -279,14 +280,14 @@ public class NfcLauncherActivity extends Activity {
                 launchStep = Step.ABORT_LAUNCH;
             }
         });
-        am.setupRequestService(new ServiceResponseListener<RequestInteractionResponse>() {
+        am.setupRequestService(new ServiceResponseListener<concert_msgs.RequestInteractionResponse>() {
             @Override
             public void onSuccess(concert_msgs.RequestInteractionResponse response) {
                 if (response.getResult() == true) {
                     launchStep = launchStep.next();
                 } else {
                     Log.i("NfcLaunch", "Concert deny app use. " + response.getMessage());
-                    toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_SHORT);
+                    toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_LONG);
                     launchStep = Step.ABORT_LAUNCH;
                 }
             }
@@ -297,7 +298,7 @@ public class NfcLauncherActivity extends Activity {
                 launchStep = Step.ABORT_LAUNCH;
             }
         });
-        am.requestAppUse(masterId, role, app);
+        am.requestAppUse(masterId, app.getRole(), app);
         toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
 
         if (waitFor(Step.LAUNCH_APP, 10) == false) {

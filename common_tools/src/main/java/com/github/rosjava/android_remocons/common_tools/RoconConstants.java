@@ -25,6 +25,7 @@ public class RoconConstants {
     public static final String CONCERT_INFO_TOPIC      = "/concert/info";
     public static final String CONCERT_ROLES_TOPIC     = "/concert/interactions/roles";
 
+    public static final String GET_APP_INFO_SRV        = "/concert/interactions/get_app";
     public static final String GET_ROLES_AND_APPS_SRV  = "/concert/interactions/get_roles_and_apps";
     public static final String REQUEST_INTERACTION_SRV = "/concert/interactions/request_interaction";
 
