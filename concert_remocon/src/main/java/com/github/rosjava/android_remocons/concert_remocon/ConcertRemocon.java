@@ -69,7 +69,7 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
-import com.github.rosjava.android_apps.application_management.ConcertAppActivity;
+import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.common_tools.AppLauncher;
@@ -137,7 +137,7 @@ public class ConcertRemocon extends RosActivity {
                              WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.concert_remocon);
 
-        concertAppName = getIntent().getStringExtra(AppsManager.PACKAGE + "." + ConcertAppActivity.AppMode.CONCERT + "_app_name");
+        concertAppName = getIntent().getStringExtra(AppsManager.PACKAGE + "." + RosAppActivity.AppMode.CONCERT + "_app_name");
         if (concertAppName == null) {
             concertAppName = defaultConcertAppName;
         }
