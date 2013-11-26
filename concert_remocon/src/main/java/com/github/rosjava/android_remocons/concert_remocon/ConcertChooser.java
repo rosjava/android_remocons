@@ -102,8 +102,9 @@ public class ConcertChooser extends Activity {
 	private boolean[] selections;
 	private MasterSearcher masterSearcher;
 	private ListView listView;
+    private Yaml yaml = new Yaml();
 
-	public ConcertChooser() {
+    public ConcertChooser() {
 		concerts = new ArrayList<ConcertDescription>();
 	}
 
@@ -122,15 +123,7 @@ public class ConcertChooser extends Activity {
 			Log.i("ConcertRemocon", "concert master chooser found a concert: " + str);
 		}
 		if (str != null) {
-			Yaml yaml = new Yaml();
-
-            // TODO can we load/save individual MasterIds? more elegant
-            List<MasterId> masters = (List<MasterId>) yaml.load(str);
-            concerts = new ArrayList<ConcertDescription>(masters.size());
-            for (MasterId master: masters) {
-                concerts.add(ConcertDescription.createUnknown(master));
-            }
-			//concerts = (List<ConcertDescription>) yaml.load(str);
+			concerts = (List<ConcertDescription>) yaml.load(str);
 		} else {
 			concerts = new ArrayList<ConcertDescription>();
 		}
@@ -138,19 +131,13 @@ public class ConcertChooser extends Activity {
 
 	public void writeConcertList() {
 		Log.i("ConcertRemocon", "concert master chooser saving concert...");
-		Yaml yaml = new Yaml();
-		String txt = null;
-//		final List<ConcertDescription> concert = concerts; // Avoid race conditions
-        List<MasterId> masters = new ArrayList<MasterId>(concerts.size());
-        for (ConcertDescription concert: concerts) {
-            masters.add(concert.getMasterId());
-        }
-
-        if (masters != null) {
-			txt = yaml.dump(masters);
+		String str = null;
+		final List<ConcertDescription> tmp = concerts; // Avoid race conditions
+        if (tmp != null) {
+            str = yaml.dump(tmp);
 		}
 		ContentValues cv = new ContentValues();
-		cv.put(ConcertsDatabase.TABLE_COLUMN, txt);
+		cv.put(ConcertsDatabase.TABLE_COLUMN, str);
 		Uri newEmp = getContentResolver().insert(ConcertsDatabase.CONTENT_URI, cv);
 		if (newEmp != ConcertsDatabase.CONTENT_URI) {
 			Log.e("ConcertRemocon", "concert master chooser could not save concert, non-equal URI's");
