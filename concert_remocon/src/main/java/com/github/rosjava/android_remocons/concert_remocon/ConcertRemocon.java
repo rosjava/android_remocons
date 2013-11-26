@@ -86,7 +86,7 @@ import concert_msgs.RemoconApp;
 import concert_msgs.RoleAppList;
 
 /**
- * A rewrite of RobotRemocon to work with concerts.
+ * An almost complete  rewrite of RobotRemocon to work with concerts.
  *
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
