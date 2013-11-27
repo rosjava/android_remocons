@@ -119,7 +119,6 @@ public class AppLauncher {
         intent.putExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.CONCERT + "_app_name", appName);
         intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
         intent.putExtra("RemoconActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon"); // TODO must be a RoconConstant!
-        intent.putExtra("RemoconURI", concert.getMasterUri());  // TODO we don't need this for concerts!!! can I remove????
         intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
 
         // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
