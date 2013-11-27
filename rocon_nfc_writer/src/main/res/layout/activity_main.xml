@@ -133,10 +133,10 @@
             android:id="@+id/nfc_app_id"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="0"
+            android:text=""
             android:textColor="#000000"
             android:minWidth="190dp"
-            android:inputType="number"
+            android:inputType="number|numberSigned"
             android:maxWidth="190dp" />
         <TextView
             android:layout_width="wrap_content"
@@ -182,14 +182,18 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="App record : (56 chars)"
             android:textColor="#000000"
-            android:width="80dp" />
+            android:width="80dp"
+            android:singleLine="false"
+            android:lines="2"
+            android:text="@string/app_record_label" />
         <EditText
             android:id="@+id/app_record"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="com.github.rosjava.android_remocons.headless_launcher"
+            android:singleLine="false"
+            android:lines="2"
             android:textColor="#000000"/>
     </LinearLayout>
 
