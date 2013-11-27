@@ -117,7 +117,6 @@ public class AppLauncher {
       Intent intent = appData.createIntent();
       intent.putExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name", app.getName());
       intent.putExtra(RobotDescription.UNIQUE_KEY, currentRobot);
-      intent.putExtra("RemoconURI", uri.toString());
       intent.putExtra("runningNodes", runningNodes);
       intent.putExtra("RemoconActivity", "com.github.robotics_in_concert.rocon_android.robot_remocon.RobotRemocon");
       try {
