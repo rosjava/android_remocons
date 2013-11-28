@@ -184,10 +184,6 @@ public abstract class RobotActivity extends RosActivity {
         }
     }
 
-	protected NameResolver getAppNameSpace() {
-		return robotNameResolver.getAppNameSpace();
-	}
-
 	protected NameResolver getRobotNameSpaceResolver() {
 		return robotNameResolver.getMasterNameSpace();
 	}
