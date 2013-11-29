@@ -68,7 +68,7 @@ public class ListenerNode<T> extends AbstractNodeMain
     }
 
     /**
-     * Utility function to block until subscriber receices the first message.
+     * Utility function to block until subscriber receives the first message.
      *
      * @throws org.ros.exception.RosException : when it times out waiting for the service.
      */
