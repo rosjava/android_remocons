@@ -18,12 +18,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.common_tools.AppLauncher;
 import com.github.rosjava.android_remocons.common_tools.AppsManager;
 import com.github.rosjava.android_remocons.common_tools.Util;
 import com.github.rosjava.android_remocons.common_tools.NfcManager;
-import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 
 import org.ros.exception.RemoteException;

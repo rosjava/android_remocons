@@ -48,8 +48,8 @@ import android.widget.TextView;
 import android.net.wifi.WifiManager;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
-import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 

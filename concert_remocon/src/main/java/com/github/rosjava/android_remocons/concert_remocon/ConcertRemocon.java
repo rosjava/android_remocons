@@ -71,11 +71,11 @@ import org.ros.node.service.ServiceResponseListener;
 
 import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_remocons.common_tools.AppLauncher;
 import com.github.rosjava.android_remocons.common_tools.AppsManager;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
-import com.github.rosjava.android_remocons.common_tools.WifiChecker;
 
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.LaunchAppDialog;
 import com.github.rosjava.android_remocons.concert_remocon.dialogs.AlertDialogWrapper;
