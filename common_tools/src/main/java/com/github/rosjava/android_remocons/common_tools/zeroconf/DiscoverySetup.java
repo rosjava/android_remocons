@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.github.rosjava.android_remocons.robot_remocon.zeroconf;
+package com.github.rosjava.android_remocons.common_tools.zeroconf;
 
 import android.content.Context;
 import android.app.ProgressDialog;
@@ -29,23 +29,23 @@ import com.github.rosjava.zeroconf_jmdns_suite.jmdns.Zeroconf;
 
 public class DiscoverySetup extends AsyncTask<Zeroconf, String, Void> {
 
-	private ProgressDialog commencing_dialog; 
-	private final Context context;
+    private ProgressDialog commencing_dialog;
+    private final Context context;
 
-	public DiscoverySetup(Context context) {
-		this.context = context;
-	}
-	
+    public DiscoverySetup(Context context) {
+        this.context = context;
+    }
+
     protected Void doInBackground(Zeroconf... zeroconfs) {
-        if ( zeroconfs.length == 1 ) {
+        if (zeroconfs.length == 1) {
             Zeroconf zconf = zeroconfs[0];
             android.util.Log.i("zeroconf", "*********** Discovery Commencing **************");
 
-            zconf.addListener("_ros-master._tcp","local");
-            zconf.addListener("_ros-master._udp","local");
+            zconf.addListener("_ros-master._tcp", "local");
+            zconf.addListener("_ros-master._udp", "local");
 
         } else {
-        	android.util.Log.i("zeroconf", "Error - DiscoveryTask::doInBackground received #zeroconfs != 1");
+            android.util.Log.i("zeroconf", "Error - DiscoveryTask::doInBackground received #zeroconfs != 1");
         }
         return null;
     }

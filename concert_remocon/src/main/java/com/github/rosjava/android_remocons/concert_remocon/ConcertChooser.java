@@ -68,7 +68,7 @@ import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
-import com.github.rosjava.android_remocons.concert_remocon.zeroconf.MasterSearcher;
+import com.github.rosjava.android_remocons.common_tools.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 
 import com.google.zxing.IntentIntegrator;
@@ -426,7 +426,7 @@ public class ConcertChooser extends Activity {
 			builder.setTitle("Scanning on the local network...");
 			LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			listView = (ListView) layoutInflater.inflate(R.layout.zeroconf_master_list, null);
-			masterSearcher = new MasterSearcher(this, listView);
+			masterSearcher = new MasterSearcher(this, listView, "concert-master", R.drawable.conductor, R.drawable.turtle);
 			builder.setView(listView);
 			builder.setPositiveButton("Select", new SearchConcertDialogButtonClickHandler());
 			builder.setNegativeButton("Cancel", new SearchConcertDialogButtonClickHandler());

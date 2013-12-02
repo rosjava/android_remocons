@@ -67,7 +67,7 @@ import android.widget.Toast;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_apps.application_management.RobotsContentProvider;
-import com.github.rosjava.android_remocons.robot_remocon.zeroconf.MasterSearcher;
+import com.github.rosjava.android_remocons.common_tools.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.google.zxing.IntentIntegrator;
 import com.google.zxing.IntentResult;
@@ -426,7 +426,7 @@ public class RobotMasterChooser extends Activity {
 			LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			listView = (ListView) layoutInflater.inflate(
 					R.layout.zeroconf_master_list, null);
-			masterSearcher = new MasterSearcher(this, listView);
+            masterSearcher = new MasterSearcher(this, listView, "ros-master", R.drawable.turtle, R.drawable.conductor);
 			builder.setView(listView);
 			builder.setPositiveButton("Select",
 					new SearchRobotDialogButtonClickHandler());
