@@ -24,7 +24,7 @@
                   android:screenOrientation="portrait"
                   >
             <intent-filter>
-                <action android:name="com.github.robotics_in_concert.rocon_android.robot_remocon.RobotRemocon" />
+                <action android:name="com.github.rosjava.android_remocons.robot_remocon.RobotRemocon" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
