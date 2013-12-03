@@ -43,7 +43,6 @@ public class NfcManager {
     private String mCurrentNdefString = "";
 
     public NfcManager(Context context) {
-        // TODO Auto-generated constructor stub
         mContext = context;
         mNfcAdapter = NfcAdapter.getDefaultAdapter(mContext);
 
@@ -94,19 +93,14 @@ public class NfcManager {
                 setNfcEnabled.setAccessible(true);
                 success = (Boolean) setNfcEnabled.invoke(mNfcAdapter);
             } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (NoSuchMethodException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IllegalArgumentException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (InvocationTargetException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 System.out.println(e.toString());
             }
@@ -118,19 +112,14 @@ public class NfcManager {
                 setNfcDisabled.setAccessible(true);
                 success = (Boolean) setNfcDisabled.invoke(mNfcAdapter);
             } catch (ClassNotFoundException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (NoSuchMethodException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IllegalArgumentException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (IllegalAccessException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             } catch (InvocationTargetException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -166,7 +155,7 @@ public class NfcManager {
 
         if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action) ||
             NfcAdapter.ACTION_TECH_DISCOVERED.equals(action) ||
-                NfcAdapter.ACTION_NDEF_DISCOVERED.equalsIgnoreCase(action))
+            NfcAdapter.ACTION_NDEF_DISCOVERED.equalsIgnoreCase(action))
             return true;
         else
             return false;
