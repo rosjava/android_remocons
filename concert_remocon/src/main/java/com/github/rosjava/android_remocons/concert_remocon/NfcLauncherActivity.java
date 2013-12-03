@@ -1,7 +1,5 @@
 package com.github.rosjava.android_remocons.concert_remocon;
 
-
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
@@ -16,26 +14,17 @@ import com.github.rosjava.android_apps.application_management.ConcertDescription
 import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.WifiChecker;
-import com.github.rosjava.android_remocons.common_tools.AppLauncher;
 import com.github.rosjava.android_remocons.common_tools.AppsManager;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.NfcReaderActivity;
 import com.github.rosjava.android_remocons.common_tools.Util;
 
-import org.ros.exception.RemoteException;
-import org.ros.node.service.ServiceResponseListener;
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.NFC_APP_HASH_FIELD_LENGTH;
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.NFC_MASTER_HOST_FIELD_LENGTH;
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.NFC_MASTER_PORT_FIELD_LENGTH;
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.NFC_PASSWORD_FIELD_LENGTH;
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.NFC_PAYLOAD_LENGTH;
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.NFC_SSID_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
@@ -56,8 +45,8 @@ public class NfcLauncherActivity extends NfcReaderActivity {
         }
     }
 
-    private Step     launchStep = Step.STARTUP;
-    private Toast    lastToast;
+    private Step launchStep = Step.STARTUP;
+    private Toast lastToast;
     private Vibrator vibrator;
     private NfcManager nfcManager;
 
@@ -66,7 +55,6 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     private String masterHost;
     private short  masterPort;
     private MasterId masterId;
-    private concert_msgs.RemoconApp app;
     private ConcertDescription concert;
 
 
