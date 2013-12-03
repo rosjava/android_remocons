@@ -32,14 +32,8 @@
             </intent-filter>
         </activity>
         <activity android:name="com.github.rosjava.android_remocons.robot_remocon.RobotMasterChooser" />
-        <activity android:name="org.ros.android.MasterChooser" />
-        <activity android:name="com.github.rosjava.android_remocons.robot_remocon.nfc.ForegroundDispatch"
-            android:label="NFC tag scan">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+        <!--<activity android:name="org.ros.android.MasterChooser" />-->
+        <activity android:name="com.github.rosjava.android_remocons.common_tools.NfcReaderActivity" />
 
         <service android:name="AppLauncher" />
         <service android:name="org.ros.android.NodeMainExecutorService" >

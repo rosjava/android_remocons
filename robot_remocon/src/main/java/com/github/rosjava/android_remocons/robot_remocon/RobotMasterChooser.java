@@ -290,18 +290,20 @@ public class RobotMasterChooser extends Activity {
             return;
         }
 
-        String scanned_data = null;
+        Map<String, Object> data = null;
 
         if (requestCode == QR_CODE_SCAN_REQUEST_CODE) {
             IntentResult scanResult = IntentIntegrator.parseActivityResult(
                     requestCode, resultCode, intent);
             if (scanResult != null && scanResult.getContents() != null) {
-                scanned_data = scanResult.getContents().toString();
+                Yaml yaml = new Yaml();
+                String scanned_data = scanResult.getContents().toString();
+                data = (Map<String, Object>) yaml.load(scanned_data);
             }
         }
         else if (requestCode == NFC_TAG_SCAN_REQUEST_CODE && resultCode == RESULT_OK) {
             if (intent.hasExtra("tag_data")) {
-                scanned_data = intent.getExtras().getString("tag_data");
+                data = (Map<String, Object>) intent.getExtras().getSerializable("tag_data");
             }
         }
         else {
@@ -309,19 +311,15 @@ public class RobotMasterChooser extends Activity {
             return;
         }
 
-        if (scanned_data == null) {
+        if (data == null) {
             Toast.makeText(this, "Scan failed", Toast.LENGTH_SHORT).show();
         }
         else {
             try {
-                Yaml yaml = new Yaml();
-                Map<String, Object> data = (Map<String, Object>) yaml.load(scanned_data);
                 Log.d("RobotRemocon", "RobotMasterChooser OBJECT: " + data.toString());
                 addMaster(new MasterId(data), false);
             } catch (Exception e) {
-                Toast.makeText(this,
-                        "Invalid robot description: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Invalid robot description: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -343,8 +341,6 @@ public class RobotMasterChooser extends Activity {
 					.findViewById(R.id.control_uri_editor);
 			uriField.setText("http://localhost:11311/",
 					TextView.BufferType.EDITABLE);
-			// controlUriField.setText("http://prX1.willowgarage.com/cgi-bin/control.py",TextView.BufferType.EDITABLE
-			// );
 			button = (Button) dialog.findViewById(R.id.enter_button);
 			button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
@@ -434,7 +430,6 @@ public class RobotMasterChooser extends Activity {
 					new SearchRobotDialogButtonClickHandler());
 			dialog = builder.create();
 			dialog.setOnKeyListener(new DialogKeyListener());
-
 			break;
 		default:
 			dialog = null;
@@ -582,8 +577,7 @@ public class RobotMasterChooser extends Activity {
 
     public void scanNFCTagClicked(View view) {
         dismissDialog(ADD_URI_DIALOG_ID);
-        Intent i = new Intent(this,
-                com.github.rosjava.android_remocons.robot_remocon.nfc.ForegroundDispatch.class);
+        Intent i = new Intent(this, com.github.rosjava.android_remocons.common_tools.NfcReaderActivity.class);
         // Set the request code so we can identify the callback via this code
         startActivityForResult(i, NFC_TAG_SCAN_REQUEST_CODE);
     }
