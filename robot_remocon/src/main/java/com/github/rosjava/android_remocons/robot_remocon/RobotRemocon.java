@@ -65,6 +65,7 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.ControlChecker;
 import com.github.rosjava.android_apps.application_management.MasterChecker;
 import com.github.rosjava.android_apps.application_management.MasterId;
@@ -102,6 +103,7 @@ public class RobotRemocon extends RobotActivity {
 	private boolean validatedRobot;
 	private boolean runningNodes = false;
 	private long availableAppsCacheTime;
+    private boolean fromNfcLauncher = false;  // true if it is a remocon activity started by NfcLauncherActivity
 
 	private void stopProgress() {
         Log.i("RobotRemocon", "Stopping the spinner");
@@ -240,6 +242,12 @@ public class RobotRemocon extends RobotActivity {
 		setDashboardResource(R.id.top_bar);
 		setMainWindowResource(R.layout.main);
 		super.onCreate(savedInstanceState);
+
+        String appName = getIntent().getStringExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name");
+        if ((appName != null) && (appName.equals("NfcLauncher"))) {
+            Log.i("RobotRemocon", "Directly started by Nfc launcher");
+            fromNfcLauncher = true;
+        }
 
 		robotNameView = (TextView) findViewById(R.id.robot_name_view);
 		deactivate = (Button) findViewById(R.id.deactivate_robot);
@@ -391,11 +399,13 @@ public class RobotRemocon extends RobotActivity {
      */
 	@Override
 	public void startMasterChooser() {
-		if (!fromApplication) {
+		if (!fromApplication && !fromNfcLauncher) {
 			super.startActivityForResult(new Intent(this,
 					RobotMasterChooser.class),
 					ROBOT_MASTER_CHOOSER_REQUEST_CODE);
 		} else {
+            Log.i("RobotRemocon", "Come back from closing remocon app, or started by Nfc launcher");
+            // In both cases we expect a robot description in the intent
             if (getIntent().hasExtra(RobotDescription.UNIQUE_KEY)) {
                 init(getIntent());
                 Log.i("RobotRemocon", "closing remocon application and successfully retrieved the robot description via intents.");
