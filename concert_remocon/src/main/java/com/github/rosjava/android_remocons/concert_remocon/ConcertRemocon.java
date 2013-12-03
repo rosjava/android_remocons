@@ -119,6 +119,7 @@ public class ConcertRemocon extends RosActivity {
       it can be launched upon the closure of one of its children applications.
      */
     private boolean fromApplication = false;  // true if it is a remocon activity getting control from a closing app
+    private boolean fromNfcLauncher = false;  // true if it is a remocon activity started by NfcLauncherActivity
 
     public ConcertRemocon() {
         super("ConcertRemocon", "ConcertRemocon");
@@ -141,10 +142,14 @@ public class ConcertRemocon extends RosActivity {
         if (concertAppName == null) {
             concertAppName = defaultConcertAppName;
         }
-        else if (concertAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
+        else if (concertAppName.equals("AppChooser")) { // TODO ugly legacy identifier, it's misleading so change it sometime
             Log.i("ConcertRemocon", "reinitialising from a closing remocon application");
             statusPublisher.update(false, null);
             fromApplication = true;
+        }
+        else if (concertAppName.equals("NfcLauncher")) {
+            Log.i("ConcertRemocon", "Directly started by Nfc launcher");
+            fromNfcLauncher = true;
         }
         else {
             // DJS: do we need anything here? I think the first two cases cover everything
@@ -415,12 +420,13 @@ public class ConcertRemocon extends RosActivity {
      */
 	@Override
 	public void startMasterChooser() {
-		if (!fromApplication) {
+		if (!fromApplication && !fromNfcLauncher) {
 			super.startActivityForResult(new Intent(this,
 					ConcertChooser.class),
 					CONCERT_MASTER_CHOOSER_REQUEST_CODE);
 		} else {
-            Log.i("ConcertRemocon", "Come back from closing remocon app...");
+            Log.i("ConcertRemocon", "Come back from closing remocon app, or started by Nfc launcher");
+            // In both cases we expect a concert description in the intent
             if (getIntent().hasExtra(ConcertDescription.UNIQUE_KEY)) {
                 init(getIntent());
                 Log.i("ConcertRemocon", "Successfully retrieved concert description from the intent");

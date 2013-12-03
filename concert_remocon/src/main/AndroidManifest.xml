@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.NFC" />
 
@@ -31,17 +32,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.github.rosjava.android_remocons.concert_remocon.ConcertChooser" />
-        <activity android:name="org.ros.android.MasterChooser" />
-        <activity android:name="com.github.rosjava.android_remocons.concert_remocon.nfc.ForegroundDispatch"
-            android:label="NFC tag scan">
+        <activity android:name=".ConcertChooser" />
+        <activity android:name=".NfcLauncherActivity"
+                  android:label="NFC tag launcher">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <activity android:name="com.github.rosjava.android_remocons.common_tools.NfcReaderActivity" />
 
-        <service android:name="com.github.rosjava.android_remocons.common_tools.AppLauncher" />
         <service android:name="org.ros.android.NodeMainExecutorService" >
             <intent-filter>
                 <action android:name="org.ros.android.NodeMainExecutorService" />
