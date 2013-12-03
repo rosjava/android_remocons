@@ -1,7 +1,6 @@
 package com.github.rosjava.android_remocons.headless_launcher;
 
 
-import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -18,8 +17,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_remocons.common_tools.AppLauncher;
 import com.github.rosjava.android_remocons.common_tools.AppsManager;
 import com.github.rosjava.android_remocons.common_tools.Util;
@@ -27,8 +26,6 @@ import com.github.rosjava.android_remocons.common_tools.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
 
 import org.ros.exception.RemoteException;
-import org.ros.internal.message.DefaultMessageFactory;
-import org.ros.internal.message.definition.MessageDefinitionReflectionProvider;
 import org.ros.node.service.ServiceResponseListener;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
@@ -189,7 +186,7 @@ public class NfcLauncherActivity extends Activity {
                 },
                 new WifiChecker.ReconnectionHandler() {
                     public boolean doReconnection(String from, String to) {
-                        // TODO should I ask for permit? maybe it's a bit rude to switch network without asking!
+                        // Switch to the SSID on tag; this is the place if we want to ask for permit
                         Log.i("NfcLaunch", "Switching from " + from + " to " + to);
                         toast("Switching from " + from + " to " + to, Toast.LENGTH_SHORT);
                         return true;
