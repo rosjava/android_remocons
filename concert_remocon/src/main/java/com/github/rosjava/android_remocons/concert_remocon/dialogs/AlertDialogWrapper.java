@@ -119,6 +119,5 @@ public class AlertDialogWrapper {
         if (dialog != null) {
             dialog.dismiss();
         }
-//        dialog = null;  TODO  do I break something?
     }
 }
