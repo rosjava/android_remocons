@@ -145,7 +145,7 @@ public class NfcLauncherActivity extends NfcReaderActivity {
 
     private void connectToSSID() throws Exception {
         String masterUri  = "http://" + masterHost + ":" + masterPort;
-        String controlUri = masterUri; // not needed
+        String controlUri = null;      // not needed  WARN; if set, rebot remocon will fail! TODO remove from everywhere
         String encryption = "WPA2";    // not needed
         masterId = new MasterId(masterUri, controlUri, ssid, encryption, password);
 
