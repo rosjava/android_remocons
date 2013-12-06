@@ -497,7 +497,9 @@ public class RobotRemocon extends RobotActivity {
 						errorDialog.show("Cannot contact ROS master: "
 								+ reason2);
 						errorDialog.dismiss();
-                        // TODO : gracefully abort back to the robot master chooser instead.
+                        // Gracefully abort back to the robot master chooser if we cannot connect to this robot
+                        // TODO : not thoroughly tested! can create problems
+                        returnToRobotMasterChooser();
                         finish();
 					}
 				});
@@ -567,7 +569,6 @@ public class RobotRemocon extends RobotActivity {
 
 					@Override
 					public boolean doEviction(String user) {
-						// TODO Auto-generated method stub
 						return false;
 					}
 				}, new ControlChecker.StartHandler() {
@@ -756,14 +757,16 @@ public class RobotRemocon extends RobotActivity {
 	}
 
 	public void chooseNewMasterClicked(View view) {
-        // uninvite ourselves
-        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName(), Boolean.TRUE);
-        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
-        Boolean result = client.waitForResponse();
-        nodeMainExecutorService.shutdownNodeMain(client);
-        if ( !result ) {
-            errorDialog.show("Timed out trying to invite the robot for pairing mode.");
-            errorDialog.dismiss();
+        if (nodeConfiguration != null) {
+            // uninvite ourselves
+            InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName(), Boolean.TRUE);
+            nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
+            Boolean result = client.waitForResponse();
+            nodeMainExecutorService.shutdownNodeMain(client);
+            if ( !result ) {
+                errorDialog.show("Timed out trying to invite the robot for pairing mode.");
+                errorDialog.dismiss();
+            }
         }
         returnToRobotMasterChooser();
 	}
