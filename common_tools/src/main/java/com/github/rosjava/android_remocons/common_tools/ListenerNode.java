@@ -76,7 +76,7 @@ public class ListenerNode<T> extends AbstractNodeMain
         int count = 0;
         while ( lastMessage == null ) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(200);
             } catch (Exception e) {
                 throw new RosRuntimeException(e);
             }
