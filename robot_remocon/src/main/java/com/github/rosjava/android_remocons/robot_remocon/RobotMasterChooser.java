@@ -65,9 +65,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.RobotId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_apps.application_management.RobotsContentProvider;
-import com.github.rosjava.android_remocons.robot_remocon.zeroconf.MasterSearcher;
+import com.github.rosjava.android_remocons.common_tools.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.google.zxing.IntentIntegrator;
 import com.google.zxing.IntentResult;
@@ -99,13 +99,14 @@ public class RobotMasterChooser extends Activity {
 	private boolean[] selections;
 	private MasterSearcher masterSearcher;
 	private ListView listView;
+    private Yaml yaml = new Yaml();
 
 	public RobotMasterChooser() {
 		robots = new ArrayList<RobotDescription>();
 	}
 
 	private void readRobotList() {
-		String str = null;
+    	String str = null;
 		Cursor c = getContentResolver().query(
 				RobotsContentProvider.CONTENT_URI, null, null, null, null);
 		if (c == null) {
@@ -113,23 +114,21 @@ public class RobotMasterChooser extends Activity {
 			Log.e("RobotRemocon", "robot master chooser provider failed!!!");
 			return;
 		}
-		if (c.getCount() > 0) {
-			c.moveToFirst();
-			str = c.getString(c
-					.getColumnIndex(RobotsContentProvider.TABLE_COLUMN));
-			Log.i("RobotRemocon", "robot master chooser found a robot: " + str);
-		}
+        if (c.getCount() > 0) {
+            c.moveToFirst();
+            str = c.getString(c.getColumnIndex(RobotsContentProvider.TABLE_COLUMN));
+            Log.i("RobotRemocon", "robot master chooser found a robot: " + str);
+        }
 		if (str != null) {
-			Yaml yaml = new Yaml();
 			robots = (List<RobotDescription>) yaml.load(str);
-		} else {
+		}
+        else {
 			robots = new ArrayList<RobotDescription>();
 		}
 	}
 
 	public void writeRobotList() {
 		Log.i("RobotRemocon", "robot master chooser saving robot...");
-		Yaml yaml = new Yaml();
 		String txt = null;
 		final List<RobotDescription> robot = robots; // Avoid race conditions
 		if (robot != null) {
@@ -208,17 +207,17 @@ public class RobotMasterChooser extends Activity {
 		}
 	}
 
-	private void addMaster(RobotId robotId) {
-		addMaster(robotId, false);
+	private void addMaster(MasterId masterId) {
+		addMaster(masterId, false);
 	}
 
-	private void addMaster(RobotId robotId, boolean connectToDuplicates) {
-		Log.i("MasterChooserActivity", "adding master to the robot master chooser [" + robotId.toString() + "]");
-		if (robotId == null || robotId.getMasterUri() == null) {
+	private void addMaster(MasterId masterId, boolean connectToDuplicates) {
+		Log.i("MasterChooserActivity", "adding master to the robot master chooser [" + masterId.toString() + "]");
+		if (masterId == null || masterId.getMasterUri() == null) {
 		} else {
 			for (int i = 0; i < robots.toArray().length; i++) {
 				RobotDescription robot = robots.get(i);
-				if (robot.getRobotId().equals(robotId)) {
+				if (robot.getMasterId().equals(masterId)) {
 					if (connectToDuplicates) {
 						choose(i);
 						return;
@@ -230,8 +229,8 @@ public class RobotMasterChooser extends Activity {
 				}
 			}
 			Log.i("MasterChooserActivity", "creating robot description: "
-					+ robotId.toString());
-			robots.add(RobotDescription.createUnknown(robotId));
+					+ masterId.toString());
+			robots.add(RobotDescription.createUnknown(masterId));
 			Log.i("MasterChooserActivity", "description created");
 			onRobotsChanged();
 		}
@@ -291,18 +290,20 @@ public class RobotMasterChooser extends Activity {
             return;
         }
 
-        String scanned_data = null;
+        Map<String, Object> data = null;
 
         if (requestCode == QR_CODE_SCAN_REQUEST_CODE) {
             IntentResult scanResult = IntentIntegrator.parseActivityResult(
                     requestCode, resultCode, intent);
             if (scanResult != null && scanResult.getContents() != null) {
-                scanned_data = scanResult.getContents().toString();
+                Yaml yaml = new Yaml();
+                String scanned_data = scanResult.getContents().toString();
+                data = (Map<String, Object>) yaml.load(scanned_data);
             }
         }
         else if (requestCode == NFC_TAG_SCAN_REQUEST_CODE && resultCode == RESULT_OK) {
             if (intent.hasExtra("tag_data")) {
-                scanned_data = intent.getExtras().getString("tag_data");
+                data = (Map<String, Object>) intent.getExtras().getSerializable("tag_data");
             }
         }
         else {
@@ -310,19 +311,15 @@ public class RobotMasterChooser extends Activity {
             return;
         }
 
-        if (scanned_data == null) {
+        if (data == null) {
             Toast.makeText(this, "Scan failed", Toast.LENGTH_SHORT).show();
         }
         else {
             try {
-                Yaml yaml = new Yaml();
-                Map<String, Object> data = (Map<String, Object>) yaml.load(scanned_data);
                 Log.d("RobotRemocon", "RobotMasterChooser OBJECT: " + data.toString());
-                addMaster(new RobotId(data), false);
+                addMaster(new MasterId(data), false);
             } catch (Exception e) {
-                Toast.makeText(this,
-                        "Invalid robot description: " + e.getMessage(),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Invalid robot description: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -344,8 +341,6 @@ public class RobotMasterChooser extends Activity {
 					.findViewById(R.id.control_uri_editor);
 			uriField.setText("http://localhost:11311/",
 					TextView.BufferType.EDITABLE);
-			// controlUriField.setText("http://prX1.willowgarage.com/cgi-bin/control.py",TextView.BufferType.EDITABLE
-			// );
 			button = (Button) dialog.findViewById(R.id.enter_button);
 			button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
@@ -392,13 +387,13 @@ public class RobotMasterChooser extends Activity {
 				Spannable name;
 				for (int i = 0; i < robots.size(); i++) {
 					name = Factory.getInstance().newSpannable(
-							robots.get(i).getRobotName() + newline
-									+ robots.get(i).getRobotId());
+							robots.get(i).getMasterName() + newline
+									+ robots.get(i).getMasterId());
 					name.setSpan(new ForegroundColorSpan(0xff888888), robots
-							.get(i).getRobotName().length(), name.length(),
+							.get(i).getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					name.setSpan(new RelativeSizeSpan(0.8f), robots.get(i)
-							.getRobotName().length(), name.length(),
+							.getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					robot_names[i] = name;
 				}
@@ -427,7 +422,7 @@ public class RobotMasterChooser extends Activity {
 			LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			listView = (ListView) layoutInflater.inflate(
 					R.layout.zeroconf_master_list, null);
-			masterSearcher = new MasterSearcher(this, listView);
+            masterSearcher = new MasterSearcher(this, listView, "ros-master", R.drawable.turtle, R.drawable.conductor);
 			builder.setView(listView);
 			builder.setPositiveButton("Select",
 					new SearchRobotDialogButtonClickHandler());
@@ -435,7 +430,6 @@ public class RobotMasterChooser extends Activity {
 					new SearchRobotDialogButtonClickHandler());
 			dialog = builder.create();
 			dialog.setOnKeyListener(new DialogKeyListener());
-
 			break;
 		default:
 			dialog = null;
@@ -505,7 +499,7 @@ public class RobotMasterChooser extends Activity {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("URL", newMasterUri);
             try {
-                addMaster(new RobotId(data));
+                addMaster(new MasterId(data));
             } catch (Exception e) {
                 Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
                         Toast.LENGTH_SHORT).show();
@@ -541,7 +535,7 @@ public class RobotMasterChooser extends Activity {
 				data.put("WIFIPW", newWifiPassword);
 			}
 			try {
-				addMaster(new RobotId(data));
+				addMaster(new MasterId(data));
 			} catch (Exception e) {
 				Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
 						Toast.LENGTH_SHORT).show();
@@ -583,8 +577,7 @@ public class RobotMasterChooser extends Activity {
 
     public void scanNFCTagClicked(View view) {
         dismissDialog(ADD_URI_DIALOG_ID);
-        Intent i = new Intent(this,
-                com.github.rosjava.android_remocons.robot_remocon.nfc.ForegroundDispatch.class);
+        Intent i = new Intent(this, com.github.rosjava.android_remocons.common_tools.NfcReaderActivity.class);
         // Set the request code so we can identify the callback via this code
         startActivityForResult(i, NFC_TAG_SCAN_REQUEST_CODE);
     }

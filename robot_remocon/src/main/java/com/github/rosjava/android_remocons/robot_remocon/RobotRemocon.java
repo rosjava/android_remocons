@@ -65,9 +65,10 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.ControlChecker;
 import com.github.rosjava.android_apps.application_management.MasterChecker;
-import com.github.rosjava.android_apps.application_management.RobotId;
+import com.github.rosjava.android_apps.application_management.MasterId;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
 import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
@@ -102,6 +103,7 @@ public class RobotRemocon extends RobotActivity {
 	private boolean validatedRobot;
 	private boolean runningNodes = false;
 	private long availableAppsCacheTime;
+    private boolean fromNfcLauncher = false;  // true if it is a remocon activity started by NfcLauncherActivity
 
 	private void stopProgress() {
         Log.i("RobotRemocon", "Stopping the spinner");
@@ -241,6 +243,12 @@ public class RobotRemocon extends RobotActivity {
 		setMainWindowResource(R.layout.main);
 		super.onCreate(savedInstanceState);
 
+        String appName = getIntent().getStringExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name");
+        if ((appName != null) && (appName.equals("NfcLauncher"))) {
+            Log.i("RobotRemocon", "Directly started by Nfc launcher");
+            fromNfcLauncher = true;
+        }
+
 		robotNameView = (TextView) findViewById(R.id.robot_name_view);
 		deactivate = (Button) findViewById(R.id.deactivate_robot);
 		deactivate.setVisibility(deactivate.GONE);
@@ -330,13 +338,12 @@ public class RobotRemocon extends RobotActivity {
             robotDescription = (RobotDescription) intent
                     .getSerializableExtra(RobotDescription.UNIQUE_KEY);
 
-            robotNameResolver.setRobotName(robotDescription
-                    .getRobotName());
+            robotNameResolver.setMasterName(robotDescription.getMasterName());
 
             validatedRobot = false;
-            validateRobot(robotDescription.getRobotId());
+            validateRobot(robotDescription.getMasterId());
 
-            uri = new URI(robotDescription.getRobotId()
+            uri = new URI(robotDescription.getMasterId()
                     .getMasterUri());
         } catch (URISyntaxException e) {
             throw new RosRuntimeException(e);
@@ -392,11 +399,13 @@ public class RobotRemocon extends RobotActivity {
      */
 	@Override
 	public void startMasterChooser() {
-		if (!fromApplication) {
+		if (!fromApplication && !fromNfcLauncher) {
 			super.startActivityForResult(new Intent(this,
 					RobotMasterChooser.class),
 					ROBOT_MASTER_CHOOSER_REQUEST_CODE);
 		} else {
+            Log.i("RobotRemocon", "Come back from closing remocon app, or started by Nfc launcher");
+            // In both cases we expect a robot description in the intent
             if (getIntent().hasExtra(RobotDescription.UNIQUE_KEY)) {
                 init(getIntent());
                 Log.i("RobotRemocon", "closing remocon application and successfully retrieved the robot description via intents.");
@@ -406,7 +415,7 @@ public class RobotRemocon extends RobotActivity {
         }
 	}
 
-	public void validateRobot(final RobotId id) {
+	public void validateRobot(final MasterId id) {
 		wifiDialog = new AlertDialogWrapper(this, new AlertDialog.Builder(this)
 				.setTitle("Change Wifi?").setCancelable(false), "Yes", "No");
 		evictDialog = new AlertDialogWrapper(this,
@@ -450,7 +459,7 @@ public class RobotRemocon extends RobotActivity {
                                 } catch (URISyntaxException e) {
                                     return; // should handle this
                                 }
-                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName());
+                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName());
                                 nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
                                 Boolean result = client.waitForResponse();
                                 nodeMainExecutorService.shutdownNodeMain(client);
@@ -488,7 +497,9 @@ public class RobotRemocon extends RobotActivity {
 						errorDialog.show("Cannot contact ROS master: "
 								+ reason2);
 						errorDialog.dismiss();
-                        // TODO : gracefully abort back to the robot master chooser instead.
+                        // Gracefully abort back to the robot master chooser if we cannot connect to this robot
+                        // TODO : not thoroughly tested! can create problems
+                        returnToRobotMasterChooser();
                         finish();
 					}
 				});
@@ -558,7 +569,6 @@ public class RobotRemocon extends RobotActivity {
 
 					@Override
 					public boolean doEviction(String user) {
-						// TODO Auto-generated method stub
 						return false;
 					}
 				}, new ControlChecker.StartHandler() {
@@ -747,14 +757,16 @@ public class RobotRemocon extends RobotActivity {
 	}
 
 	public void chooseNewMasterClicked(View view) {
-        // uninvite ourselves
-        InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName(), Boolean.TRUE);
-        nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
-        Boolean result = client.waitForResponse();
-        nodeMainExecutorService.shutdownNodeMain(client);
-        if ( !result ) {
-            errorDialog.show("Timed out trying to invite the robot for pairing mode.");
-            errorDialog.dismiss();
+        if (nodeConfiguration != null) {
+            // uninvite ourselves
+            InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName(), Boolean.TRUE);
+            nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
+            Boolean result = client.waitForResponse();
+            nodeMainExecutorService.shutdownNodeMain(client);
+            if ( !result ) {
+                errorDialog.show("Timed out trying to invite the robot for pairing mode.");
+                errorDialog.dismiss();
+            }
         }
         returnToRobotMasterChooser();
 	}

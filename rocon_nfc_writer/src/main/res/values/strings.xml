@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Rocon NFC tags writer</string>
+    <string name="action_settings">Settings</string>
+    <string name="app_record_label">App record :\n(56 chars)</string>
+
+</resources>
