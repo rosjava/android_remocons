@@ -14,8 +14,10 @@
  * the License.
  */
 
+/* Disabled till upgraded for new rocon messages (March '14)
 include 'common_tools'
 include 'robot_remocon'
 include 'concert_remocon'
 include 'headless_launcher'
 include 'rocon_nfc_writer'
+*/
