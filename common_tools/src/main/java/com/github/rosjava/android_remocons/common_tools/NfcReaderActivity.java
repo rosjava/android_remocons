@@ -43,6 +43,7 @@ import android.widget.TextView;
 import java.util.HashMap;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
 /**
  * Read NfcF tags and return the resulting hash map to the invoker action.
@@ -94,14 +95,14 @@ public class NfcReaderActivity extends Activity {
             data = new HashMap<String, Object>();
 
             int offset = 3; // skip 1 byte for status and 2 lang bytes
-            data.put("WIFI", Util.toString(payload, offset, NFC_SSID_FIELD_LENGTH).trim());
+            data.put("WIFI", ByteArrays.toString(payload, offset, NFC_SSID_FIELD_LENGTH).trim());
             offset += NFC_SSID_FIELD_LENGTH;
-            data.put("WIFIPW", Util.toString(payload, offset, NFC_PASSWORD_FIELD_LENGTH).trim());
+            data.put("WIFIPW", ByteArrays.toString(payload, offset, NFC_PASSWORD_FIELD_LENGTH).trim());
             data.put("WIFIENC", "WPA2");
             offset += NFC_PASSWORD_FIELD_LENGTH;
-            String host = Util.toString(payload, offset, NFC_MASTER_HOST_FIELD_LENGTH).trim();
+            String host = ByteArrays.toString(payload, offset, NFC_MASTER_HOST_FIELD_LENGTH).trim();
             offset += NFC_MASTER_HOST_FIELD_LENGTH;
-            short  port = Util.toShort(payload, offset);
+            short  port = ByteArrays.toShort(payload, offset);
             data.put("URL", "http://" + host + ":" + port);
 
             finish();

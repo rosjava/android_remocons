@@ -146,7 +146,7 @@ public class ConcertChecker {
                 ParameterClient paramClient = new ParameterClient(
                         NodeIdentifier.forNameAndUri("/concert_checker", concertUri.toString()), concertUri);
                 String name = (String) paramClient.getParam(GraphName.of(CONCERT_NAME_PARAM)).getResult();
-                Log.i("ConcertRemocon", "Concert " + name + " found; retrieve additional information");
+                Log.i("Remocon", "Concert " + name + " found; retrieve additional information");
 
                 NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
                 NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(
@@ -166,7 +166,7 @@ public class ConcertChecker {
                 rocon_std_msgs.Icon concertIcon = concertInfo.getIcon();
 
                 if (name.equals(concertName) == false)
-                    Log.w("ConcertRemocon", "Concert names from parameter and topic differs; we use the later");
+                    Log.w("Remocon", "Concert names from parameter and topic differs; we use the later");
 
                 // Check for the concert roles topic
                 ListenerNode<concert_msgs.Roles> readRolesTopic =
@@ -180,17 +180,17 @@ public class ConcertChecker {
                 // configure concert description
                 Date timeLastSeen = new Date();
                 ConcertDescription description = new ConcertDescription(masterId, concertName, concertDesc, concertIcon, timeLastSeen);
-                Log.i("ConcertRemocon", "Concert is available");
+                Log.i("Remocon", "Concert is available");
                 description.setConnectionStatus(ConcertDescription.OK);
                 description.setUserRoles(readRolesTopic.getLastMessage());
                 foundConcertCallback.receive(description);
                 return;
             } catch (RuntimeException e) {
                 // thrown if concert could not be found in the getParam call (from java.net.ConnectException)
-                Log.w("ConcertRemocon", "could not find concert [" + concertUri + "][" + e.toString() + "]");
+                Log.w("Remocon", "could not find concert [" + concertUri + "][" + e.toString() + "]");
                 failureCallback.handleFailure(e.toString());
             } catch (Throwable e) {
-                Log.w("ConcertRemocon", "exception while creating node in concert checker for URI " + concertUri, e);
+                Log.w("Remocon", "exception while creating node in concert checker for URI " + concertUri, e);
                 failureCallback.handleFailure(e.toString());
             }
         }

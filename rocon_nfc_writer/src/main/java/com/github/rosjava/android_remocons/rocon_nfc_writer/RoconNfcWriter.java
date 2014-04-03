@@ -14,7 +14,7 @@ import android.widget.Toast;
 import java.security.InvalidParameterException;
 
 import com.github.rosjava.android_remocons.common_tools.NfcManager;
-import com.github.rocon_rosjava_core.rosjava_utils.ByteArrays;
+import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 

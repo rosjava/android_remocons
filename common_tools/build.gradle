@@ -24,7 +24,7 @@ dependencies {
     compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
     compile 'com.github.rosjava.android_extras:zxing:[0.1,0.2)'
     /* compile 'com.github.rosjava.android_apps:application_management:[0.1,0.2)' */
-    compile 'com.github.rocon_rosjava_core:rosjava_utils:[0.1,)'
+    compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
 }
 
 apply plugin: 'android-library'

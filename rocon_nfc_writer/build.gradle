@@ -16,7 +16,7 @@
 
 dependencies {
     compile project(':common_tools')
-    compile 'com.github.rocon_rosjava_core:rosjava_utils:[0.1,)'
+    compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
 }
 
 apply plugin: 'android'

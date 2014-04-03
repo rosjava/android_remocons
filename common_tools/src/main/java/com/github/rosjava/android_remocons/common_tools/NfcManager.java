@@ -31,7 +31,7 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.github.rocon_rosjava_core.rosjava_utils.ByteArrays;
+import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
 public class NfcManager {
 
