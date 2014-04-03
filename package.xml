@@ -21,5 +21,6 @@
   <build_depend>android_extras</build_depend>
   <build_depend>rocon_msgs</build_depend>
   <!-- While not officially released -->
+  <build_depend>rocon_rosjava_core</build_depend>
   <build_depend>rocon_rosjava_msgs</build_depend>
 </package>

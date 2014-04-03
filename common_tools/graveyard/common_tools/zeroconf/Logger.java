@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Daniel Stonier
+ * Copyright (C) 2013 Yujin Robot.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,10 +14,15 @@
  * the License.
  */
 
-/* Disabled till upgraded for new rocon messages (March '14)
-include 'robot_remocon'
-include 'concert_remocon'
-include 'headless_launcher'
-*/
-include 'common_tools'
-include 'rocon_nfc_writer'
+package com.github.rosjava.android_remocons.common_tools.zeroconf;
+
+import java.lang.String;
+
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.ZeroconfLogger;
+
+public class Logger implements ZeroconfLogger {
+
+    public void println(String msg) {
+        android.util.Log.i("zeroconf", msg);
+    }
+}

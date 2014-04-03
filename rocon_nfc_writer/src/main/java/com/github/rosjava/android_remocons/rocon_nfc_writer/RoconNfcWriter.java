@@ -14,7 +14,7 @@ import android.widget.Toast;
 import java.security.InvalidParameterException;
 
 import com.github.rosjava.android_remocons.common_tools.NfcManager;
-import com.github.rosjava.android_remocons.common_tools.Util;
+import com.github.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 
@@ -140,12 +140,12 @@ public class RoconNfcWriter extends Activity {
             if (appRecord.length() > NFC_APP_RECORD_FIELD_LENGTH)
                 throw new InvalidParameterException("AAR limited to " + NFC_APP_RECORD_FIELD_LENGTH + " chars");
 
-            byte[] content = Util.concat(Util.toFixSizeBytes(ssid, NFC_SSID_FIELD_LENGTH, (byte)0),
-                                         Util.toFixSizeBytes(password, NFC_PASSWORD_FIELD_LENGTH, (byte)0),
-                                         Util.toFixSizeBytes(masterHost, NFC_MASTER_HOST_FIELD_LENGTH, (byte)0),
-                                         Util.toBytes(Short.decode(masterPort)),
-                                         Util.toBytes(Integer.decode(appHash)),
-                                         Util.toBytes(Short.decode(extraData)));
+            byte[] content = ByteArrays.concat(ByteArrays.toFixSizeBytes(ssid, NFC_SSID_FIELD_LENGTH, (byte)0),
+                                         ByteArrays.toFixSizeBytes(password, NFC_PASSWORD_FIELD_LENGTH, (byte)0),
+                                         ByteArrays.toFixSizeBytes(masterHost, NFC_MASTER_HOST_FIELD_LENGTH, (byte)0),
+                                         ByteArrays.toBytes(Short.decode(masterPort)),
+                                         ByteArrays.toBytes(Integer.decode(appHash)),
+                                         ByteArrays.toBytes(Short.decode(extraData)));
 
                 // Max payload size of our Ultralight C NFC tags is 137 bytes, so...
                 //   ssid             16 bytes

@@ -31,7 +31,6 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.github.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
 public class NfcManager {
 
@@ -199,10 +198,10 @@ public class NfcManager {
             byte[] arr = ndef_records[i].toByteArray();
 
             temp = temp + "- TNF=" + ndef_records[i].getTnf() +
-                       "\n - TYPE=" + ByteArrays.getHexString(type, type.length) + " " + new String(type) +
-                       "\n - ID=" + ByteArrays.getHexString(id, id.length) + " " + new String(id) +
-                       "\n - PayLoad=" + ByteArrays.getHexString(pl, pl.length) + " " + new String(pl) +
-                       "\n - ByteArray=" + ByteArrays.getHexString(arr, arr.length) + " " + new String(arr) + "\n";
+                       "\n - TYPE=" + Util.getHexString(type, type.length) + " " + new String(type) +
+                       "\n - ID=" + Util.getHexString(id, id.length) + " " + new String(id) +
+                       "\n - PayLoad=" + Util.getHexString(pl, pl.length) + " " + new String(pl) +
+                       "\n - ByteArray=" + Util.getHexString(arr, arr.length) + " " + new String(arr) + "\n";
 
             ndefString += temp;
         }
@@ -241,7 +240,7 @@ public class NfcManager {
         final byte[] textBytes = text.getBytes(utfEncoding);
         final int utfBit = encodeInUtf8 ? 0 : (1 << 7);
         final char status = (char) (utfBit + langBytes.length);
-        final byte[] data = ByteArrays.concat(new byte[]{(byte) status}, langBytes, textBytes);
+        final byte[] data = Util.concat(new byte[]{(byte) status}, langBytes, textBytes);
 
         return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
     }
@@ -262,7 +261,7 @@ public class NfcManager {
         final Charset utfEncoding = Charset.forName("UTF-8");
         final int utfBit = 0;
         final char status = (char) (utfBit + langBytes.length);
-        final byte[] data = ByteArrays.concat(new byte[]{(byte) status}, langBytes, payload);
+        final byte[] data = Util.concat(new byte[]{(byte) status}, langBytes, payload);
 
         NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
         NdefMessage msg = null;
