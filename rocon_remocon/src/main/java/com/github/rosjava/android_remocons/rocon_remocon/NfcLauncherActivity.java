@@ -1,4 +1,4 @@
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.rocon_remocon;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,21 +10,22 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_apps.application_management.MasterId;
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
-import com.github.rosjava.android_remocons.common_tools.AppsManager;
-import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
-import com.github.rosjava.android_remocons.common_tools.NfcManager;
-import com.github.rosjava.android_remocons.common_tools.NfcReaderActivity;
-import com.github.rosjava.android_remocons.common_tools.Util;
+import com.github.rosjava.android_remocons.common_tools.rocon.AppsManager;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.MasterId;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity;
+import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
+import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
+
+import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
@@ -131,13 +132,13 @@ public class NfcLauncherActivity extends NfcReaderActivity {
         }
 
         int offset = 3; // skip 1 byte for status and 2 lang bytes
-        ssid       = Util.toString(payload, offset, NFC_SSID_FIELD_LENGTH).trim();
+        ssid       = ByteArrays.toString(payload, offset, NFC_SSID_FIELD_LENGTH).trim();
         offset    += NFC_SSID_FIELD_LENGTH;
-        password   = Util.toString(payload, offset, NFC_PASSWORD_FIELD_LENGTH).trim();
+        password   = ByteArrays.toString(payload, offset, NFC_PASSWORD_FIELD_LENGTH).trim();
         offset    += NFC_PASSWORD_FIELD_LENGTH;
-        masterHost = Util.toString(payload, offset, NFC_MASTER_HOST_FIELD_LENGTH).trim();
+        masterHost = ByteArrays.toString(payload, offset, NFC_MASTER_HOST_FIELD_LENGTH).trim();
         offset    += NFC_MASTER_HOST_FIELD_LENGTH;
-        masterPort = Util.toShort(payload, offset);
+        masterPort = ByteArrays.toShort(payload, offset);
 
         launchStep = launchStep.next();
     }
@@ -206,9 +207,9 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     }
 
     private void startConcert() throws Exception {
-        Intent intent = new Intent("com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon");
+        Intent intent = new Intent("ConcertRemocon");
         intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
-        intent.putExtra(AppsManager.PACKAGE + "." + RosAppActivity.AppMode.CONCERT + "_app_name", "NfcLauncher");
+        intent.putExtra(AppsManager.PACKAGE + "." + InteractionMode.CONCERT + "_app_name", "NfcLauncher");
         startActivity(intent);
     }
 

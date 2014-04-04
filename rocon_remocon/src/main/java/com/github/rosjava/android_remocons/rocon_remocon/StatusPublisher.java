@@ -1,4 +1,4 @@
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.rocon_remocon;
 
 import android.util.Log;
 
@@ -12,10 +12,9 @@ import org.ros.node.topic.Publisher;
 
 import java.util.UUID;
 
-import concert_msgs.RemoconStatus;
-import rocon_std_msgs.PlatformInfo;
+import rocon_interaction_msgs.RemoconStatus;
 
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
@@ -41,7 +40,7 @@ public class StatusPublisher implements NodeMain {
     public static StatusPublisher getInstance() {
         if (instance == null) {
             instance = new StatusPublisher();
-            Log.d("ConcertRemocon", "Remocon status publisher created");
+            Log.d("RoconRemocon", "Remocon status publisher created");
         }
 
         return instance;
@@ -62,13 +61,13 @@ public class StatusPublisher implements NodeMain {
 
         // Prepare latched publisher
         publisher = connectedNode.newPublisher("/remocons/" + REMOCON_NAME + "_" + REMOCON_UUID,
-                                               "concert_msgs/RemoconStatus");
+                                               rocon_interaction_msgs.RemoconStatus._TYPE);
         publisher.setLatchMode(true);
 
         // Prepare and publish default status; platform info and uuid remain for the whole session
         status = publisher.newMessage();
         status.setPlatformInfo(ANDROID_PLATFORM_INFO);
-        status.getPlatformInfo().setName(REMOCON_NAME);
+//        status.getPlatformInfo().setName(REMOCON_NAME);
 //        status.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);
 //        status.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
 //        status.getPlatformInfo().setPlatform(PlatformInfo.PLATFORM_TABLET);
@@ -77,12 +76,12 @@ public class StatusPublisher implements NodeMain {
 //        status.getUuid().getUuid().setByte(0, 0);//REMOCON_UUID.getBytes());
         status.setUuid(REMOCON_UUID);  // TODO hack!  uuid is a byte[16] array but like this it fails msg delivery! must be cause the weird rosjava version of byte[] reserves 255 bytes buffer
         status.setRunningApp(false);
-        status.setAppName("");
+        //status.setAppName("");  // not yet implemented
 
         publisher.publish(status);
 
         initialized = true;
-        Log.i("ConcertRemocon", "Remocon status publisher initialized");
+        Log.i("Remocon", "Remocon status publisher initialized");
     }
 
     @Override
@@ -91,7 +90,7 @@ public class StatusPublisher implements NodeMain {
 
         publisher.shutdown();
         initialized = false;
-        Log.i("ConcertRemocon", "Remocon status publisher shutdown");
+        Log.i("Remocon", "Remocon status publisher shutdown");
     }
 
     @Override
@@ -100,17 +99,18 @@ public class StatusPublisher implements NodeMain {
 
     @Override
     public void onError(Node node, Throwable throwable) {
-        Log.e("ConcertRemocon", "Remocon status publisher error: " + throwable.getMessage());
+        Log.e("Remocon", "Remocon status publisher error: " + throwable.getMessage());
     }
 
     public void update(boolean runningApp, String appName) {
-        Log.d("ConcertRemocon", "Remocon status publisher updated. Running app: " + runningApp);
+        Log.d("Remocon", "Remocon status publisher updated. Running app: " + runningApp);
 
-        status.setRunningApp(runningApp);
-        if (runningApp == false || appName == null)
-            status.setAppName("");
-        else
-            status.setAppName(appName);
+        // not yet implemented
+        // status.setRunningApp(runningApp);
+        // if (runningApp == false || appName == null)
+        //    status.setAppName("");
+        // else
+        //    status.setAppName(appName);
 
         publisher.publish(status);
     }

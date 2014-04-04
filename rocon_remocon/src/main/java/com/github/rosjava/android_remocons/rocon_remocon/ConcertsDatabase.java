@@ -33,7 +33,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.rocon_remocon;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;

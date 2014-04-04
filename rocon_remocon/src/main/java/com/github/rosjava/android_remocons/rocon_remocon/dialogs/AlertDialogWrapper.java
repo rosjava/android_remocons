@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon.dialogs;
+package com.github.rosjava.android_remocons.rocon_remocon.dialogs;
 
 import android.app.Activity;
 import android.app.AlertDialog;

@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_apps.application_management;
+package com.github.rosjava.android_remocons.common_tools.system;
 
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
@@ -40,7 +40,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_remocons.common_tools.master.MasterId;
 
 /**
  * Threaded WiFi checker. Checks and tests if the WiFi is configured properly and if not, connects to the correct network.

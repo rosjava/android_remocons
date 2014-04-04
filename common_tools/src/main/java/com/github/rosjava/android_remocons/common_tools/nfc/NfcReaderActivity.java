@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.common_tools;
+package com.github.rosjava.android_remocons.common_tools.nfc;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -42,8 +42,9 @@ import android.widget.TextView;
 
 import java.util.HashMap;
 
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
+import com.github.rosjava.android_remocons.common_tools.R;
 
 /**
  * Read NfcF tags and return the resulting hash map to the invoker action.

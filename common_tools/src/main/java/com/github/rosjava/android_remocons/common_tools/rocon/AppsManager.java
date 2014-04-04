@@ -15,12 +15,12 @@
  * the License.
  */
 
-package com.github.rosjava.android_remocons.common_tools;
+package com.github.rosjava.android_remocons.common_tools.rocon;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_remocons.common_tools.master.MasterId;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
@@ -39,12 +39,12 @@ import org.ros.node.service.ServiceResponseListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import rocon_interaction_msgs.GetApp;
-import rocon_interaction_msgs.GetAppRequest;
-import rocon_interaction_msgs.GetAppResponse;
-import rocon_interaction_msgs.GetRolesAndApps;
-import rocon_interaction_msgs.GetRolesAndAppsRequest;
-import rocon_interaction_msgs.GetRolesAndAppsResponse;
+import rocon_interaction_msgs.GetInteraction;
+import rocon_interaction_msgs.GetInteractionRequest;
+import rocon_interaction_msgs.GetInteractionResponse;
+import rocon_interaction_msgs.GetInteractions;
+import rocon_interaction_msgs.GetInteractionsRequest;
+import rocon_interaction_msgs.GetInteractionsResponse;
 import rocon_interaction_msgs.RequestInteraction;
 import rocon_interaction_msgs.RequestInteractionRequest;
 import rocon_interaction_msgs.RequestInteractionResponse;
@@ -79,23 +79,22 @@ public class AppsManager extends AbstractNodeMain {
 
     // unique identifier to key string variables between activities.
     // TODO I make it compatible current apps; not needed if we rewrite as concert apps
-    public static final String PACKAGE = com.github.rosjava.android_apps.application_management.AppManager.PACKAGE;
-
+    public static final String PACKAGE = "com.github.rosjava.android_remocons.common_tools.rocon.AppManager";
     public enum Action {
-        NONE, GET_APPS_FOR_ROLE, GET_APP_INFO, REQUEST_APP_USE
+        NONE, GET_INTERACTIONS_FOR_ROLE, GET_INTERACTION_INFO, REQUEST_INTERACTION_USE
     };
 
     private int app_hash;
     private String role;
     private Action action = Action.NONE;
- 	private rocon_interaction_msgs.RemoconApp app;
+ 	private rocon_interaction_msgs.Interaction app;
     private ConnectNodeThread connectThread;
     private ConnectedNode connectedNode;
     private NodeMainExecutorService nodeMainExecutorService;
     private FailureHandler failureCallback;
 	private ServiceResponseListener<RequestInteractionResponse> requestServiceResponseListener;
-	private ServiceResponseListener<GetRolesAndAppsResponse>    getAppsServiceResponseListener;
-    private ServiceResponseListener<GetAppResponse>             appInfoServiceResponseListener;
+	private ServiceResponseListener<GetInteractionsResponse>    getAppsServiceResponseListener;
+    private ServiceResponseListener<GetInteractionResponse>             appInfoServiceResponseListener;
 
 
 	public AppsManager(FailureHandler failureCallback) {
@@ -106,11 +105,11 @@ public class AppsManager extends AbstractNodeMain {
         this.requestServiceResponseListener = serviceResponseListener;
     }
 
-    public void setupGetAppsService(ServiceResponseListener<GetRolesAndAppsResponse> serviceResponseListener) {
+    public void setupGetInteractionsService(ServiceResponseListener<GetInteractionsResponse> serviceResponseListener) {
         this.getAppsServiceResponseListener = serviceResponseListener;
     }
 
-    public void setupAppInfoService(ServiceResponseListener<GetAppResponse> serviceResponseListener) {
+    public void setupAppInfoService(ServiceResponseListener<GetInteractionResponse> serviceResponseListener) {
         this.appInfoServiceResponseListener = serviceResponseListener;
     }
 
@@ -128,7 +127,7 @@ public class AppsManager extends AbstractNodeMain {
     }
 
     public void getAppsForRole(final MasterId masterId, final String role) {
-        this.action = Action.GET_APPS_FOR_ROLE;
+        this.action = Action.GET_INTERACTIONS_FOR_ROLE;
         this.role = role;
 
         // If this is the first action requested, we need a connected node, what must be done in a different thread
@@ -150,8 +149,8 @@ public class AppsManager extends AbstractNodeMain {
         }
     }
 
-    public void requestAppUse(final MasterId masterId, final String role, final rocon_interaction_msgs.RemoconApp app) {
-        this.action = Action.REQUEST_APP_USE;
+    public void requestAppUse(final MasterId masterId, final String role, final rocon_interaction_msgs.Interaction app) {
+        this.action = Action.REQUEST_INTERACTION_USE;
         this.role = role;
         this.app  = app;
 
@@ -175,7 +174,7 @@ public class AppsManager extends AbstractNodeMain {
     }
 
     public void getAppInfo(final MasterId masterId, final int hash) {
-        this.action = Action.GET_APP_INFO;
+        this.action = Action.GET_INTERACTION_INFO;
         this.app_hash = hash;
 
         // If this is the first action requested, we need a connected node, what must be done in a different thread
@@ -199,21 +198,21 @@ public class AppsManager extends AbstractNodeMain {
 
     private void getAppsForRole() {
         // call get_roles_and_apps concert service
-        ServiceClient<GetRolesAndAppsRequest, GetRolesAndAppsResponse> srvClient;
+        ServiceClient<GetInteractionsRequest, GetInteractionsResponse> srvClient;
         try {
-            Log.d("AppsMng", "List apps service client created [" + GET_ROLES_AND_APPS_SRV + "]");
-            srvClient = connectedNode.newServiceClient(GET_ROLES_AND_APPS_SRV, GetRolesAndApps._TYPE);
+            Log.d("AppsMng", "List apps service client created [" + GET_INTERACTIONS_SRV + "]");
+            srvClient = connectedNode.newServiceClient(GET_INTERACTIONS_SRV, GetInteractions._TYPE);
         } catch (ServiceNotFoundException e) {
-            Log.w("AppsMng", "List apps service not found [" + GET_ROLES_AND_APPS_SRV + "]");
+            Log.w("AppsMng", "List apps service not found [" + GET_INTERACTIONS_SRV + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
-        final GetRolesAndAppsRequest request = srvClient.newMessage();
+        final GetInteractionsRequest request = srvClient.newMessage();
 
         request.getRoles().add(role);
-        request.setPlatformInfo(ANDROID_PLATFORM_INFO);
+        request.setUri(ANDROID_PLATFORM_INFO.getUri());
 
         srvClient.call(request, getAppsServiceResponseListener);
-        Log.d("AppsMng", "List apps service call done [" + GET_ROLES_AND_APPS_SRV + "]");
+        Log.d("AppsMng", "List apps service call done [" + GET_INTERACTIONS_SRV + "]");
     }
 
     private void requestAppUse() {
@@ -228,10 +227,7 @@ public class AppsManager extends AbstractNodeMain {
         }
         final RequestInteractionRequest request = srvClient.newMessage();
 
-        request.setRole(role);
-        request.setApplication(app.getName());
-        request.setServiceName(app.getServiceName());
-        request.setPlatformInfo(ANDROID_PLATFORM_INFO);
+        request.setHash(app_hash);
 
         srvClient.call(request, requestServiceResponseListener);
         Log.d("AppsMng", "Request app service call done [" + REQUEST_INTERACTION_SRV + "]");
@@ -239,21 +235,20 @@ public class AppsManager extends AbstractNodeMain {
 
     private void getAppInfo() {
         // call get_app concert service
-        ServiceClient<GetAppRequest, GetAppResponse> srvClient;
+        ServiceClient<GetInteractionRequest, GetInteractionResponse> srvClient;
         try {
-            Log.d("AppsMng", "Get app info service client created [" + GET_APP_INFO_SRV + "]");
-            srvClient = connectedNode.newServiceClient(GET_APP_INFO_SRV, GetApp._TYPE);
+            Log.d("AppsMng", "Get app info service client created [" + GET_INTERACTION_SRV + "]");
+            srvClient = connectedNode.newServiceClient(GET_INTERACTION_SRV, GetInteraction._TYPE);
         } catch (ServiceNotFoundException e) {
-            Log.w("AppsMng", "Get app info not found [" + GET_APP_INFO_SRV + "]");
+            Log.w("AppsMng", "Get app info not found [" + GET_INTERACTION_SRV + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
-        final GetAppRequest request = srvClient.newMessage();
+        final GetInteractionRequest request = srvClient.newMessage();
 
         request.setHash(app_hash);
-        request.setPlatformInfo(ANDROID_PLATFORM_INFO);
 
         srvClient.call(request, appInfoServiceResponseListener);
-        Log.d("AppsMng", "Get app info service call done [" + GET_APP_INFO_SRV + "]");
+        Log.d("AppsMng", "Get app info service call done [" + GET_INTERACTION_SRV + "]");
     }
 
     /**
@@ -279,12 +274,15 @@ public class AppsManager extends AbstractNodeMain {
             try {
                 URI concertUri = new URI(masterId.getMasterUri());
 
-                // Check if the concert exists by looking for concert name parameter
-                // getParam throws when it can't find the parameter.
+                // Check if the master exists by looking for a master parameter
+                // getParam throws when it can't find the parameter (DJS: what does it throw?).
+                // Could get it to look for a hardcoded rocon parameter for extra guarantees
+                // (e.g. /rocon/version) however we'd still have to do some checking below
+                // when the info is there but interactions not.
                 ParameterClient paramClient = new ParameterClient(
                         NodeIdentifier.forNameAndUri("/concert_checker", concertUri.toString()), concertUri);
-                String name = (String) paramClient.getParam(GraphName.of(CONCERT_NAME_PARAM)).getResult();
-                Log.i("ConcertRemocon", "Concert " + name + " found; retrieve additional information");
+                String name = (String) paramClient.getParam(GraphName.of("/rosversion")).getResult();
+                Log.i("Remocon", "Concert " + name + " found; retrieve additional information");
 
                 nodeMainExecutorService = new NodeMainExecutorService();
                 NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(
@@ -330,13 +328,13 @@ public class AppsManager extends AbstractNodeMain {
             case NONE:
                 Log.w("AppsMng", "Node started without specifying an action");
                 break;
-            case REQUEST_APP_USE:
+            case REQUEST_INTERACTION_USE:
                 requestAppUse();
                 break;
-            case GET_APPS_FOR_ROLE:
+            case GET_INTERACTIONS_FOR_ROLE:
                 getAppsForRole();
                 break;
-            case GET_APP_INFO:
+            case GET_INTERACTION_INFO:
                 getAppInfo();
                 break;
             default:

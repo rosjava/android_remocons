@@ -42,7 +42,7 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-        <activity android:name="com.github.rosjava.android_remocons.common_tools.NfcReaderActivity" />
+        <activity android:name="com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity" />
 
         <!--<service android:name="AppLauncher" />-->
         <service android:name="org.ros.android.NodeMainExecutorService" >

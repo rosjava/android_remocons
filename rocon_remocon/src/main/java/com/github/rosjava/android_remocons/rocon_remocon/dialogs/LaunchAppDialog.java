@@ -1,4 +1,4 @@
-package com.github.rosjava.android_remocons.concert_remocon.dialogs;
+package com.github.rosjava.android_remocons.rocon_remocon.dialogs;
 
 /**
  * Created by jorge on 11/7/13.
@@ -6,7 +6,6 @@ package com.github.rosjava.android_remocons.concert_remocon.dialogs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -22,7 +21,7 @@ public class LaunchAppDialog extends AlertDialogWrapper {
         super(context, new AlertDialog.Builder(context), "Launch", "Cancel");
     }
 
-    public void setup(concert_msgs.RemoconApp app, boolean allowed, String reason) {
+    public void setup(rocon_interaction_msgs.Interaction app, boolean allowed, String reason) {
 
         boolean hasValidIcon = false;
         String iconFormat = app.getIcon().getFormat();

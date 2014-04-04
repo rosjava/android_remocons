@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.rocon_remocon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
 
 /**
  * @author hersh@willowgarage.com

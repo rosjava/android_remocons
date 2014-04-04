@@ -13,10 +13,10 @@ import android.widget.Toast;
 
 import java.security.InvalidParameterException;
 
-import com.github.rosjava.android_remocons.common_tools.NfcManager;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
 import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)

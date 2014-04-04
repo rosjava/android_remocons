@@ -31,7 +31,7 @@
 * POSSIBILITY OF SUCH DAMAGE.
 */
 
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.rocon_remocon;
 
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
@@ -42,26 +42,29 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
-import concert_msgs.RemoconApp;
+
+import com.github.rosjava.android_remocons.rocon_remocon.R;
+
+import rocon_interaction_msgs.Interaction;
 import java.util.ArrayList;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
 public class AppAdapter extends BaseAdapter {
   private Context context;
-  private ArrayList<RemoconApp> apps;
+  private ArrayList<Interaction> interactions;
 
-  public AppAdapter(Context c, ArrayList<RemoconApp> apps) {
+  public AppAdapter(Context c, ArrayList<Interaction> interactions) {
     context = c;
-    this.apps = apps;
+    this.interactions = interactions;
   }
 
   @Override
   public int getCount() {
-    if (apps == null) {
+    if (interactions == null) {
       return 0;
     }
-    return apps.size();
+    return interactions.size();
   }
 
   @Override
@@ -82,11 +85,11 @@ public class AppAdapter extends BaseAdapter {
     LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
     View view = inflater.inflate(R.layout.app_item, null);
-    RemoconApp app = apps.get(position);
-    if( app.getIcon().getData().array().length > 0 && app.getIcon().getFormat() != null &&
-        (app.getIcon().getFormat().equals("jpeg") || app.getIcon().getFormat().equals("png")) ) {
-    	ChannelBuffer buffer = app.getIcon().getData();
-    	Bitmap iconBitmap = BitmapFactory.decodeByteArray( app.getIcon().getData().array(), buffer.arrayOffset(), buffer.readableBytes());
+    Interaction interaction = interactions.get(position);
+    if( interaction.getIcon().getData().array().length > 0 && interaction.getIcon().getFormat() != null &&
+        (interaction.getIcon().getFormat().equals("jpeg") || interaction.getIcon().getFormat().equals("png")) ) {
+    	ChannelBuffer buffer = interaction.getIcon().getData();
+    	Bitmap iconBitmap = BitmapFactory.decodeByteArray( interaction.getIcon().getData().array(), buffer.arrayOffset(), buffer.readableBytes());
 
       if( iconBitmap != null ) {
         ImageView iv = (ImageView) view.findViewById(R.id.icon);
@@ -94,7 +97,7 @@ public class AppAdapter extends BaseAdapter {
       }
     }
     TextView tv = (TextView) view.findViewById(R.id.name);
-    tv.setText(app.getDisplayName());
+    tv.setText(interaction.getDisplayName());
 
     return view;
   }

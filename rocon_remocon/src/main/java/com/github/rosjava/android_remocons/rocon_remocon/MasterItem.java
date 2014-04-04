@@ -31,7 +31,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.rocon_remocon;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -47,15 +47,16 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.net.wifi.WifiManager;
 
-import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
-import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
+import com.github.rosjava.android_remocons.rocon_remocon.R;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
  * Data class behind view of one item in the list of ROS Masters. Gets created with a master URI and a
- * local host name, then starts a {@link com.github.rosjava.android_remocons.common_tools.ConcertChecker}
+ * local host name, then starts a {@link com.github.rosjava.android_remocons.common_tools.master.ConcertChecker}
  * to look up concert name and type.
  *
  * @author hersh@willowgarage.com

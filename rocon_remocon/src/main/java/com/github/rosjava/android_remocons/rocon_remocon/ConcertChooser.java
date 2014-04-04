@@ -34,7 +34,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.concert_remocon;
+package com.github.rosjava.android_remocons.rocon_remocon;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -66,8 +66,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.MasterId;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity;
 import com.github.rosjava.android_remocons.common_tools.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 
@@ -116,13 +117,13 @@ public class ConcertChooser extends Activity {
 				ConcertsDatabase.CONTENT_URI, null, null, null, null);
 		if (c == null) {
 			concerts = new ArrayList<ConcertDescription>();
-			Log.e("ConcertRemocon", "concert master chooser provider failed!!!");
+			Log.e("Remocon", "concert master chooser provider failed!!!");
 			return;
 		}
 		if (c.getCount() > 0) {
 			c.moveToFirst();
 			str = c.getString(c.getColumnIndex(ConcertsDatabase.TABLE_COLUMN));
-			Log.i("ConcertRemocon", "concert master chooser found a concert: " + str);
+			Log.i("Remocon", "concert master chooser found a concert: " + str);
 		}
 		if (str != null) {
 			concerts = (List<ConcertDescription>) yaml.load(str);
@@ -132,7 +133,7 @@ public class ConcertChooser extends Activity {
 	}
 
 	public void writeConcertList() {
-		Log.i("ConcertRemocon", "concert master chooser saving concert...");
+		Log.i("Remocon", "concert master chooser saving concert...");
 		String str = null;
 		final List<ConcertDescription> tmp = concerts; // Avoid race conditions
         if (tmp != null) {
@@ -142,7 +143,7 @@ public class ConcertChooser extends Activity {
 		cv.put(ConcertsDatabase.TABLE_COLUMN, str);
 		Uri newEmp = getContentResolver().insert(ConcertsDatabase.CONTENT_URI, cv);
 		if (newEmp != ConcertsDatabase.CONTENT_URI) {
-			Log.e("ConcertRemocon", "concert master chooser could not save concert, non-equal URI's");
+			Log.e("Remocon", "concert master chooser could not save concert, non-equal URI's");
 		}
 	}
 
@@ -266,7 +267,7 @@ public class ConcertChooser extends Activity {
 			ConcertDescription concert = iter.next();
 			if (concert == null || concert.getConnectionStatus() == null
 					|| concert.getConnectionStatus().equals(ConcertDescription.ERROR)) {
-				Log.i("ConcertRemocon", "concert master chooser removing concert with connection status '"
+				Log.i("Remocon", "concert master chooser removing concert with connection status '"
 						+ concert.getConnectionStatus() + "'");
 				iter.remove();
 			}
@@ -308,7 +309,7 @@ public class ConcertChooser extends Activity {
             }
         }
         else {
-            Log.w("ConcertRemocon", "Unknown activity request code: " + requestCode);
+            Log.w("Remocon", "Unknown activity request code: " + requestCode);
             return;
         }
 
@@ -317,7 +318,7 @@ public class ConcertChooser extends Activity {
         }
         else {
             try {
-                Log.d("ConcertRemocon", "ConcertChooser OBJECT: " + data.toString());
+                Log.d("Remocon", "ConcertChooser OBJECT: " + data.toString());
                 addMaster(new MasterId(data), false);
             } catch (Exception e) {
                 Toast.makeText(this, "Invalid concert description: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -492,7 +493,7 @@ public class ConcertChooser extends Activity {
                     + discovered_service.port + "/";
         }
         if (newMasterUri != null && newMasterUri.length() > 0) {
-            android.util.Log.i("ConcertRemocon", newMasterUri);
+            android.util.Log.i("Remocon", newMasterUri);
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("URL", newMasterUri);
             try {
@@ -574,7 +575,7 @@ public class ConcertChooser extends Activity {
 
     public void scanNFCTagClicked(View view) {
         dismissDialog(ADD_URI_DIALOG_ID);
-        Intent i = new Intent(this, com.github.rosjava.android_remocons.common_tools.NfcReaderActivity.class);
+        Intent i = new Intent(this, NfcReaderActivity.class);
         // Set the request code so we can identify the callback via this code
         startActivityForResult(i, NFC_TAG_SCAN_REQUEST_CODE);
     }

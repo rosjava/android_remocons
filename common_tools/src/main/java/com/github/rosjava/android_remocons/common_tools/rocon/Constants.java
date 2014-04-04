@@ -1,4 +1,4 @@
-package com.github.rosjava.android_remocons.common_tools;
+package com.github.rosjava.android_remocons.common_tools.rocon;
 
 import org.ros.internal.message.DefaultMessageFactory;
 import org.ros.internal.message.definition.MessageDefinitionReflectionProvider;
@@ -11,7 +11,7 @@ import rocon_std_msgs.Strings;
  *
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
-public class RoconConstants {
+public class Constants {
     public static final int NFC_SSID_FIELD_LENGTH           =  16;
     public static final int NFC_PASSWORD_FIELD_LENGTH       =  16;
     public static final int NFC_MASTER_HOST_FIELD_LENGTH    =  16;
@@ -26,9 +26,9 @@ public class RoconConstants {
 //    public static final String CONCERT_INFO_TOPIC      = "/concert/info";
 //    public static final String CONCERT_ROLES_TOPIC     = "/concert/interactions/roles";
 //
-//    public static final String GET_APP_INFO_SRV        = "/concert/interactions/get_app";
-//    public static final String GET_ROLES_AND_APPS_SRV  = "/concert/interactions/get_roles_and_apps";
-//    public static final String REQUEST_INTERACTION_SRV = "/concert/interactions/request_interaction";
+    public static final String GET_INTERACTION_SRV        = "/concert/interactions/get_interaction";
+    public static final String GET_INTERACTIONS_SRV  = "/concert/interactions/get_interactions";
+    public static final String REQUEST_INTERACTION_SRV = "/concert/interactions/request_interaction";
 
     public static final rocon_std_msgs.PlatformInfo ANDROID_PLATFORM_INFO = makePlatformInfo();
 

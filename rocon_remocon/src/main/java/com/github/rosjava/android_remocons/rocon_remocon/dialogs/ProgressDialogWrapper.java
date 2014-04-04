@@ -1,4 +1,4 @@
-package com.github.rosjava.android_remocons.concert_remocon.dialogs;
+package com.github.rosjava.android_remocons.rocon_remocon.dialogs;
 
 /**
  * Created by jorge on 11/7/13.
@@ -21,7 +21,7 @@ public class ProgressDialogWrapper {
     }
 
     public void dismiss() {
-        Log.d("ConcertRemocon", "Stopping the spinner");
+        Log.d("Remocon", "Stopping the spinner");
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 if (progressDialog != null) {
@@ -36,7 +36,7 @@ public class ProgressDialogWrapper {
         activity.runOnUiThread(new Runnable() {
             public void run() {
                 if (progressDialog != null) {
-                    Log.d("ConcertRemocon", "Restarting the spinner with a new message");
+                    Log.d("Remocon", "Restarting the spinner with a new message");
                     progressDialog.dismiss();
                 }
 

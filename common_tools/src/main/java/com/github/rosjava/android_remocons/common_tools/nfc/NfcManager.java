@@ -1,4 +1,4 @@
-package com.github.rosjava.android_remocons.common_tools;
+package com.github.rosjava.android_remocons.common_tools.nfc;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
