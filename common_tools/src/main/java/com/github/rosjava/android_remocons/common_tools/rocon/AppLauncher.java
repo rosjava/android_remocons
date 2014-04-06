@@ -56,10 +56,8 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Patterns;
 
-import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
+import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
 import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
-
 
 /**
  * A rewrite of robot_remocon/AppLauncher that...
@@ -93,7 +91,7 @@ public class AppLauncher {
     static public Result launch(final Activity parent, final ConcertDescription concert,
                                 final rocon_interaction_msgs.Interaction app) {
 
-        Log.i("AppLaunch", "launching concert app " + app.getDisplayName() + " on service " + app.getServiceName());
+        Log.i("AppLaunch", "launching concert app " + app.getDisplayName() + " on service " + app.getNamespace());
 
         // On android apps, app name will be an intent action, while for web apps it will be its URL
         if (Patterns.WEB_URL.matcher(app.getName()).matches() == true) {
@@ -116,9 +114,9 @@ public class AppLauncher {
         Intent intent = new Intent(appName);
 
         // Copy all app data to "extra" data in the intent.
-        intent.putExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.CONCERT + "_app_name", appName);
+        intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", appName);
         intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
-        intent.putExtra("RemoconActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon"); // TODO must be a RoconConstant!
+        intent.putExtra("RemoconActivity", Constants.ACTIVITY_ROCON_REMOCON);
         intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
 
         // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
@@ -159,7 +157,7 @@ public class AppLauncher {
                 protected String doInBackground(URL... urls) {
                     try {
                         HttpURLConnection urlConnection = (HttpURLConnection)urls[0].openConnection();
-                        int responseCode = urlConnection.getResponseCode();
+                        int unused_responseCode = urlConnection.getResponseCode();
                         urlConnection.disconnect();
                         return urlConnection.getResponseMessage();
                     }

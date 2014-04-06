@@ -76,6 +76,7 @@ import com.github.rosjava.android_remocons.common_tools.rocon.AppsManager;
 import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
 import com.github.rosjava.android_remocons.common_tools.master.MasterId;
+import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
 import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
 
 import com.github.rosjava.android_remocons.rocon_remocon.R;
@@ -85,7 +86,6 @@ import com.github.rosjava.android_remocons.rocon_remocon.dialogs.ProgressDialogW
 import com.google.common.base.Preconditions;
 
 import rocon_interaction_msgs.Interaction;
-import rocon_interaction_msgs.RoleAppList;
 
 /**
  * An almost complete  rewrite of RobotRemocon to work with concerts.
@@ -140,7 +140,7 @@ public class ConcertRemocon extends RosActivity {
                              WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.concert_remocon);
 
-        concertAppName = getIntent().getStringExtra(AppsManager.PACKAGE + "." + InteractionMode.CONCERT + "_app_name");
+        concertAppName = getIntent().getStringExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name");
         if (concertAppName == null) {
             concertAppName = defaultConcertAppName;
         }
@@ -165,13 +165,13 @@ public class ConcertRemocon extends RosActivity {
                 Log.e("ConcertRemocon", "Failure on apps manager: " + reason);
             }
         });
-        appsManager.setupGetAppsService(new ServiceResponseListener<rocon_interaction_msgs.GetInteractionsResponse>() {
+        appsManager.setupGetInteractionsService(new ServiceResponseListener<rocon_interaction_msgs.GetInteractionsResponse>() {
             @Override
             public void onSuccess(rocon_interaction_msgs.GetInteractionsResponse response) {
-                List<RoleAppList> apps = response.getData();
+                List<Interaction> apps = response.getInteractions();
                 if (apps.size() > 0) {
-                    availableAppsCache = (ArrayList<Interaction>) apps.get(0).getRemoconApps();
-                    Log.i("ConcertRemocon", "RoleAppList Publication: " + availableAppsCache.size() + " apps");
+                    availableAppsCache = (ArrayList<Interaction>) apps;
+                    Log.i("ConcertRemocon", "Interaction Publication: " + availableAppsCache.size() + " apps");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {

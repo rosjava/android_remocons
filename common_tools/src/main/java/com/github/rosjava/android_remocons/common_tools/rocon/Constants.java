@@ -30,6 +30,10 @@ public class Constants {
     public static final String GET_INTERACTIONS_SRV  = "/concert/interactions/get_interactions";
     public static final String REQUEST_INTERACTION_SRV = "/concert/interactions/request_interaction";
 
+    // unique identifier to key string variables between activities.
+    static public final String ACTIVITY_SWITCHER_ID = "com.github.rosjava.android_remocons.common_tools.rocon.Constants";
+    static public final String ACTIVITY_ROCON_REMOCON = "com.github.rosjava.android_remocons.rocon_remocon.ConcertRemocon";
+
     public static final rocon_std_msgs.PlatformInfo ANDROID_PLATFORM_INFO = makePlatformInfo();
 
     /**

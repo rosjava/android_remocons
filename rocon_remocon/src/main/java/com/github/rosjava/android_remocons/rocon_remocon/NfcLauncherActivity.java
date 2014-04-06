@@ -16,6 +16,7 @@ import com.github.rosjava.android_remocons.common_tools.master.ConcertDescriptio
 import com.github.rosjava.android_remocons.common_tools.master.MasterId;
 import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity;
+import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
 import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
 import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
 
@@ -209,7 +210,7 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     private void startConcert() throws Exception {
         Intent intent = new Intent("ConcertRemocon");
         intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
-        intent.putExtra(AppsManager.PACKAGE + "." + InteractionMode.CONCERT + "_app_name", "NfcLauncher");
+        intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", "NfcLauncher");
         startActivity(intent);
     }
 

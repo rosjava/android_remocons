@@ -77,9 +77,6 @@ public class AppsManager extends AbstractNodeMain {
         void handleFailure(String reason);
     }
 
-    // unique identifier to key string variables between activities.
-    // TODO I make it compatible current apps; not needed if we rewrite as concert apps
-    public static final String PACKAGE = "com.github.rosjava.android_remocons.common_tools.rocon.AppManager";
     public enum Action {
         NONE, GET_INTERACTIONS_FOR_ROLE, GET_INTERACTION_INFO, REQUEST_INTERACTION_USE
     };
