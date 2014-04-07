@@ -129,7 +129,7 @@ public class AppLauncher {
         }
 
 //      intent.putExtra("runningNodes", runningNodes);
-//      intent.putExtra("PairedManagerActivity", "com.github.concertics_in_concert.rocon_android.concert_remocon.ConcertRemocon");
+//      intent.putExtra("PairedManagerActivity", "com.github.concertics_in_concert.rocon_android.rocon_remocon.ConcertRemocon");
 
         try {
             Log.i("AppLaunch", "trying to start activity (action: " + appName + " )");

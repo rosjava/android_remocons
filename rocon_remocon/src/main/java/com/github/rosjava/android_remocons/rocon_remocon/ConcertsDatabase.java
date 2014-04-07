@@ -70,7 +70,7 @@ public class ConcertsDatabase extends ContentProvider {
         }
     }
 
-    public  static final Uri CONTENT_URI = Uri.parse("content://com.github.rosjava.android_remocons.concert_remocon");
+    public  static final Uri CONTENT_URI = Uri.parse("content://com.github.rosjava.android_remocons.rocon_remocon");
     public  static final int DATABASE_VERSION = 2;
     public  static final String DATABASE_NAME = "concertlist_table";
     public  static final String TABLE_NAME    = "concertlist";

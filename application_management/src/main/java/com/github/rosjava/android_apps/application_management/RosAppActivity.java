@@ -152,7 +152,7 @@ public abstract class RosAppActivity extends RosActivity {
 //        MasterDescription  md = MasterDescription.createUnknown(mid);
 //        getIntent().putExtra(MasterDescription.UNIQUE_KEY, md);
 //        getIntent().putExtra(AppManager.PACKAGE + ".concert_app_name", "KKKK");
-//        getIntent().putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.concert_remocon.ConcertRemocon");
+//        getIntent().putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.rocon_remocon.ConcertRemocon");
 //        getIntent().putExtra("ChooserURI", "http://192.168.10.129:11311");
 //        getIntent().putExtra("Parameters", "{pickup_point: pickup}");
 //        getIntent().putExtra("Remappings", "{ 'cmd_vel':'/robot_teleop/cmd_vel', 'image_color':'/robot_teleop/image_color/compressed_throttle' }");

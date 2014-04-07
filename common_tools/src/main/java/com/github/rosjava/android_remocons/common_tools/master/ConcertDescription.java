@@ -49,17 +49,18 @@ public class ConcertDescription extends MasterDescription implements java.io.Ser
     private String description;
     private String[] userRoles;
     private int currentRole = -1;
+    private String interactionsNamespace;
 
     public static ConcertDescription create(MasterDescription master) {
         ConcertDescription cd = new ConcertDescription(master.getMasterId(), master.getMasterName(),
-                                                       null, null, new Date());
+                                                       null, null, null, new Date());
         cd.setMasterIconFormat(master.getMasterIconFormat());
         cd.setMasterIconData(master.getMasterIconData());
         return cd;
     }
 
     public static ConcertDescription createUnknown(MasterId masterId) {
-        return new ConcertDescription(masterId, NAME_UNKNOWN, null, null, new Date());
+        return new ConcertDescription(masterId, NAME_UNKNOWN, null, null, null, new Date());
     }
 
     /**
@@ -69,11 +70,12 @@ public class ConcertDescription extends MasterDescription implements java.io.Ser
     }
 
     public ConcertDescription(MasterId masterId, String concertName, String description,
-                              rocon_std_msgs.Icon concertIcon, Date timeLastSeen) {
+                              rocon_std_msgs.Icon concertIcon, String interactionsNamespace,
+                              Date timeLastSeen) {
         super(masterId, concertName, "Rocon concert", concertIcon, "", timeLastSeen);
-        // empty apps namespace on concerts; allis handled by remappings
 
         this.description = description;
+        this.interactionsNamespace = interactionsNamespace;
     }
 
     public void copyFrom(ConcertDescription other) {
@@ -81,7 +83,10 @@ public class ConcertDescription extends MasterDescription implements java.io.Ser
 
         this.userRoles = other.userRoles.clone();
         this.description = other.description;
+        this.interactionsNamespace = other.interactionsNamespace;
     }
+
+    public String getInteractionsNamespace() { return this.interactionsNamespace; }
 
     public String[] getUserRoles()  {
         return userRoles;
@@ -92,6 +97,10 @@ public class ConcertDescription extends MasterDescription implements java.io.Ser
             return userRoles[currentRole];
         else
             return null;
+    }
+
+    public void setInteractionsNamespace(String namespace) {
+        this.interactionsNamespace = namespace;
     }
 
     public void setUserRoles(rocon_interaction_msgs.Roles roles)

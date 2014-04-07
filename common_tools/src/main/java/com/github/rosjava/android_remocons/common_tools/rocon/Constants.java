@@ -22,14 +22,6 @@ public class Constants {
     public static final int NFC_PAYLOAD_LENGTH              =  56; // 16 + 16 + 16 + 2 + 4 + 2
     public static final int NFC_ULTRALIGHT_C_MAX_LENGTH     = 137;
 
-//    public static final String CONCERT_NAME_PARAM      = "/concert/name";
-//    public static final String CONCERT_INFO_TOPIC      = "/concert/info";
-//    public static final String CONCERT_ROLES_TOPIC     = "/concert/interactions/roles";
-//
-    public static final String GET_INTERACTION_SRV        = "/concert/interactions/get_interaction";
-    public static final String GET_INTERACTIONS_SRV  = "/concert/interactions/get_interactions";
-    public static final String REQUEST_INTERACTION_SRV = "/concert/interactions/request_interaction";
-
     // unique identifier to key string variables between activities.
     static public final String ACTIVITY_SWITCHER_ID = "com.github.rosjava.android_remocons.common_tools.rocon.Constants";
     static public final String ACTIVITY_ROCON_REMOCON = "com.github.rosjava.android_remocons.rocon_remocon.ConcertRemocon";

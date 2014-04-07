@@ -46,12 +46,12 @@ public class LaunchAppDialog extends AlertDialogWrapper {
         dialog.setTitle(app.getDisplayName());
 
         if (allowed) {
-            Log.i("ConcertRemocon", "Concert allowed use selected app. " + reason);
-            dialog.setMessage(app.getDescription() + "\n\nConcert allows you to start this app!");
+            Log.i("Remocon", "This interaction is permitted [" + reason + "]");
+            dialog.setMessage(app.getDescription() + "\n\nLovely, you are allowed to launch this interaction.");
         }
         else {
-            Log.i("ConcertRemocon", "Concert denies the use of selected app. " + reason);
-            dialog.setMessage(app.getDescription() + "\n\nConcert doesn't allow you to start this app\n" + reason);
+            Log.i("Remocon", "This interaction is not permitted [" + reason + "]");
+            dialog.setMessage(app.getDescription() + "\n\nDude, this is not allowed - what did you do?\n" + reason);
             enablePositive = false;
         }
     }

@@ -34,15 +34,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.github.rosjava.android_remocons.common_tools.master;
+package com.github.rosjava.android_remocons.common_tools;
 
 import android.util.Log;
-
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
 import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
 import org.ros.internal.node.server.NodeIdentifier;
 import org.ros.namespace.GraphName;
 import org.ros.node.NodeConfiguration;
@@ -51,10 +49,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
 
-import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfo;
-import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfoException;
-import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionsException;
-import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.RoconInteractions;
+import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
+
+import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 
 /**
  * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS
@@ -143,70 +141,57 @@ public class ConcertChecker {
         @Override
         public void run() {
             try {
-                // Check if the master exists by looking for the rosversion parameter.
-                // getParam throws when it can't find the parameter (DJS: what does it throw?).
-                // Could get it to look for a hardcoded rocon parameter for extra guarantees
-                // (e.g. /rocon/version) however we'd still have to do some checking below
-                // when the info is there but interactions not.
+                // Check if the concert exists by looking for concert name parameter
+                // getParam throws when it can't find the parameter.
                 ParameterClient paramClient = new ParameterClient(
                         NodeIdentifier.forNameAndUri("/concert_checker", concertUri.toString()), concertUri);
-                String version = (String) paramClient.getParam(GraphName.of("/rosversion")).getResult();
-                Log.i("Remocon", "r ros master found [" + version + "]");
+                String name = (String) paramClient.getParam(GraphName.of(CONCERT_NAME_PARAM)).getResult();
+                Log.i("ConcertRemocon", "Concert " + name + " found; retrieve additional information");
 
                 NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
                 NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(
                         InetAddressFactory.newNonLoopback().getHostAddress(), concertUri);
 
                 // Check for the concert information topic
-                MasterInfo masterInfo = new MasterInfo();
-                RoconInteractions roconInteractions = new RoconInteractions();
+                ListenerNode<concert_msgs.ConcertInfo> readInfoTopic =
+                        new ListenerNode(CONCERT_INFO_TOPIC, concert_msgs.ConcertInfo._TYPE);
+                nodeMainExecutorService.execute(readInfoTopic, nodeConfiguration.setNodeName("read_info_node"));
+                readInfoTopic.waitForResponse();
 
-                nodeMainExecutorService.execute(
-                        masterInfo,
-                        nodeConfiguration.setNodeName("master_info_node")
-                );
-                masterInfo.waitForResponse(); // MasterInfoExc. on timeout, listener or ros runtime errors
-                Log.i("Remocon", "master info found");
-                nodeMainExecutorService.execute(
-                        roconInteractions,
-                        nodeConfiguration.setNodeName("rocon_interactions_node")
-                );
-                roconInteractions.waitForResponse(); // InteractionsExc. on timeout, listener or ros runtime errors
-                Log.i("Remocon", "rocon interactions found");
+
+                concert_msgs.ConcertInfo concertInfo = readInfoTopic.getLastMessage();
+
+                String              concertName = concertInfo.getName();
+                String              concertDesc = concertInfo.getDescription();
+                rocon_std_msgs.Icon concertIcon = concertInfo.getIcon();
+
+                if (name.equals(concertName) == false)
+                    Log.w("ConcertRemocon", "Concert names from parameter and topic differs; we use the later");
+
+                // Check for the concert roles topic
+                ListenerNode<concert_msgs.Roles> readRolesTopic =
+                        new ListenerNode(CONCERT_ROLES_TOPIC, concert_msgs.Roles._TYPE);
+                nodeMainExecutorService.execute(readRolesTopic, nodeConfiguration.setNodeName("concert_roles_node"));
+                readRolesTopic.waitForResponse();
+
+                nodeMainExecutorService.shutdownNodeMain(readInfoTopic);
+                nodeMainExecutorService.shutdownNodeMain(readRolesTopic);
 
                 // configure concert description
                 Date timeLastSeen = new Date();
-                ConcertDescription description = new ConcertDescription(
-                        masterId,
-                        masterInfo.getName(),
-                        masterInfo.getDescription(),
-                        masterInfo.getIcon(),
-                        roconInteractions.getNamespace(),
-                        timeLastSeen);
-
+                ConcertDescription description = new ConcertDescription(masterId, concertName, concertDesc, concertIcon, timeLastSeen);
+                Log.i("ConcertRemocon", "Concert is available");
                 description.setConnectionStatus(ConcertDescription.OK);
-                description.setUserRoles(roconInteractions.getRoles());
+                description.setUserRoles(readRolesTopic.getLastMessage());
                 foundConcertCallback.receive(description);
-
-                nodeMainExecutorService.shutdownNodeMain(masterInfo);
-                nodeMainExecutorService.shutdownNodeMain(roconInteractions);
                 return;
-            } catch (XmlRpcTimeoutException e) {
-                Log.w("Remocon", "timed out trying to connect to the master [" + concertUri + "][" + e.toString() + "]");
-                failureCallback.handleFailure("Timed out trying to connect to the master. Is your network interface up?");
             } catch (RuntimeException e) {
-                // thrown if there is no master at that url (from java.net.ConnectException)
-                Log.w("Remocon", "connection refused. Is the master running? [" + concertUri + "][" + e.toString() + "]");
-                failureCallback.handleFailure("Connection refused. Is the master running?");
-            } catch (InteractionsException e) {
-                Log.w("Remocon", "rocon interactions unavailable [" + concertUri + "][" + e.toString() + "]");
-                failureCallback.handleFailure("Rocon interactions unavailable [" + e.toString() + "]");
-            } catch (MasterInfoException e) {
-                Log.w("Remocon", "master info unavailable [" + concertUri + "][" + e.toString() + "]");
-                failureCallback.handleFailure("Rocon master info unavailable. Is your ROS_IP set? Is the rocon_master_info node running?");
+                // thrown if concert could not be found in the getParam call (from java.net.ConnectException)
+                Log.w("ConcertRemocon", "could not find concert [" + concertUri + "][" + e.toString() + "]");
+                failureCallback.handleFailure(e.toString());
             } catch (Throwable e) {
-                Log.w("Remocon", "exception while creating node in concert checker for URI " + concertUri, e);
-                failureCallback.handleFailure("unknown exception in the rocon checker [" + e.toString() + "]");
+                Log.w("ConcertRemocon", "exception while creating node in concert checker for URI " + concertUri, e);
+                failureCallback.handleFailure(e.toString());
             }
         }
     }

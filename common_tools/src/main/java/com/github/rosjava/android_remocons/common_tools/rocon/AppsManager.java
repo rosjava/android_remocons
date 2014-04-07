@@ -81,21 +81,34 @@ public class AppsManager extends AbstractNodeMain {
         NONE, GET_INTERACTIONS_FOR_ROLE, GET_INTERACTION_INFO, REQUEST_INTERACTION_USE
     };
 
-    private int app_hash;
     private String role;
+    private String interactionsNamespace;
     private Action action = Action.NONE;
  	private rocon_interaction_msgs.Interaction app;
+    private int app_hash;  // need this separately since headless starts don't have any app info.
     private ConnectNodeThread connectThread;
     private ConnectedNode connectedNode;
     private NodeMainExecutorService nodeMainExecutorService;
     private FailureHandler failureCallback;
 	private ServiceResponseListener<RequestInteractionResponse> requestServiceResponseListener;
 	private ServiceResponseListener<GetInteractionsResponse>    getAppsServiceResponseListener;
-    private ServiceResponseListener<GetInteractionResponse>             appInfoServiceResponseListener;
+    private ServiceResponseListener<GetInteractionResponse>     appInfoServiceResponseListener;
 
 
 	public AppsManager(FailureHandler failureCallback) {
+
         this.failureCallback = failureCallback;
+    }
+
+    /**
+     * This is done outside of the constructor to save it from having to be continually
+     * reinstantiated in the rocon remocons. That does mean it requires some black magic,
+     * i.e. construction -> init & setupXYZ -> execute
+     *
+     * @param interactionsNamespace
+     */
+    public void init(String interactionsNamespace) {
+        this.interactionsNamespace = interactionsNamespace;
     }
 
     public void setupRequestService(ServiceResponseListener<RequestInteractionResponse> serviceResponseListener) {
@@ -150,6 +163,7 @@ public class AppsManager extends AbstractNodeMain {
         this.action = Action.REQUEST_INTERACTION_USE;
         this.role = role;
         this.app  = app;
+        this.app_hash = app.getHash();
 
         // If this is the first action requested, we need a connected node, what must be done in a different thread
         // The requested action will be executed once we have a connected node (this object itself) in onStart method
@@ -170,6 +184,14 @@ public class AppsManager extends AbstractNodeMain {
         }
     }
 
+    /**
+     * This is called from the headless launcher where the only thing it knows is the
+     * master id (for connection purposes and the hash stored in an nfc tag (or other).
+     * We need to save this hash for later service calls.
+     *
+     * @param masterId
+     * @param hash
+     */
     public void getAppInfo(final MasterId masterId, final int hash) {
         this.action = Action.GET_INTERACTION_INFO;
         this.app_hash = hash;
@@ -196,11 +218,13 @@ public class AppsManager extends AbstractNodeMain {
     private void getAppsForRole() {
         // call get_roles_and_apps concert service
         ServiceClient<GetInteractionsRequest, GetInteractionsResponse> srvClient;
+        String serviceName = this.interactionsNamespace + "/get_interactions";
+
         try {
-            Log.d("AppsMng", "List apps service client created [" + GET_INTERACTIONS_SRV + "]");
-            srvClient = connectedNode.newServiceClient(GET_INTERACTIONS_SRV, GetInteractions._TYPE);
+            Log.d("AppsMng", "List apps service client created [" + serviceName + "]");
+            srvClient = connectedNode.newServiceClient(serviceName, GetInteractions._TYPE);
         } catch (ServiceNotFoundException e) {
-            Log.w("AppsMng", "List apps service not found [" + GET_INTERACTIONS_SRV + "]");
+            Log.w("AppsMng", "List apps service not found [" + serviceName + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
         final GetInteractionsRequest request = srvClient.newMessage();
@@ -209,43 +233,44 @@ public class AppsManager extends AbstractNodeMain {
         request.setUri(ANDROID_PLATFORM_INFO.getUri());
 
         srvClient.call(request, getAppsServiceResponseListener);
-        Log.d("AppsMng", "List apps service call done [" + GET_INTERACTIONS_SRV + "]");
+        Log.d("AppsMng", "List apps service call done [" + serviceName + "]");
     }
 
     private void requestAppUse() {
         // call request_interaction concert service
         ServiceClient<RequestInteractionRequest, RequestInteractionResponse> srvClient;
+        String serviceName = this.interactionsNamespace + "/request_interaction";
         try {
-            Log.d("AppsMng", "Request app service client created [" + REQUEST_INTERACTION_SRV + "]");
-            srvClient = connectedNode.newServiceClient(REQUEST_INTERACTION_SRV, RequestInteraction._TYPE);
+            Log.d("AppsMng", "Request app service client created [" + serviceName + "]");
+            srvClient = connectedNode.newServiceClient(serviceName, RequestInteraction._TYPE);
         } catch (ServiceNotFoundException e) {
-            Log.w("AppsMng", "Request app service not found [" + REQUEST_INTERACTION_SRV + "]");
+            Log.w("AppsMng", "Request app service not found [" + serviceName + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
         final RequestInteractionRequest request = srvClient.newMessage();
 
-        request.setHash(app_hash);
+        request.setHash(this.app.getHash());
 
         srvClient.call(request, requestServiceResponseListener);
-        Log.d("AppsMng", "Request app service call done [" + REQUEST_INTERACTION_SRV + "]");
+        Log.d("AppsMng", "Request app service call done [" + serviceName + "]");
     }
 
     private void getAppInfo() {
         // call get_app concert service
         ServiceClient<GetInteractionRequest, GetInteractionResponse> srvClient;
+        String serviceName = this.interactionsNamespace + "/get_interaction";
         try {
-            Log.d("AppsMng", "Get app info service client created [" + GET_INTERACTION_SRV + "]");
-            srvClient = connectedNode.newServiceClient(GET_INTERACTION_SRV, GetInteraction._TYPE);
+            Log.d("AppsMng", "Get app info service client created [" + serviceName + "]");
+            srvClient = connectedNode.newServiceClient(serviceName, GetInteraction._TYPE);
         } catch (ServiceNotFoundException e) {
-            Log.w("AppsMng", "Get app info not found [" + GET_INTERACTION_SRV + "]");
+            Log.w("AppsMng", "Get app info not found [" + serviceName + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
         final GetInteractionRequest request = srvClient.newMessage();
-
-        request.setHash(app_hash);
+        request.setHash(this.app.getHash());
 
         srvClient.call(request, appInfoServiceResponseListener);
-        Log.d("AppsMng", "Get app info service call done [" + GET_INTERACTION_SRV + "]");
+        Log.d("AppsMng", "Get app info service call done [" + serviceName + "]");
     }
 
     /**

@@ -79,7 +79,6 @@ import com.github.rosjava.android_remocons.common_tools.master.MasterId;
 import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
 import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
 
-import com.github.rosjava.android_remocons.rocon_remocon.R;
 import com.github.rosjava.android_remocons.rocon_remocon.dialogs.LaunchAppDialog;
 import com.github.rosjava.android_remocons.rocon_remocon.dialogs.AlertDialogWrapper;
 import com.github.rosjava.android_remocons.rocon_remocon.dialogs.ProgressDialogWrapper;
@@ -138,7 +137,7 @@ public class ConcertRemocon extends RosActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                              WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.concert_remocon);
+        setContentView(R.layout.rocon_remocon);
 
         concertAppName = getIntent().getStringExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name");
         if (concertAppName == null) {
@@ -153,18 +152,20 @@ public class ConcertRemocon extends RosActivity {
             Log.i("ConcertRemocon", "Directly started by Nfc launcher");
             fromNfcLauncher = true;
         }
-        else {
+        // else {
             // DJS: do we need anything here? I think the first two cases cover everything
-        }
+        // }
 
 		concertNameView = (TextView) findViewById(R.id.concert_name_view);
 
         // Prepare the app manager; we do here instead of on init to keep using the same instance when switching roles
-        appsManager = new AppsManager(new AppsManager.FailureHandler() {
-            public void handleFailure(String reason) {
-                Log.e("ConcertRemocon", "Failure on apps manager: " + reason);
-            }
-        });
+        appsManager = new AppsManager(
+                new AppsManager.FailureHandler() {
+                    public void handleFailure(String reason) {
+                        Log.e("Remocon", "Failure on apps manager: " + reason);
+                    }
+                }
+        );
         appsManager.setupGetInteractionsService(new ServiceResponseListener<rocon_interaction_msgs.GetInteractionsResponse>() {
             @Override
             public void onSuccess(rocon_interaction_msgs.GetInteractionsResponse response) {
@@ -190,7 +191,7 @@ public class ConcertRemocon extends RosActivity {
             @Override
             public void onFailure(RemoteException e) {
                 progressDialog.dismiss();
-                Log.e("ConcertRemocon", "Retrive rapps for role "
+                Log.e("Remocon", "retrieve rapps for role "
                         + concertDescription.getCurrentRole() + " failed: " + e.getMessage());
             }
 
@@ -219,7 +220,7 @@ public class ConcertRemocon extends RosActivity {
                             }
                             else if (result == AppLauncher.Result.NOT_INSTALLED) {
                                 // App not installed; ask for going to play store to download the missing app
-                                Log.i("ConcertRemocon", "Showing not-installed dialog.");
+                                Log.i("Remocon", "Showing not-installed dialog.");
 
                                 final String installPackage =
                                         selectedInteraction.getName().substring(0, selectedInteraction.getName().lastIndexOf("."));
@@ -272,7 +273,7 @@ public class ConcertRemocon extends RosActivity {
             @Override
             public void onFailure(RemoteException e) {
                 progressDialog.dismiss();
-                Log.e("ConcertRemocon", "Retrive rapps for role "
+                Log.e("ConcertRemocon", "Retrieve rapps for role "
                         + concertDescription.getCurrentRole() + " failed: " + e.getMessage());
             }
         });
@@ -294,7 +295,7 @@ public class ConcertRemocon extends RosActivity {
 	protected void init(final NodeMainExecutor nodeMainExecutor) {
         nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
                 .newNonLoopback().getHostAddress(), getMasterUri());
-
+        appsManager.init(concertDescription.getInteractionsNamespace());
         appsManager.getAppsForRole(concertDescription.getMasterId(), concertDescription.getCurrentRole());
         progressDialog.show("Getting apps...",
                 "Waiting for concert apps for " + concertDescription.getCurrentRole() + " role");
@@ -358,7 +359,7 @@ public class ConcertRemocon extends RosActivity {
     }
 
     private void chooseRole() {
-        Log.i("ConcertRemocon", "Concert chosen; show choose user role dialog");
+        Log.i("Remocon", "concert chosen; show choose user role dialog");
         concertDescription.setCurrentRole(-1);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(ConcertRemocon.this);
