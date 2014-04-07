@@ -35,6 +35,7 @@
 package com.github.rosjava.android_remocons.common_tools.master;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Extends MasterDescription with concert specific attributes.
@@ -102,11 +103,10 @@ public class RoconDescription extends MasterDescription implements java.io.Seria
         this.interactionsNamespace = namespace;
     }
 
-    public void setUserRoles(rocon_interaction_msgs.Roles roles)
+    public void setUserRoles(List<String> roles)
     {
-        java.util.List<String> tmp = roles.getList();
-        userRoles = new String[tmp.size()];
-        tmp.toArray(userRoles);
+        userRoles = new String[roles.size()];
+        roles.toArray(userRoles);
     }
     public void setCurrentRole(int role) {
         currentRole = role;

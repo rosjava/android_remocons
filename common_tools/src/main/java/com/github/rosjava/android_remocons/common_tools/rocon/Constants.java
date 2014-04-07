@@ -39,9 +39,10 @@ public class Constants {
         MessageDefinitionReflectionProvider messageDefinitionProvider = new MessageDefinitionReflectionProvider();
         DefaultMessageFactory messageFactory = new DefaultMessageFactory(messageDefinitionProvider);
         PlatformInfo platformInfo = messageFactory.newFromType(PlatformInfo._TYPE);
+        // rocon:/hw/name/app_framework/os"
         platformInfo.setUri("rocon:/"
-                        + Strings.URI_WILDCARD + "/"
-                        + Strings.APPLICATION_FRAMEWORK_HYDRO + "|" + Strings.APPLICATION_FRAMEWORK_IGLOO
+                        + Strings.URI_WILDCARD + "/" + Strings.URI_WILDCARD + "/"
+                        + Strings.APPLICATION_FRAMEWORK_HYDRO + "|" + Strings.APPLICATION_FRAMEWORK_INDIGO + "/"
                         + Strings.OS_ICE_CREAM_SANDWICH + "|" + Strings.OS_JELLYBEAN
         );
         platformInfo.setVersion(Strings.ROCON_VERSION);

@@ -55,6 +55,7 @@ import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfo;
 import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfoException;
 import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionsException;
 import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.RoconInteractions;
+import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
 
 /**
  * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS
@@ -159,7 +160,7 @@ public class ConcertChecker {
 
                 // Check for the concert information topic
                 MasterInfo masterInfo = new MasterInfo();
-                RoconInteractions roconInteractions = new RoconInteractions();
+                RoconInteractions roconInteractions = new RoconInteractions(Constants.ANDROID_PLATFORM_INFO.getUri());
 
                 nodeMainExecutorService.execute(
                         masterInfo,
@@ -171,7 +172,7 @@ public class ConcertChecker {
                         roconInteractions,
                         nodeConfiguration.setNodeName("rocon_interactions_node")
                 );
-                roconInteractions.waitForResponse(); // InteractionsExc. on timeout, listener or ros runtime errors
+                roconInteractions.waitForResponse(); // InteractionsExc. on timeout, service or ros runtime errors
                 Log.i("Remocon", "rocon interactions found");
 
                 // configure concert description
