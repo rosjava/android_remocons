@@ -66,7 +66,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 import com.github.rosjava.android_remocons.common_tools.master.MasterId;
 import com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity;
 import com.github.rosjava.android_remocons.common_tools.zeroconf.MasterSearcher;
@@ -89,7 +89,7 @@ import java.util.TimerTask;
  * A rewrite of ye olde RobotMasterChooser to work with rocon masters (i.e.
  * those that have rocon master info and an interactions manager present).
  */
-public class ConcertChooser extends Activity {
+public class MasterChooser extends Activity {
 
 	private static final int ADD_URI_DIALOG_ID = 0;
 	private static final int ADD_DELETION_DIALOG_ID = 1;
@@ -98,49 +98,49 @@ public class ConcertChooser extends Activity {
     private static final int QR_CODE_SCAN_REQUEST_CODE = 101;
     private static final int NFC_TAG_SCAN_REQUEST_CODE = 102;
 
-	private List<ConcertDescription> concerts;
+	private List<RoconDescription> concerts;
 	private boolean[] selections;
 	private MasterSearcher masterSearcher;
 	private ListView listView;
     private Yaml yaml = new Yaml();
 
-    public ConcertChooser() {
-		concerts = new ArrayList<ConcertDescription>();
+    public MasterChooser() {
+		concerts = new ArrayList<RoconDescription>();
 	}
 
 	private void readConcertList() {
 		String str = null;
 		Cursor c = getContentResolver().query(
-				ConcertsDatabase.CONTENT_URI, null, null, null, null);
+				Database.CONTENT_URI, null, null, null, null);
 		if (c == null) {
-			concerts = new ArrayList<ConcertDescription>();
-			Log.e("Remocon", "concert master chooser provider failed!!!");
+			concerts = new ArrayList<RoconDescription>();
+			Log.e("Remocon", "master chooser provider failed!!!");
 			return;
 		}
 		if (c.getCount() > 0) {
 			c.moveToFirst();
-			str = c.getString(c.getColumnIndex(ConcertsDatabase.TABLE_COLUMN));
-			Log.i("Remocon", "concert master chooser found a concert: " + str);
+			str = c.getString(c.getColumnIndex(Database.TABLE_COLUMN));
+			Log.i("Remocon", "master chooser found a rocon master: " + str);
 		}
 		if (str != null) {
-			concerts = (List<ConcertDescription>) yaml.load(str);
+			concerts = (List<RoconDescription>) yaml.load(str);
 		} else {
-			concerts = new ArrayList<ConcertDescription>();
+			concerts = new ArrayList<RoconDescription>();
 		}
 	}
 
 	public void writeConcertList() {
-		Log.i("Remocon", "concert master chooser saving concert...");
+		Log.i("Remocon", "master chooser saving rocon master details...");
 		String str = null;
-		final List<ConcertDescription> tmp = concerts; // Avoid race conditions
+		final List<RoconDescription> tmp = concerts; // Avoid race conditions
         if (tmp != null) {
             str = yaml.dump(tmp);
 		}
 		ContentValues cv = new ContentValues();
-		cv.put(ConcertsDatabase.TABLE_COLUMN, str);
-		Uri newEmp = getContentResolver().insert(ConcertsDatabase.CONTENT_URI, cv);
-		if (newEmp != ConcertsDatabase.CONTENT_URI) {
-			Log.e("Remocon", "concert master chooser could not save concert, non-equal URI's");
+		cv.put(Database.TABLE_COLUMN, str);
+		Uri newEmp = getContentResolver().insert(Database.CONTENT_URI, cv);
+		if (newEmp != Database.CONTENT_URI) {
+			Log.e("Remocon", "master chooser could not save concert, non-equal URI's");
 		}
 	}
 
@@ -150,7 +150,7 @@ public class ConcertChooser extends Activity {
 	}
 
 	private void updateListView() {
-		setContentView(R.layout.concert_chooser);
+		setContentView(R.layout.master_chooser);
 		ListView listview = (ListView) findViewById(R.id.master_list);
 		listview.setAdapter(new MasterAdapter(this, concerts));
 		registerForContextMenu(listview);
@@ -173,10 +173,10 @@ public class ConcertChooser extends Activity {
      * @param position
      */
 	private void choose(int position) {
-		ConcertDescription concert = concerts.get(position);
+		RoconDescription concert = concerts.get(position);
 		if (concert == null || concert.getConnectionStatus() == null
-				|| concert.getConnectionStatus().equals(ConcertDescription.ERROR)) {
-			AlertDialog d = new AlertDialog.Builder(ConcertChooser.this)
+				|| concert.getConnectionStatus().equals(RoconDescription.ERROR)) {
+			AlertDialog d = new AlertDialog.Builder(MasterChooser.this)
 					.setTitle("Error!")
 					.setCancelable(false)
 					.setMessage("Failed: Cannot contact concert")
@@ -187,8 +187,8 @@ public class ConcertChooser extends Activity {
 								}
 							}).create();
 			d.show();
-        } else if ( concert.getConnectionStatus().equals(ConcertDescription.UNAVAILABLE) ) {
-            AlertDialog d = new AlertDialog.Builder(ConcertChooser.this)
+        } else if ( concert.getConnectionStatus().equals(RoconDescription.UNAVAILABLE) ) {
+            AlertDialog d = new AlertDialog.Builder(MasterChooser.this)
                     .setTitle("Concert Unavailable!")
                     .setCancelable(false)
                     .setMessage("Currently busy serving another.")
@@ -201,7 +201,7 @@ public class ConcertChooser extends Activity {
             d.show();
         } else {
             Intent resultIntent = new Intent();
-            resultIntent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
+            resultIntent.putExtra(RoconDescription.UNIQUE_KEY, concert);
             setResult(RESULT_OK, resultIntent);
             finish();
 		}
@@ -216,7 +216,7 @@ public class ConcertChooser extends Activity {
 		if (masterId == null || masterId.getMasterUri() == null) {
 		} else {
 			for (int i = 0; i < concerts.toArray().length; i++) {
-				ConcertDescription concert = concerts.get(i);
+				RoconDescription concert = concerts.get(i);
 				if (concert.getMasterId().equals(masterId)) {
 					if (connectToDuplicates) {
 						choose(i);
@@ -230,7 +230,7 @@ public class ConcertChooser extends Activity {
 			}
 			Log.i("MasterChooserActivity", "creating concert description: "
 					+ masterId.toString());
-			concerts.add(ConcertDescription.createUnknown(masterId));
+			concerts.add(RoconDescription.createUnknown(masterId));
 			Log.i("MasterChooserActivity", "description created");
 			onConcertsChanged();
 		}
@@ -259,11 +259,11 @@ public class ConcertChooser extends Activity {
 	}
 
 	private void deleteUnresponsiveConcerts() {
-		Iterator<ConcertDescription> iter = concerts.iterator();
+		Iterator<RoconDescription> iter = concerts.iterator();
 		while (iter.hasNext()) {
-			ConcertDescription concert = iter.next();
+			RoconDescription concert = iter.next();
 			if (concert == null || concert.getConnectionStatus() == null
-					|| concert.getConnectionStatus().equals(ConcertDescription.ERROR)) {
+					|| concert.getConnectionStatus().equals(RoconDescription.ERROR)) {
 				Log.i("Remocon", "concert master chooser removing concert with connection status '"
 						+ concert.getConnectionStatus() + "'");
 				iter.remove();
@@ -315,10 +315,10 @@ public class ConcertChooser extends Activity {
         }
         else {
             try {
-                Log.d("Remocon", "ConcertChooser OBJECT: " + data.toString());
+                Log.d("Remocon", "master chooser OBJECT: " + data.toString());
                 addMaster(new MasterId(data), false);
             } catch (Exception e) {
-                Toast.makeText(this, "Invalid concert description: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "invalid rocon master description: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -496,11 +496,11 @@ public class ConcertChooser extends Activity {
             try {
                 addMaster(new MasterId(data));
             } catch (Exception e) {
-                Toast.makeText(ConcertChooser.this, "Invalid Parameters.",
+                Toast.makeText(MasterChooser.this, "Invalid Parameters.",
                         Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(ConcertChooser.this, "No valid resolvable master URI.",
+            Toast.makeText(MasterChooser.this, "No valid resolvable master URI.",
                     Toast.LENGTH_SHORT).show();
         }
 	}
@@ -532,11 +532,11 @@ public class ConcertChooser extends Activity {
 			try {
 				addMaster(new MasterId(data));
 			} catch (Exception e) {
-				Toast.makeText(ConcertChooser.this, "Invalid Parameters.",
+				Toast.makeText(MasterChooser.this, "Invalid Parameters.",
 						Toast.LENGTH_SHORT).show();
 			}
 		} else {
-			Toast.makeText(ConcertChooser.this, "Must specify Master URI.",
+			Toast.makeText(MasterChooser.this, "Must specify Master URI.",
 					Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -586,7 +586,7 @@ public class ConcertChooser extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.concert_master_chooser_option_menu, menu);
+		inflater.inflate(R.menu.master_chooser_option_menu, menu);
 		return true;
 	}
 

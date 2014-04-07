@@ -47,10 +47,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.net.wifi.WifiManager;
 
-import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
-import com.github.rosjava.android_remocons.rocon_remocon.R;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -65,16 +64,16 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
         ConcertChecker.FailureHandler {
     private ConcertChecker checker;
     private View view;
-    private ConcertDescription description;
-    private ConcertChooser parentMca;
+    private RoconDescription description;
+    private MasterChooser parentMca;
     private String errorReason;
     private boolean control;
 
-    public MasterItem(ConcertDescription concertDescription, ConcertChooser parentMca) {
+    public MasterItem(RoconDescription roconDescription, MasterChooser parentMca) {
         errorReason = "";
         this.parentMca = parentMca;
-        this.description = concertDescription;
-        this.description.setConnectionStatus(ConcertDescription.CONNECTING);
+        this.description = roconDescription;
+        this.description.setConnectionStatus(RoconDescription.CONNECTING);
         if (WifiChecker.wifiValid(this.description.getMasterId(),
                 (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
             checker = new ConcertChecker(this, this);
@@ -86,13 +85,13 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
             }
         } else {
             errorReason = "Wrong WiFi Network";
-            description.setConnectionStatus(ConcertDescription.WIFI);
+            description.setConnectionStatus(RoconDescription.WIFI);
             safePopulateView();
         }
     }
 
     public boolean isOk() {
-        return this.description.getConnectionStatus().equals(ConcertDescription.OK);
+        return this.description.getConnectionStatus().equals(RoconDescription.OK);
     }
 
     public void handleSuccess() {
@@ -101,15 +100,15 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
     }
 
     @Override
-    public void receive(ConcertDescription concertDescription) {
-        description.copyFrom(concertDescription);
+    public void receive(RoconDescription roconDescription) {
+        description.copyFrom(roconDescription);
         safePopulateView();
     }
 
     @Override
     public void handleFailure(String reason) {
         errorReason = reason;
-        description.setConnectionStatus(control ? ConcertDescription.CONTROL : ConcertDescription.ERROR);
+        description.setConnectionStatus(control ? RoconDescription.CONTROL : RoconDescription.ERROR);
         safePopulateView();
     }
 
@@ -125,7 +124,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
 
     private void safePopulateView() {
         if (view != null) {
-            final ConcertChooser mca = parentMca;
+            final MasterChooser mca = parentMca;
             view.post(new Runnable() {
                 @Override
                 public void run() {
@@ -138,12 +137,12 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
 
     private void populateView() {
         Log.i("MasterItem", "connection status = " + description.getConnectionStatus());
-        boolean isOk = description.getConnectionStatus().equals(ConcertDescription.OK);
-        boolean isUnavailable = description.getConnectionStatus().equals(ConcertDescription.UNAVAILABLE);
-        boolean isControl = description.getConnectionStatus().equals(ConcertDescription.CONTROL);
-        boolean isWifi = description.getConnectionStatus().equals(ConcertDescription.WIFI);
-        boolean isError = description.getConnectionStatus().equals(ConcertDescription.ERROR);
-        boolean isConnecting = description.getConnectionStatus().equals(ConcertDescription.CONNECTING);
+        boolean isOk = description.getConnectionStatus().equals(RoconDescription.OK);
+        boolean isUnavailable = description.getConnectionStatus().equals(RoconDescription.UNAVAILABLE);
+        boolean isControl = description.getConnectionStatus().equals(RoconDescription.CONTROL);
+        boolean isWifi = description.getConnectionStatus().equals(RoconDescription.WIFI);
+        boolean isError = description.getConnectionStatus().equals(RoconDescription.ERROR);
+        boolean isConnecting = description.getConnectionStatus().equals(RoconDescription.CONNECTING);
         ProgressBar progress = (ProgressBar) view.findViewById(R.id.progress_circle);
         progress.setIndeterminate(true);
         progress.setVisibility(isConnecting ? View.VISIBLE : View.GONE);

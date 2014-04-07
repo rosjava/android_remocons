@@ -16,7 +16,7 @@
 
     <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
         <provider
-            android:name="com.github.rosjava.android_remocons.rocon_remocon.ConcertsDatabase"
+            android:name=".Database"
             android:authorities="com.github.rosjava.android_remocons.rocon_remocon"
         />
         <activity android:name="com.github.rosjava.android_remocons.rocon_remocon.Remocon"
@@ -32,7 +32,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.github.rosjava.android_remocons.rocon_remocon.ConcertChooser" />
+        <activity android:name=".MasterChooser" />
         <activity android:name="com.github.rosjava.android_remocons.rocon_remocon.NfcLauncherActivity"
                   android:label="NFC tag launcher">
             <intent-filter>

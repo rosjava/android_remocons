@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:id="@+id/add_concert"
-        android:title="Add Concert" />
+        android:title="Add Masters" />
   <item android:id="@+id/delete_unresponsive"
-        android:title="Delete Unresponsive Concerts" />
+        android:title="Delete Unresponsive Masters" />
   <item android:id="@+id/delete_all"
-        android:title="Delete All Concerts" />
+        android:title="Delete All Masters" />
   <item android:id="@+id/kill"
         android:title="Kill" />
   <item android:id="@+id/delete_selected"
-        android:title="Select Concerts to Delete" />
+        android:title="Select Masters to Delete" />
 </menu>

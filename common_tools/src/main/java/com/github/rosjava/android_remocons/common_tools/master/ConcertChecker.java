@@ -58,7 +58,7 @@ import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.Roco
 
 /**
  * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS
- * concert and sends back a {@link ConcertDescription} (with concert name and type)
+ * concert and sends back a {@link RoconDescription} (with concert name and type)
  * on success or a failure reason on failure.
  *
  * @author hersh@willowgarage.com
@@ -70,7 +70,7 @@ public class ConcertChecker {
         /**
          * Called on success with a description of the concert that got checked.
          */
-        void receive(ConcertDescription concertDescription);
+        void receive(RoconDescription roconDescription);
     }
 
     public interface FailureHandler {
@@ -176,7 +176,7 @@ public class ConcertChecker {
 
                 // configure concert description
                 Date timeLastSeen = new Date();
-                ConcertDescription description = new ConcertDescription(
+                RoconDescription description = new RoconDescription(
                         masterId,
                         masterInfo.getName(),
                         masterInfo.getDescription(),
@@ -184,7 +184,7 @@ public class ConcertChecker {
                         roconInteractions.getNamespace(),
                         timeLastSeen);
 
-                description.setConnectionStatus(ConcertDescription.OK);
+                description.setConnectionStatus(RoconDescription.OK);
                 description.setUserRoles(roconInteractions.getRoles());
                 foundConcertCallback.receive(description);
 

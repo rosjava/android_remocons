@@ -39,7 +39,6 @@ package com.github.rosjava.android_remocons.common_tools.rocon;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -47,9 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -57,7 +54,7 @@ import android.util.Log;
 import android.util.Patterns;
 
 import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
-import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 
 /**
  * A rewrite of robot_remocon/AppLauncher that...
@@ -88,7 +85,7 @@ public class AppLauncher {
     /**
      * Launch a client app for the given concert app.
      */
-    static public Result launch(final Activity parent, final ConcertDescription concert,
+    static public Result launch(final Activity parent, final RoconDescription concert,
                                 final rocon_interaction_msgs.Interaction app) {
 
         Log.i("AppLaunch", "launching concert app " + app.getDisplayName() + " on service " + app.getNamespace());
@@ -106,7 +103,7 @@ public class AppLauncher {
     /**
      * Launch a client android app for the given concert app.
      */
-    static private Result launchAndroidApp(final Activity parent, final ConcertDescription concert,
+    static private Result launchAndroidApp(final Activity parent, final RoconDescription concert,
                                            final rocon_interaction_msgs.Interaction app) {
 
         // Create the Intent from rapp's name, pass it parameters and remaps and start it
@@ -115,7 +112,7 @@ public class AppLauncher {
 
         // Copy all app data to "extra" data in the intent.
         intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", appName);
-        intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
+        intent.putExtra(RoconDescription.UNIQUE_KEY, concert);
         intent.putExtra("RemoconActivity", Constants.ACTIVITY_ROCON_REMOCON);
         intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
 
@@ -145,7 +142,7 @@ public class AppLauncher {
     /**
      * Launch a client web app for the given concert app.
      */
-    static private Result launchWebApp(final Activity parent, final ConcertDescription concert,
+    static private Result launchWebApp(final Activity parent, final RoconDescription concert,
                                        final rocon_interaction_msgs.Interaction app) {
         try
         {

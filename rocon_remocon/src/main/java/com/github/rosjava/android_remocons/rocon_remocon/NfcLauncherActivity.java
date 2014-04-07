@@ -10,9 +10,8 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.github.rosjava.android_remocons.common_tools.rocon.AppsManager;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
-import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
 import com.github.rosjava.android_remocons.common_tools.master.MasterId;
 import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity;
@@ -57,7 +56,7 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     private String masterHost;
     private short  masterPort;
     private MasterId masterId;
-    private ConcertDescription concert;
+    private RoconDescription concert;
 
 
 	@Override
@@ -181,9 +180,9 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     private void checkConcert() throws Exception {
         final ConcertChecker cc = new ConcertChecker(
                 new ConcertChecker.ConcertDescriptionReceiver() {
-                    public void receive(ConcertDescription concertDescription) {
+                    public void receive(RoconDescription concertDescription) {
                         concert = concertDescription;
-                        if ( concert.getConnectionStatus() == ConcertDescription.UNAVAILABLE ) {
+                        if ( concert.getConnectionStatus() == RoconDescription.UNAVAILABLE ) {
                             // Check that it's not busy
                             Log.e("NfcLaunch", "Concert is unavailable: busy serving another remote controller");
                             launchStep = Step.ABORT_LAUNCH;
@@ -209,7 +208,7 @@ public class NfcLauncherActivity extends NfcReaderActivity {
 
     private void startConcert() throws Exception {
         Intent intent = new Intent("Remocon");
-        intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
+        intent.putExtra(RoconDescription.UNIQUE_KEY, concert);
         intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", "NfcLauncher");
         startActivity(intent);
     }

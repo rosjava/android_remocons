@@ -16,8 +16,8 @@ import org.jboss.netty.buffer.ChannelBuffer;
 /**
  * Custom alert dialog to prompt launching an app
  */
-public class LaunchAppDialog extends AlertDialogWrapper {
-    public LaunchAppDialog(Activity context) {
+public class LaunchInteractionDialog extends AlertDialogWrapper {
+    public LaunchInteractionDialog(Activity context) {
         super(context, new AlertDialog.Builder(context), "Launch", "Cancel");
     }
 

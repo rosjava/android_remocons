@@ -35,7 +35,6 @@
 package com.github.rosjava.android_remocons.common_tools.master;
 
 import java.util.Date;
-import rocon_interaction_msgs.Roles;
 
 /**
  * Extends MasterDescription with concert specific attributes.
@@ -43,7 +42,7 @@ import rocon_interaction_msgs.Roles;
  *
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
-public class ConcertDescription extends MasterDescription implements java.io.Serializable {
+public class RoconDescription extends MasterDescription implements java.io.Serializable {
     private static final long serialVersionUID = -4705526306056241179L;
 
     private String description;
@@ -51,34 +50,34 @@ public class ConcertDescription extends MasterDescription implements java.io.Ser
     private int currentRole = -1;
     private String interactionsNamespace;
 
-    public static ConcertDescription create(MasterDescription master) {
-        ConcertDescription cd = new ConcertDescription(master.getMasterId(), master.getMasterName(),
+    public static RoconDescription create(MasterDescription master) {
+        RoconDescription cd = new RoconDescription(master.getMasterId(), master.getMasterName(),
                                                        null, null, null, new Date());
         cd.setMasterIconFormat(master.getMasterIconFormat());
         cd.setMasterIconData(master.getMasterIconData());
         return cd;
     }
 
-    public static ConcertDescription createUnknown(MasterId masterId) {
-        return new ConcertDescription(masterId, NAME_UNKNOWN, null, null, null, new Date());
+    public static RoconDescription createUnknown(MasterId masterId) {
+        return new RoconDescription(masterId, NAME_UNKNOWN, null, null, null, new Date());
     }
 
     /**
      * Empty constructor required by snake yaml parsing
      */
-    public ConcertDescription() {
+    public RoconDescription() {
     }
 
-    public ConcertDescription(MasterId masterId, String concertName, String description,
-                              rocon_std_msgs.Icon concertIcon, String interactionsNamespace,
-                              Date timeLastSeen) {
+    public RoconDescription(MasterId masterId, String concertName, String description,
+                            rocon_std_msgs.Icon concertIcon, String interactionsNamespace,
+                            Date timeLastSeen) {
         super(masterId, concertName, "Rocon concert", concertIcon, "", timeLastSeen);
 
         this.description = description;
         this.interactionsNamespace = interactionsNamespace;
     }
 
-    public void copyFrom(ConcertDescription other) {
+    public void copyFrom(RoconDescription other) {
         super.copyFrom(other);
 
         this.userRoles = other.userRoles.clone();

@@ -44,7 +44,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.util.Log;
 
-public class ConcertsDatabase extends ContentProvider {
+public class Database extends ContentProvider {
     DatabaseHelper dbh;
 
     private class DatabaseHelper extends SQLiteOpenHelper {

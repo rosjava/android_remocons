@@ -41,7 +41,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
-import com.github.rosjava.android_remocons.common_tools.master.ConcertDescription;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 
 /**
  * @author hersh@willowgarage.com
@@ -49,7 +49,7 @@ import com.github.rosjava.android_remocons.common_tools.master.ConcertDescriptio
 public class MasterAdapter extends BaseAdapter {
   private Context context;
   private List<MasterItem> masterItems;
-  public MasterAdapter(ConcertChooser rmc, List<ConcertDescription> concerts) {
+  public MasterAdapter(MasterChooser rmc, List<RoconDescription> concerts) {
     context = rmc;
     masterItems = new ArrayList<MasterItem>();
     if (concerts != null) {
