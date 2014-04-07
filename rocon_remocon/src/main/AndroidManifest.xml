@@ -19,12 +19,12 @@
             android:name="com.github.rosjava.android_remocons.rocon_remocon.ConcertsDatabase"
             android:authorities="com.github.rosjava.android_remocons.rocon_remocon"
         />
-        <activity android:name="com.github.rosjava.android_remocons.rocon_remocon.ConcertRemocon"
+        <activity android:name="com.github.rosjava.android_remocons.rocon_remocon.Remocon"
                   android:label="@string/app_name"
                   android:screenOrientation="portrait"
                   >
             <intent-filter>
-                <action android:name="com.github.rosjava.android_remocons.rocon_remocon.ConcertRemocon" />
+                <action android:name="com.github.rosjava.android_remocons.rocon_remocon.Remocon" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>

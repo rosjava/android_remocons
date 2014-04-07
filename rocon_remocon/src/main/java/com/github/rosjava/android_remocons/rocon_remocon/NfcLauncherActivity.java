@@ -208,7 +208,7 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     }
 
     private void startConcert() throws Exception {
-        Intent intent = new Intent("ConcertRemocon");
+        Intent intent = new Intent("Remocon");
         intent.putExtra(ConcertDescription.UNIQUE_KEY, concert);
         intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", "NfcLauncher");
         startActivity(intent);

@@ -86,11 +86,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * A rewrite of RobotMasterChooser to work with concerts.
- *
- * @author hersh@willowgarage.com
- * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)
- * @author jorge@yujinrobot.com (Jorge Santos Simon)
+ * A rewrite of ye olde RobotMasterChooser to work with rocon masters (i.e.
+ * those that have rocon master info and an interactions manager present).
  */
 public class ConcertChooser extends Activity {
 
