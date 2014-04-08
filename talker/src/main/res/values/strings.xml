@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Application Management -->
-    <string name="app_name">Listener</string>
-    <string name="paired_app_name">rocon_apps/talker</string>
+    <string name="app_name">Talker</string>
+    <string name="paired_app_name">rocon_apps/listener</string>
     <string name="default_robot">rocon</string>
 
     <!-- Menu options -->

@@ -52,7 +52,9 @@ import rocon_interaction_msgs.RequestInteractionResponse;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 
 /**
- * This class has been derived from RobotAppsManager in android_apps/application_management.
+ * This class has been derived from the original turtlebot robot app manager but now
+ * tuned for interactions.
+ *
  * The original is quite messy, and this is not much better, so maybe needs extra refactoring.
  * Also RobotAppsManager claims that it can be executed once, but I modified this to execute
  * arbitrary times. It looks to work, but mechanism is a bit brittle.

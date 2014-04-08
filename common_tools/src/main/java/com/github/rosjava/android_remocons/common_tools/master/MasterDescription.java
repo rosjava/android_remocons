@@ -50,7 +50,7 @@ import rocon_std_msgs.Icon;
  */
 public class MasterDescription implements java.io.Serializable {
     // Unique identifier for keys passed between android apps.
-    public static final String UNIQUE_KEY = "com.github.rosjava.android_apps.application_management.MasterDescription";
+    public static final String UNIQUE_KEY = "com.github.rosjava.android_remocons.master.MasterDescription";
     private static final long serialVersionUID = 1L;
 
     public static final String CONNECTING = "connecting...";

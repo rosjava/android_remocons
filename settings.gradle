@@ -17,6 +17,8 @@
 /* Disabled till upgraded for new rocon messages (March '14)
 include 'headless_launcher'
 */
-include 'rocon_remocon'
 include 'common_tools'
+include 'listener'
 include 'rocon_nfc_writer'
+include 'rocon_remocon'
+include 'talker'

@@ -1,10 +1,12 @@
-package com.github.rosjava.android_apps.listener;
+package com.github.rosjava.android_remocons.listener;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import java.io.IOException;
 import java.net.URI;
 
 // RosJava Imports
@@ -18,7 +20,7 @@ import org.ros.android.MessageCallable;
 import org.ros.android.view.RosTextView;
 
 // Android App Imports
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
+import com.github.rosjava.android_remocons.common_tools.apps.RosAppActivity;
 
 
 public class Listener extends RosAppActivity
@@ -47,26 +49,34 @@ public class Listener extends RosAppActivity
     protected void init(NodeMainExecutor nodeMainExecutor)
     {
         String chatterTopic = remaps.get(getString(R.string.chatter_topic));
-
         super.init(nodeMainExecutor);
-        NodeConfiguration nodeConfiguration =
-                NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), getMasterUri());
+
         rosTextView = (RosTextView<std_msgs.String>) findViewById(R.id.text);
         rosTextView.setTopicName(getMasterNameSpace().resolve(chatterTopic).toString());
         rosTextView.setMessageType(std_msgs.String._TYPE);
         rosTextView.setMessageToStringCallable(new MessageCallable<String, std_msgs.String>() {
             @Override
             public java.lang.String call(std_msgs.String message) {
+                Log.e("Listener", "received a message [" + message.getData() + "]");
                 return message.getData();
             }
         });
-        // Really horrible hack till I work out exactly the root cause and fix for
-        // https://github.com/rosjava/android_remocons/issues/47
         try {
+            // Really horrible hack till I work out exactly the root cause and fix for
+            // https://github.com/rosjava/android_remocons/issues/47
             Thread.sleep(1000);
-        } catch (Exception e) {
+            java.net.Socket socket = new java.net.Socket(getMasterUri().getHost(), getMasterUri().getPort());
+            java.net.InetAddress local_network_address = socket.getLocalAddress();
+            socket.close();
+            NodeConfiguration nodeConfiguration =
+                    NodeConfiguration.newPublic(local_network_address.getHostAddress(), getMasterUri());
+            nodeMainExecutor.execute(rosTextView, nodeConfiguration);
+        } catch(InterruptedException e) {
+            // Thread interruption
+        } catch (IOException e) {
+            // Socket problem
         }
-        nodeMainExecutor.execute(rosTextView, nodeConfiguration);
+
     }
 
     @Override
