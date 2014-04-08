@@ -129,7 +129,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
                 @Override
                 public void run() {
                     populateView();
-                    mca.writeConcertList();
+                    mca.writeMasterList();
                 }
             });
         }

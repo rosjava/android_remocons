@@ -98,22 +98,22 @@ public class MasterChooser extends Activity {
     private static final int QR_CODE_SCAN_REQUEST_CODE = 101;
     private static final int NFC_TAG_SCAN_REQUEST_CODE = 102;
 
-	private List<RoconDescription> concerts;
+	private List<RoconDescription> masters;
 	private boolean[] selections;
 	private MasterSearcher masterSearcher;
 	private ListView listView;
     private Yaml yaml = new Yaml();
 
     public MasterChooser() {
-		concerts = new ArrayList<RoconDescription>();
+		masters = new ArrayList<RoconDescription>();
 	}
 
-	private void readConcertList() {
+	private void readMasterList() {
 		String str = null;
 		Cursor c = getContentResolver().query(
 				Database.CONTENT_URI, null, null, null, null);
 		if (c == null) {
-			concerts = new ArrayList<RoconDescription>();
+			masters = new ArrayList<RoconDescription>();
 			Log.e("Remocon", "master chooser provider failed!!!");
 			return;
 		}
@@ -123,16 +123,16 @@ public class MasterChooser extends Activity {
 			Log.i("Remocon", "master chooser found a rocon master: " + str);
 		}
 		if (str != null) {
-			concerts = (List<RoconDescription>) yaml.load(str);
+			masters = (List<RoconDescription>) yaml.load(str);
 		} else {
-			concerts = new ArrayList<RoconDescription>();
+			masters = new ArrayList<RoconDescription>();
 		}
 	}
 
-	public void writeConcertList() {
+	public void writeMasterList() {
 		Log.i("Remocon", "master chooser saving rocon master details...");
 		String str = null;
-		final List<RoconDescription> tmp = concerts; // Avoid race conditions
+		final List<RoconDescription> tmp = masters; // Avoid race conditions
         if (tmp != null) {
             str = yaml.dump(tmp);
 		}
@@ -145,14 +145,14 @@ public class MasterChooser extends Activity {
 	}
 
 	private void refresh() {
-		readConcertList();
+		readMasterList();
 		updateListView();
 	}
 
 	private void updateListView() {
 		setContentView(R.layout.master_chooser);
 		ListView listview = (ListView) findViewById(R.id.master_list);
-		listview.setAdapter(new MasterAdapter(this, concerts));
+		listview.setAdapter(new MasterAdapter(this, masters));
 		registerForContextMenu(listview);
 
 		listview.setOnItemClickListener(new OnItemClickListener() {
@@ -165,7 +165,7 @@ public class MasterChooser extends Activity {
 	}
 
     /**
-     * Called when the user clicks on one of the concerts in master chooser
+     * Called when the user clicks on one of the listed masters in master chooser
      * view. Should probably check the connection status before
      * proceeding here, but perhaps we can just rely on the user clicking
      * refresh so this process stays without any lag delay.
@@ -173,7 +173,7 @@ public class MasterChooser extends Activity {
      * @param position
      */
 	private void choose(int position) {
-		RoconDescription concert = concerts.get(position);
+		RoconDescription concert = masters.get(position);
 		if (concert == null || concert.getConnectionStatus() == null
 				|| concert.getConnectionStatus().equals(RoconDescription.ERROR)) {
 			AlertDialog d = new AlertDialog.Builder(MasterChooser.this)
@@ -189,7 +189,7 @@ public class MasterChooser extends Activity {
 			d.show();
         } else if ( concert.getConnectionStatus().equals(RoconDescription.UNAVAILABLE) ) {
             AlertDialog d = new AlertDialog.Builder(MasterChooser.this)
-                    .setTitle("Concert Unavailable!")
+                    .setTitle("Master Unavailable!")
                     .setCancelable(false)
                     .setMessage("Currently busy serving another.")
                     .setNeutralButton("OK",
@@ -215,8 +215,8 @@ public class MasterChooser extends Activity {
 		Log.i("MasterChooserActivity", "adding master to the concert master chooser [" + masterId.toString() + "]");
 		if (masterId == null || masterId.getMasterUri() == null) {
 		} else {
-			for (int i = 0; i < concerts.toArray().length; i++) {
-				RoconDescription concert = concerts.get(i);
+			for (int i = 0; i < masters.toArray().length; i++) {
+				RoconDescription concert = masters.get(i);
 				if (concert.getMasterId().equals(masterId)) {
 					if (connectToDuplicates) {
 						choose(i);
@@ -230,36 +230,36 @@ public class MasterChooser extends Activity {
 			}
 			Log.i("MasterChooserActivity", "creating concert description: "
 					+ masterId.toString());
-			concerts.add(RoconDescription.createUnknown(masterId));
+			masters.add(RoconDescription.createUnknown(masterId));
 			Log.i("MasterChooserActivity", "description created");
-			onConcertsChanged();
+			onMastersChanged();
 		}
 	}
 
-	private void onConcertsChanged() {
-		writeConcertList();
+	private void onMastersChanged() {
+		writeMasterList();
 		updateListView();
 	}
 
-	private void deleteAllConcerts() {
-		concerts.clear();
-		onConcertsChanged();
+	private void deleteAllMasters() {
+		masters.clear();
+		onMastersChanged();
 	}
 
-	private void deleteSelectedConcerts(boolean[] array) {
+	private void deleteSelectedMasters(boolean[] array) {
 		int j = 0;
 		for (int i = 0; i < array.length; i++) {
 			if (array[i]) {
-				concerts.remove(j);
+				masters.remove(j);
 			} else {
 				j++;
 			}
 		}
-		onConcertsChanged();
+		onMastersChanged();
 	}
 
-	private void deleteUnresponsiveConcerts() {
-		Iterator<RoconDescription> iter = concerts.iterator();
+	private void deleteUnresponsiveMasters() {
+		Iterator<RoconDescription> iter = masters.iterator();
 		while (iter.hasNext()) {
 			RoconDescription concert = iter.next();
 			if (concert == null || concert.getConnectionStatus() == null
@@ -269,13 +269,13 @@ public class MasterChooser extends Activity {
 				iter.remove();
 			}
 		}
-		onConcertsChanged();
+		onMastersChanged();
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		readConcertList();
+		readMasterList();
 		updateListView();
 
 	}
@@ -325,7 +325,7 @@ public class MasterChooser extends Activity {
 
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		readConcertList();
+		readMasterList();
 		final Dialog dialog;
 		Button button;
 		AlertDialog.Builder builder;
@@ -333,7 +333,7 @@ public class MasterChooser extends Activity {
 		case ADD_URI_DIALOG_ID:
 			dialog = new Dialog(this);
 			dialog.setContentView(R.layout.add_uri_dialog);
-			dialog.setTitle("Add a concert");
+			dialog.setTitle("Add a Master");
 			dialog.setOnKeyListener(new DialogKeyListener());
 			EditText uriField = (EditText) dialog.findViewById(R.id.uri_editor);
 			EditText controlUriField = (EditText) dialog
@@ -343,7 +343,7 @@ public class MasterChooser extends Activity {
 			button = (Button) dialog.findViewById(R.id.enter_button);
 			button.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View v) {
-					enterConcertInfo(dialog);
+					enterMasterInfo(dialog);
 					removeDialog(ADD_URI_DIALOG_ID);
 				}
 			});
@@ -365,7 +365,7 @@ public class MasterChooser extends Activity {
 			button.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					searchConcertClicked(v);
+					searchMasterClicked(v);
 				}
 			});
 
@@ -380,18 +380,18 @@ public class MasterChooser extends Activity {
 		case ADD_DELETION_DIALOG_ID:
 			builder = new AlertDialog.Builder(this);
 			String newline = System.getProperty("line.separator");
-			if (concerts.size() > 0) {
-				selections = new boolean[concerts.size()];
-				Spannable[] concert_names = new Spannable[concerts.size()];
+			if (masters.size() > 0) {
+				selections = new boolean[masters.size()];
+				Spannable[] concert_names = new Spannable[masters.size()];
 				Spannable name;
-				for (int i = 0; i < concerts.size(); i++) {
+				for (int i = 0; i < masters.size(); i++) {
 					name = Factory.getInstance().newSpannable(
-							concerts.get(i).getMasterName() + newline + concerts.get(i).getMasterId());
+							masters.get(i).getMasterName() + newline + masters.get(i).getMasterId());
 					name.setSpan(new ForegroundColorSpan(0xff888888),
-                            concerts.get(i).getMasterName().length(), name.length(),
+                            masters.get(i).getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					name.setSpan(new RelativeSizeSpan(0.8f),
-                            concerts.get(i).getMasterName().length(), name.length(),
+                            masters.get(i).getMasterName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					concert_names[i] = name;
 				}
@@ -404,7 +404,7 @@ public class MasterChooser extends Activity {
 						new DeletionDialogButtonClickHandler());
 				dialog = builder.create();
 			} else {
-				builder.setTitle("No concerts to delete.");
+				builder.setTitle("No masters to delete.");
 				dialog = builder.create();
 				final Timer t = new Timer();
 				t.schedule(new TimerTask() {
@@ -421,8 +421,8 @@ public class MasterChooser extends Activity {
 			listView = (ListView) layoutInflater.inflate(R.layout.zeroconf_master_list, null);
 			masterSearcher = new MasterSearcher(this, listView, "concert-master", R.drawable.conductor, R.drawable.turtle);
 			builder.setView(listView);
-			builder.setPositiveButton("Select", new SearchConcertDialogButtonClickHandler());
-			builder.setNegativeButton("Cancel", new SearchConcertDialogButtonClickHandler());
+			builder.setPositiveButton("Select", new SearchMasterDialogButtonClickHandler());
+			builder.setNegativeButton("Cancel", new SearchMasterDialogButtonClickHandler());
 			dialog = builder.create();
 			dialog.setOnKeyListener(new DialogKeyListener());
 			break;
@@ -445,7 +445,7 @@ public class MasterChooser extends Activity {
 		public void onClick(DialogInterface dialog, int clicked) {
 			switch (clicked) {
 			case DialogInterface.BUTTON_POSITIVE:
-				deleteSelectedConcerts(selections);
+				deleteSelectedMasters(selections);
 				removeDialog(ADD_DELETION_DIALOG_ID);
 				break;
 			case DialogInterface.BUTTON_NEGATIVE:
@@ -455,7 +455,7 @@ public class MasterChooser extends Activity {
 		}
 	}
 
-	public class SearchConcertDialogButtonClickHandler implements
+	public class SearchMasterDialogButtonClickHandler implements
 			DialogInterface.OnClickListener {
 		public void onClick(DialogInterface dialog, int clicked) {
 			switch (clicked) {
@@ -465,8 +465,8 @@ public class MasterChooser extends Activity {
 
 				for (int i = 0; i < positions.size(); i++) {
 					if (positions.valueAt(i)) {
-						enterConcertInfo((DiscoveredService) listView.getAdapter()
-								.getItem(positions.keyAt(i)));
+						enterMasterInfo((DiscoveredService) listView.getAdapter()
+                                .getItem(positions.keyAt(i)));
 					}
 				}
 				removeDialog(ADD_DELETION_DIALOG_ID);
@@ -478,7 +478,7 @@ public class MasterChooser extends Activity {
 		}
 	}
 
-	public void enterConcertInfo(DiscoveredService discovered_service) {
+	public void enterMasterInfo(DiscoveredService discovered_service) {
         /*
           This could be better - it should actually contact and check off each
           resolvable zeroconf address looking for the master. Instead, we just grab
@@ -505,7 +505,7 @@ public class MasterChooser extends Activity {
         }
 	}
 
-	public void enterConcertInfo(Dialog dialog) {
+	public void enterMasterInfo(Dialog dialog) {
 		EditText uriField = (EditText) dialog.findViewById(R.id.uri_editor);
 		String newMasterUri = uriField.getText().toString();
 		EditText controlUriField = (EditText) dialog
@@ -547,7 +547,7 @@ public class MasterChooser extends Activity {
 			if (event.getAction() == KeyEvent.ACTION_DOWN
 					&& keyCode == KeyEvent.KEYCODE_ENTER) {
 				Dialog dlg = (Dialog) dialog;
-				enterConcertInfo(dlg);
+				enterMasterInfo(dlg);
 				removeDialog(ADD_URI_DIALOG_ID);
 				return true;
 			}
@@ -555,7 +555,7 @@ public class MasterChooser extends Activity {
 		}
 	}
 
-	public void addConcertClicked(View view) {
+	public void addMasterClicked(View view) {
 		showDialog(ADD_URI_DIALOG_ID);
 	}
 
@@ -577,7 +577,7 @@ public class MasterChooser extends Activity {
         startActivityForResult(i, NFC_TAG_SCAN_REQUEST_CODE);
     }
 
-	public void searchConcertClicked(View view) {
+	public void searchMasterClicked(View view) {
 		removeDialog(ADD_URI_DIALOG_ID);
 		showDialog(ADD_SEARCH_CONCERT_DIALOG_ID);
 
@@ -600,10 +600,10 @@ public class MasterChooser extends Activity {
 			showDialog(ADD_DELETION_DIALOG_ID);
 			return true;
 		} else if (id == R.id.delete_unresponsive) {
-			deleteUnresponsiveConcerts();
+			deleteUnresponsiveMasters();
 			return true;
 		} else if (id == R.id.delete_all) {
-			deleteAllConcerts();
+			deleteAllMasters();
 			return true;
 		} else if (id == R.id.kill) {
 			Intent intent = new Intent();

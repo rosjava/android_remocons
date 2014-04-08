@@ -20,8 +20,8 @@
     <Button android:layout_width="fill_parent" 
             android:layout_height="wrap_content" 
             android:layout_weight=".5"
-            android:text="Add a concert"
-            android:onClick="addConcertClicked"/>
+            android:text="Add a Master"
+            android:onClick="addMasterClicked"/>
     <Button android:layout_width="fill_parent" 
             android:layout_height="wrap_content" 
             android:layout_weight=".5"
