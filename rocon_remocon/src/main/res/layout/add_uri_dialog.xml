@@ -23,13 +23,6 @@
           android:inputType="textUri"
           android:layout_toLeftOf="@+id/enter_button"/>
 
-    <TextView android:text="Enter control URI:"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"/>
-  <EditText android:id="@+id/control_uri_editor"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textUri" />
   <TextView android:text="Enter wifi network name:"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>

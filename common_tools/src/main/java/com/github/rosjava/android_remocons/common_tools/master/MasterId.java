@@ -45,7 +45,6 @@ public class MasterId implements java.io.Serializable {
     private static final long serialVersionUID = -1185642483404745956L;
 
     private String masterUri;
-    private String controlUri;
     private String wifi;
     private String wifiEncryption;
     private String wifiPassword;
@@ -53,9 +52,8 @@ public class MasterId implements java.io.Serializable {
     public MasterId() {
     }
 
-    public MasterId(String masterUri, String controlUri, String wifi, String wifiEncryption, String wifiPassword) {
+    public MasterId(String masterUri, String wifi, String wifiEncryption, String wifiPassword) {
         this.masterUri = masterUri;
-        this.controlUri = controlUri;
         this.wifi = wifi;
         this.wifiEncryption = wifiEncryption;
         this.wifiPassword = wifiPassword;
@@ -64,9 +62,6 @@ public class MasterId implements java.io.Serializable {
     public MasterId(Map<String, Object> map) {
         if (map.containsKey("URL")) {
             this.masterUri = map.get("URL").toString();
-        }
-        if (map.containsKey("CURL")) {
-            this.controlUri = map.get("CURL").toString();
         }
         if (map.containsKey("WIFI")) {
             this.wifi = map.get("WIFI").toString();
@@ -87,10 +82,6 @@ public class MasterId implements java.io.Serializable {
         return masterUri;
     }
 
-    public String getControlUri() {
-        return controlUri;
-    }
-
     public String getWifi() {
         return wifi;
     }
@@ -108,9 +99,6 @@ public class MasterId implements java.io.Serializable {
         String str = getMasterUri() == null ? "" : getMasterUri();
         if (getWifi() != null) {
             str = str + " On Wifi: " + getWifi();
-        }
-        if (getControlUri() != null) {
-            str = str + " Controlled By: " + getControlUri();
         }
         return str;
     }
@@ -144,7 +132,6 @@ public class MasterId implements java.io.Serializable {
         // This will succeed because of the instanceof, and lets us access private fields.
         MasterId lhs = (MasterId) o;
         return nullSafeEquals(this.masterUri, lhs.masterUri)
-            && nullSafeEquals(this.controlUri, lhs.controlUri)
             && nullSafeEquals(this.wifi, lhs.wifi)
             && nullSafeEquals(this.wifiEncryption, lhs.wifiEncryption)
             && nullSafeEquals(this.wifiPassword, lhs.wifiPassword);
@@ -156,7 +143,6 @@ public class MasterId implements java.io.Serializable {
         int result = 17;
         // Include a hash for each field checked by equals().
         result = 31 * result + (masterUri == null ? 0 : masterUri.hashCode());
-        result = 31 * result + (controlUri == null ? 0 : controlUri.hashCode());
         result = 31 * result + (wifi == null ? 0 : wifi.hashCode());
         result = 31 * result + (wifiEncryption == null ? 0 : wifiEncryption.hashCode());
         result = 31 * result + (wifiPassword == null ? 0 : wifiPassword.hashCode());

@@ -67,7 +67,6 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
     private RoconDescription description;
     private MasterChooser parentMca;
     private String errorReason;
-    private boolean control;
 
     public MasterItem(RoconDescription roconDescription, MasterChooser parentMca) {
         errorReason = "";
@@ -77,12 +76,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
         if (WifiChecker.wifiValid(this.description.getMasterId(),
                 (WifiManager) parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
             checker = new ConcertChecker(this, this);
-            if (this.description.getMasterId().getControlUri() != null) {
-                control = true;
-            } else {
-                control = false;
-                checker.beginChecking(this.description.getMasterId());
-            }
+            checker.beginChecking(this.description.getMasterId());
         } else {
             errorReason = "Wrong WiFi Network";
             description.setConnectionStatus(RoconDescription.WIFI);
@@ -95,7 +89,6 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
     }
 
     public void handleSuccess() {
-        control = false;
         checker.beginChecking(this.description.getMasterId());
     }
 
@@ -108,7 +101,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
     @Override
     public void handleFailure(String reason) {
         errorReason = reason;
-        description.setConnectionStatus(control ? RoconDescription.CONTROL : RoconDescription.ERROR);
+        description.setConnectionStatus(RoconDescription.ERROR);
         safePopulateView();
     }
 
@@ -139,7 +132,6 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
         Log.i("MasterItem", "connection status = " + description.getConnectionStatus());
         boolean isOk = description.getConnectionStatus().equals(RoconDescription.OK);
         boolean isUnavailable = description.getConnectionStatus().equals(RoconDescription.UNAVAILABLE);
-        boolean isControl = description.getConnectionStatus().equals(RoconDescription.CONTROL);
         boolean isWifi = description.getConnectionStatus().equals(RoconDescription.WIFI);
         boolean isError = description.getConnectionStatus().equals(RoconDescription.ERROR);
         boolean isConnecting = description.getConnectionStatus().equals(RoconDescription.CONNECTING);
@@ -149,7 +141,7 @@ public class MasterItem implements ConcertChecker.ConcertDescriptionReceiver,
         ImageView errorImage = (ImageView) view.findViewById(R.id.error_icon);
         errorImage.setVisibility(isError ? View.VISIBLE : View.GONE);
         ImageView iv = (ImageView) view.findViewById(R.id.concert_icon);
-        iv.setVisibility((isOk || isWifi || isControl || isUnavailable) ? View.VISIBLE : View.GONE);
+        iv.setVisibility((isOk || isWifi || isUnavailable) ? View.VISIBLE : View.GONE);
         if (isWifi) {
             iv.setImageResource(R.drawable.wifi_question_mark);
         } else if (description.getMasterIconData() == null) {

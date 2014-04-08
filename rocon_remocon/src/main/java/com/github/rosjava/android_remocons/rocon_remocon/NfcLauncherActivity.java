@@ -145,9 +145,8 @@ public class NfcLauncherActivity extends NfcReaderActivity {
 
     private void connectToSSID() throws Exception {
         String masterUri  = "http://" + masterHost + ":" + masterPort;
-        String controlUri = null;      // not needed
         String encryption = "WPA2";    // not needed
-        masterId = new MasterId(masterUri, controlUri, ssid, encryption, password);
+        masterId = new MasterId(masterUri, ssid, encryption, password);
 
         final WifiChecker wc = new WifiChecker(
                 new WifiChecker.SuccessHandler() {

@@ -336,8 +336,6 @@ public class MasterChooser extends Activity {
 			dialog.setTitle("Add a Master");
 			dialog.setOnKeyListener(new DialogKeyListener());
 			EditText uriField = (EditText) dialog.findViewById(R.id.uri_editor);
-			EditText controlUriField = (EditText) dialog
-					.findViewById(R.id.control_uri_editor);
 			uriField.setText("http://localhost:11311/",
 					TextView.BufferType.EDITABLE);
 			button = (Button) dialog.findViewById(R.id.enter_button);
@@ -508,9 +506,6 @@ public class MasterChooser extends Activity {
 	public void enterMasterInfo(Dialog dialog) {
 		EditText uriField = (EditText) dialog.findViewById(R.id.uri_editor);
 		String newMasterUri = uriField.getText().toString();
-		EditText controlUriField = (EditText) dialog
-				.findViewById(R.id.control_uri_editor);
-		String newControlUri = controlUriField.getText().toString();
 		EditText wifiNameField = (EditText) dialog
 				.findViewById(R.id.wifi_name_editor);
 		String newWifiName = wifiNameField.getText().toString();
@@ -520,9 +515,6 @@ public class MasterChooser extends Activity {
 		if (newMasterUri != null && newMasterUri.length() > 0) {
 			Map<String, Object> data = new HashMap<String, Object>();
 			data.put("URL", newMasterUri);
-			if (newControlUri != null && newControlUri.length() > 0) {
-				data.put("CURL", newControlUri);
-			}
 			if (newWifiName != null && newWifiName.length() > 0) {
 				data.put("WIFI", newWifiName);
 			}
