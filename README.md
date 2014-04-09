@@ -1,11 +1,33 @@
-Rocon Android
-=============
+Android Remocons
+================
 
-Remoticons for pairing and concert modes as well as some simple apps for testing.
+Remocons for pairing and concert modes as well as some simple apps for testing.
 
-Java Package Names
-==================
+Installation
+============
 
-Endeavour to put all your package names under com.github.rocon.android.xxx. It's not a strict fit, but robotics-in-concert fails anyway because of the dashes. 
+This will use the maven repos for the core rosjava and android repos.
 
-For apps, add a further namespace (i.e. com.github.com.rocon.android.apps.xxx).
+```
+> yujin_init_workspace -j5 ~/rocon_rosjava rocon-rosjava
+> cd ~/rocon_rosjava
+> yujin_init_build .
+> yujin_make --install-rosdeps
+> yujin_make
+> . .bashrc
+```
+
+In another shell:
+
+```
+> yujin_init_workspace -j5 ~/android_interactions
+> cd ~/android_interactions
+> yujin_init_build --underlays="~/rocon_rosjava/devel" .
+> cd ~/android_interactions/src
+> wstool set android_remocons --git https://github.com/robotics-in-concert/android_remocons.git --version=master
+> wstool set rocon_android_apps --git https://github.com/robotics-in-concert/rocon_android_apps.git --version=hydro-devel
+> wstool update -j2
+> yujin_make --install-rosdeps
+> yujin_make
+> . .bashrc
+```
