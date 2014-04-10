@@ -269,7 +269,7 @@ public class AppsManager extends AbstractNodeMain {
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
         final GetInteractionRequest request = srvClient.newMessage();
-        request.setHash(this.app.getHash());
+        request.setHash(this.app_hash);
 
         srvClient.call(request, appInfoServiceResponseListener);
         Log.d("AppsMng", "Get app info service call done [" + serviceName + "]");

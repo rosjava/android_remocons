@@ -1,10 +1,6 @@
 package com.github.rosjava.android_remocons.headless_launcher;
 
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -16,19 +12,34 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.github.rosjava.android_apps.application_management.ConcertDescription;
-import com.github.rosjava.android_apps.application_management.MasterId;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
-import com.github.rosjava.android_remocons.common_tools.AppLauncher;
-import com.github.rosjava.android_remocons.common_tools.AppsManager;
-import com.github.rosjava.android_remocons.common_tools.Util;
-import com.github.rosjava.android_remocons.common_tools.NfcManager;
-import com.github.rosjava.android_remocons.common_tools.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.master.MasterDescription;
+import com.github.rosjava.android_remocons.common_tools.master.MasterId;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
+import com.github.rosjava.android_remocons.common_tools.rocon.AppLauncher;
+import com.github.rosjava.android_remocons.common_tools.rocon.AppsManager;
+import com.github.rosjava.android_remocons.common_tools.system.Util;
+import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
 
 import org.ros.exception.RemoteException;
 import org.ros.node.service.ServiceResponseListener;
 
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import rocon_interaction_msgs.GetInteractionResponse;
+import rocon_interaction_msgs.Interaction;
+import rocon_interaction_msgs.RequestInteractionResponse;
+
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_APP_HASH_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_HOST_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_PORT_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PASSWORD_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PAYLOAD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_SSID_FIELD_LENGTH;
+
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
@@ -63,8 +74,8 @@ public class NfcLauncherActivity extends Activity {
     private int    appHash;
     private short  extraData;
     private MasterId masterId;
-    private concert_msgs.RemoconApp app;
-    private ConcertDescription concert;
+    private Interaction app;
+    private RoconDescription concert;
 
 
 	@Override
@@ -127,7 +138,7 @@ public class NfcLauncherActivity extends Activity {
         }
         catch (Exception e) {
             // TODO make and "error sound"
-            Log.e("NfcLaunch", e.getMessage());
+            Log.e("NfcLaunch", "ERROR:" + e.getMessage());
             toast(e.getMessage(), Toast.LENGTH_LONG);
             finish();
         }
@@ -203,9 +214,10 @@ public class NfcLauncherActivity extends Activity {
     private void checkConcert() throws Exception {
         final ConcertChecker cc = new ConcertChecker(
                 new ConcertChecker.ConcertDescriptionReceiver() {
-                    public void receive(ConcertDescription concertDescription) {
-                        concert = concertDescription;
-                        if ( concert.getConnectionStatus() == ConcertDescription.UNAVAILABLE ) {
+                    @Override
+                    public void receive(RoconDescription roconDescription) {
+                        concert = roconDescription;
+                        if ( concert.getConnectionStatus() == MasterDescription.UNAVAILABLE ) {
                             // Check that it's not busy
                             Log.e("NfcLaunch", "Concert is unavailable: busy serving another remote controller");
                             launchStep = Step.ABORT_LAUNCH;
@@ -236,11 +248,13 @@ public class NfcLauncherActivity extends Activity {
                 launchStep = Step.ABORT_LAUNCH;
             }
         });
-        am.setupAppInfoService(new ServiceResponseListener<concert_msgs.GetAppResponse>() {
+
+        Log.i("NfcLaunch[dwlee]", "Create App Manager");
+        am.setupAppInfoService(new ServiceResponseListener<GetInteractionResponse>() {
             @Override
-            public void onSuccess(concert_msgs.GetAppResponse response) {
-                if (response.getResult() == true) {
-                    app = response.getApp();
+            public void onSuccess(GetInteractionResponse getInteractionResponse) {
+                if (getInteractionResponse.getResult() == true) {
+                    app = getInteractionResponse.getInteraction();
                     launchStep = launchStep.next();
                 } else {
                     Log.i("NfcLaunch", "App with hash " + appHash + " not found in concert");
@@ -254,7 +268,12 @@ public class NfcLauncherActivity extends Activity {
                 launchStep = Step.ABORT_LAUNCH;
             }
         });
+
+
+        am.init(concert.getInteractionsNamespace());
         am.getAppInfo(masterId, appHash);
+
+        Log.i("NfcLaunch[dwlee]", "Requesting app info for hash " + appHash + "...");
         toast("Requesting app info for hash " + appHash + "...", Toast.LENGTH_SHORT);
 
         if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
@@ -265,8 +284,11 @@ public class NfcLauncherActivity extends Activity {
         // Add the extra data integer we got from the NFC tag as a new parameter for the app
         // Useful when we want to tailor app behavior depending to the tag that launched it
         String params = app.getParameters();
-        params = params.substring(0, params.lastIndexOf('}')) + ", 'extra_data':" + String.valueOf(extraData) + "}";
-        app.setParameters(params);
+        Log.i("NfcLaunch[dwlee]", "params: "+params);
+        if (params.length() != 0){
+            params = params.substring(0, params.lastIndexOf('}')) + ", 'extra_data':" + String.valueOf(extraData) + "}";
+            app.setParameters(params);
+        }
     }
 
     private void getUsePermit() throws Exception {
@@ -276,14 +298,16 @@ public class NfcLauncherActivity extends Activity {
                 launchStep = Step.ABORT_LAUNCH;
             }
         });
-        am.setupRequestService(new ServiceResponseListener<concert_msgs.RequestInteractionResponse>() {
+
+
+        am.setupRequestService(new ServiceResponseListener<rocon_interaction_msgs.RequestInteractionResponse>() {
             @Override
-            public void onSuccess(concert_msgs.RequestInteractionResponse response) {
-                if (response.getResult() == true) {
+            public void onSuccess(RequestInteractionResponse requestInteractionResponse) {
+                if (requestInteractionResponse.getResult() == true) {
                     launchStep = launchStep.next();
                 } else {
-                    Log.i("NfcLaunch", "Concert deny app use. " + response.getMessage());
-                    toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_LONG);
+                    Log.i("NfcLaunch", "Concert deny app use. " + requestInteractionResponse.getMessage());
+                    toast("Concert deny app use. " + requestInteractionResponse.getMessage(), Toast.LENGTH_LONG);
                     launchStep = Step.ABORT_LAUNCH;
                 }
             }
@@ -294,6 +318,26 @@ public class NfcLauncherActivity extends Activity {
                 launchStep = Step.ABORT_LAUNCH;
             }
         });
+
+//        am.setupRequestService(new ServiceResponseListener<concert_msgs.RequestInteractionResponse>() {
+//            @Override
+//            public void onSuccess(concert_msgs.RequestInteractionResponse response) {
+//                if (response.getResult() == true) {
+//                    launchStep = launchStep.next();
+//                } else {
+//                    Log.i("NfcLaunch", "Concert deny app use. " + response.getMessage());
+//                    toast("Concert deny app use. " + response.getMessage(), Toast.LENGTH_LONG);
+//                    launchStep = Step.ABORT_LAUNCH;
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(RemoteException e) {
+//                Log.e("NfcLaunch", "Request app use failed. " + e.getMessage());
+//                launchStep = Step.ABORT_LAUNCH;
+//            }
+//        });
+        am.init(concert.getInteractionsNamespace());
         am.requestAppUse(masterId, app.getRole(), app);
         toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
 
@@ -304,7 +348,9 @@ public class NfcLauncherActivity extends Activity {
     }
 
     private void launchApp() throws Exception {
+        //AppLauncher.Result result = AppLauncher.launch(this, concert, app);
         AppLauncher.Result result = AppLauncher.launch(this, concert, app);
+
         if (result == AppLauncher.Result.SUCCESS) {
             Log.i("NfcLaunch", app.getDisplayName() + " successfully launched");
             toast(app.getDisplayName() + " successfully launched; have fun!", Toast.LENGTH_SHORT);
