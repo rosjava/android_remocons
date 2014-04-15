@@ -24,7 +24,9 @@ import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
 
 import org.ros.exception.RemoteException;
 import org.ros.node.service.ServiceResponseListener;
+import org.yaml.snakeyaml.Yaml;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -249,7 +251,6 @@ public class NfcLauncherActivity extends Activity {
             }
         });
 
-        Log.i("NfcLaunch[dwlee]", "Create App Manager");
         am.setupAppInfoService(new ServiceResponseListener<GetInteractionResponse>() {
             @Override
             public void onSuccess(GetInteractionResponse getInteractionResponse) {
@@ -273,7 +274,6 @@ public class NfcLauncherActivity extends Activity {
         am.init(concert.getInteractionsNamespace());
         am.getAppInfo(masterId, appHash);
 
-        Log.i("NfcLaunch[dwlee]", "Requesting app info for hash " + appHash + "...");
         toast("Requesting app info for hash " + appHash + "...", Toast.LENGTH_SHORT);
 
         if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
@@ -283,11 +283,13 @@ public class NfcLauncherActivity extends Activity {
 
         // Add the extra data integer we got from the NFC tag as a new parameter for the app
         // Useful when we want to tailor app behavior depending to the tag that launched it
-        String params = app.getParameters();
-        Log.i("NfcLaunch[dwlee]", "params: "+params);
-        if (params.length() != 0){
-            params = params.substring(0, params.lastIndexOf('}')) + ", 'extra_data':" + String.valueOf(extraData) + "}";
-            app.setParameters(params);
+        //String params = app.getParameters();
+        Yaml param_yaml = new Yaml();
+        Map<String, String> params = (Map<String, String>) param_yaml.load(app.getParameters());
+        if (params.size() > 0){
+            params.put("extra_data",String.valueOf(extraData));
+            Yaml yaml = new Yaml();
+            app.setParameters(yaml.dump(params));
         }
     }
 
