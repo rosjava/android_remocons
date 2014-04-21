@@ -36,15 +36,6 @@
 
 package com.github.rosjava.android_remocons.common_tools.rocon;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -55,6 +46,18 @@ import android.util.Patterns;
 
 import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
 import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
+
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A rewrite of robot_remocon/AppLauncher that...
@@ -170,22 +173,42 @@ public class AppLauncher {
 
             // We pass concert URL, parameters and remaps as URL parameters
             String appUriStr = app.getName();
-            appUriStr += "?" + "MasterURI=" + concert.getMasterUri();
-            if ((app.getParameters() != null) && (app.getParameters().length() > 0)) {
-                appUriStr += "&" + "params=" + URLEncoder.encode(app.getParameters());
-            }
-
-            // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
-            // TODO Single quotes seem to be necessary, but I didn't confirm yet
+            String interaction_data = "{";
+            //add remap
+            String remaps = "\"remappings\": {";
             if ((app.getRemappings() != null) && (app.getRemappings().size() > 0)) {
-                String remaps = "{";
                 for (rocon_std_msgs.Remapping remap: app.getRemappings())
-                    remaps += "\'" + remap.getRemapFrom() + "\':\'" + remap.getRemapTo() + "\',";
+                    remaps += "\"" + remap.getRemapFrom() + "\":\"" + remap.getRemapTo() + "\",";
                 remaps = remaps.substring(0, remaps.length() - 1) + "}";
-                appUriStr += "&" + "remaps=" + URLEncoder.encode(remaps);
+            }
+            remaps += ",";
+            interaction_data += remaps;
+
+            //add displayname
+            String displayname = "\"display_name\":";
+            if ((app.getDisplayName() != null) && (app.getDisplayName().length() > 0)) {
+                displayname += "\"" + app.getDisplayName() +"\"";
+            }
+            displayname +=",";
+            interaction_data += displayname;
+
+            //add parameters
+            String parameters = "\"parameters\": {";
+            if ((app.getParameters() != null) && (app.getParameters().length() > 0)) {
+                Yaml yaml = new Yaml();
+                Map<String, String> params = (Map<String, String>) yaml.load(app.getParameters());
+                for( String key : params.keySet() ) {
+                    System.out.println(String.format("키 : %s, 값 : %s", key, params.get(key)));
+                    parameters += "\"" + key + "\":\"" + String.valueOf(params.get(key))+"" + "\",";
+                }
+                parameters = parameters.substring(0, parameters.length() - 1);
             }
 
-            appURL = new URL(appUriStr);
+            parameters +="}";
+            interaction_data += parameters;
+            interaction_data +="}";
+
+            appUriStr = appUriStr + "?" + "interaction_data="+URLEncoder.encode(interaction_data);
             appURL.toURI(); // throws URISyntaxException if fails; probably a redundant check
             Uri appURI =  Uri.parse(appUriStr);
 
