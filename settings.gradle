@@ -14,9 +14,6 @@
  * the License.
  */
 
-/* Disabled till upgraded for new rocon messages (March '14)
-include 'headless_launcher'
-*/
 include 'common_tools'
 include 'listener'
 include 'rocon_nfc_writer'
