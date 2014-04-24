@@ -36,7 +36,8 @@ dependencies {
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:master_info:[0.1,)'
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:rocon_interactions:[0.1,)'
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
-    compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
+    //compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
+
 }
 
 apply plugin: 'android'
