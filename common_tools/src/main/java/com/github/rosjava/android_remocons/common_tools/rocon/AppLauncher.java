@@ -97,8 +97,29 @@ public class AppLauncher {
         if (Patterns.WEB_URL.matcher(app.getName()).matches() == true) {
             return launchWebApp(parent, concert, app);
         }
-        else {
+        else if(checkAppName(app.getName()).length() != 0){
+            return launchWebApp(parent, concert, app);
+        }
+        else{
             return launchAndroidApp(parent, concert, app);
+        }
+    }
+
+    /**
+     * Check the application name whether web_url(*) or web_app(*)
+     */
+
+    static public String checkAppName(String app_name){
+        String web_url_desc = "web_url(";
+        String web_app_desc = "web_app(";
+        if(app_name.contains(web_app_desc)){
+            return "web_app";
+        }
+        else if(app_name.contains(web_url_desc)){
+            return "web_url";
+        }
+        else{
+            return "";
         }
     }
 
@@ -150,7 +171,24 @@ public class AppLauncher {
         try
         {
             // Validate the URL before starting anything
-            URL appURL = new URL(app.getName());
+            String app_name = "";
+            String app_type = "";
+
+            // Parse the url
+            if (checkAppName(app.getName()).equals("web_url")){
+                app_type = "web_url";
+                app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
+
+            }
+            else if(checkAppName(app.getName()).equals("web_app")){
+                app_type = "web_app";
+                app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
+            }
+            else{
+                app_name = app.getName();
+            }
+
+            URL appURL = new URL(app_name);
 
             AsyncTask<URL, Void, String> asyncTask = new AsyncTask<URL, Void, String>() {
                 @Override
@@ -172,7 +210,7 @@ public class AppLauncher {
             }
 
             // We pass concert URL, parameters and remaps as URL parameters
-            String appUriStr = app.getName();
+            String appUriStr = app_name;
             String interaction_data = "{";
             //add remap
             String remaps = "\"remappings\": {";
@@ -180,6 +218,9 @@ public class AppLauncher {
                 for (rocon_std_msgs.Remapping remap: app.getRemappings())
                     remaps += "\"" + remap.getRemapFrom() + "\":\"" + remap.getRemapTo() + "\",";
                 remaps = remaps.substring(0, remaps.length() - 1) + "}";
+            }
+            else{
+                remaps+="}";
             }
             remaps += ",";
             interaction_data += remaps;
@@ -198,7 +239,6 @@ public class AppLauncher {
                 Yaml yaml = new Yaml();
                 Map<String, String> params = (Map<String, String>) yaml.load(app.getParameters());
                 for( String key : params.keySet() ) {
-                    System.out.println(String.format("키 : %s, 값 : %s", key, params.get(key)));
                     parameters += "\"" + key + "\":\"" + String.valueOf(params.get(key))+"" + "\",";
                 }
                 parameters = parameters.substring(0, parameters.length() - 1);
@@ -208,7 +248,15 @@ public class AppLauncher {
             interaction_data += parameters;
             interaction_data +="}";
 
-            appUriStr = appUriStr + "?" + "interaction_data="+URLEncoder.encode(interaction_data);
+            if(app_type.equals("web_url")) {
+                appUriStr = appUriStr;
+            }
+            else if(app_type.equals("web_app")){
+                appUriStr = appUriStr + "?" + "interaction_data=" + URLEncoder.encode(interaction_data);
+            }
+            else{
+                appUriStr = appUriStr + "?" + "interaction_data=" + URLEncoder.encode(interaction_data);
+            }
             appURL.toURI(); // throws URISyntaxException if fails; probably a redundant check
             Uri appURI =  Uri.parse(appUriStr);
 

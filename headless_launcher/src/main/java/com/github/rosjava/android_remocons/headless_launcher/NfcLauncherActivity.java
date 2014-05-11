@@ -286,7 +286,8 @@ public class NfcLauncherActivity extends Activity {
         //String params = app.getParameters();
         Yaml param_yaml = new Yaml();
         Map<String, String> params = (Map<String, String>) param_yaml.load(app.getParameters());
-        if (params.size() > 0){
+
+        if (params != null && params.size() > 0){
             params.put("extra_data",String.valueOf(extraData));
             Yaml yaml = new Yaml();
             app.setParameters(yaml.dump(params));
