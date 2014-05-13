@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+
+
 /**
  * A rewrite of robot_remocon/AppLauncher that...
  *  - works with concerts
@@ -72,6 +74,7 @@ public class AppLauncher {
     public enum Result {
         SUCCESS,
         NOT_INSTALLED,
+        NOTHING,
         CANNOT_CONNECT,
         MALFORMED_URI,
         CONNECT_TIMEOUT,
@@ -83,6 +86,13 @@ public class AppLauncher {
             this.message = message;
             return this;
         }
+    }
+
+    public enum AppType {
+        NATIVE,
+        WEB_URL,
+        WEB_APP,
+        NOTHING;
     }
 
     /**
@@ -97,11 +107,34 @@ public class AppLauncher {
         if (Patterns.WEB_URL.matcher(app.getName()).matches() == true) {
             return launchWebApp(parent, concert, app);
         }
+        else if(app.getName().length() == 0){
+            return Result.NOTHING;
+        }
         else if(checkAppName(app.getName()).length() != 0){
             return launchWebApp(parent, concert, app);
         }
         else{
             return launchAndroidApp(parent, concert, app);
+        }
+    }
+
+    static public AppType checkAppType(String app_name){
+        String web_url_desc = "web_url(";
+        String web_app_desc = "web_app(";
+        if (Patterns.WEB_URL.matcher(app_name).matches() == true) {
+            return AppType.WEB_URL;
+        }
+        else if(app_name.length() == 0){
+            return AppType.NOTHING;
+        }
+        else if(app_name.contains(web_app_desc)){
+            return AppType.WEB_APP;
+        }
+        else if(app_name.contains(web_url_desc)){
+            return AppType.WEB_URL;
+        }
+        else{
+            return AppType.NATIVE;
         }
     }
 
@@ -175,12 +208,11 @@ public class AppLauncher {
             String app_type = "";
 
             // Parse the url
-            if (checkAppName(app.getName()).equals("web_url")){
+            if (checkAppType(app.getName()) == AppType.WEB_URL){
                 app_type = "web_url";
                 app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
-
             }
-            else if(checkAppName(app.getName()).equals("web_app")){
+            else if(checkAppType(app.getName()) == AppType.WEB_APP){
                 app_type = "web_app";
                 app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
             }

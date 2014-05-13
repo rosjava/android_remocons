@@ -36,11 +36,6 @@
 
 package com.github.rosjava.android_remocons.rocon_remocon;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -61,6 +56,19 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
+import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.master.MasterId;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
+import com.github.rosjava.android_remocons.common_tools.rocon.AppLauncher;
+import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
+import com.github.rosjava.android_remocons.common_tools.rocon.InteractionsManager;
+import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
+import com.github.rosjava.android_remocons.rocon_remocon.dialogs.AlertDialogWrapper;
+import com.github.rosjava.android_remocons.rocon_remocon.dialogs.LaunchInteractionDialog;
+import com.github.rosjava.android_remocons.rocon_remocon.dialogs.ProgressDialogWrapper;
+import com.google.common.base.Preconditions;
+
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
 import org.ros.exception.RemoteException;
@@ -69,21 +77,12 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
-import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
-import com.github.rosjava.android_remocons.common_tools.rocon.AppLauncher;
-import com.github.rosjava.android_remocons.common_tools.rocon.AppsManager;
-import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
-import com.github.rosjava.android_remocons.common_tools.master.MasterId;
-import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
-import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
-
-import com.github.rosjava.android_remocons.rocon_remocon.dialogs.LaunchInteractionDialog;
-import com.github.rosjava.android_remocons.rocon_remocon.dialogs.AlertDialogWrapper;
-import com.github.rosjava.android_remocons.rocon_remocon.dialogs.ProgressDialogWrapper;
-import com.google.common.base.Preconditions;
-
+import rocon_interaction_msgs.GetInteractionsResponse;
 import rocon_interaction_msgs.Interaction;
 
 /**
@@ -109,8 +108,9 @@ public class Remocon extends RosActivity {
 	private AlertDialogWrapper wifiDialog;
 	private AlertDialogWrapper evictDialog;
 	private AlertDialogWrapper errorDialog;
-    private AppsManager appsManager;
+    private InteractionsManager interactionsManager;
     private StatusPublisher statusPublisher;
+    private PairSubscriber pairSubscriber;
 	private boolean alreadyClicked = false;
 	private boolean validatedConcert;
 	private long availableAppsCacheTime;
@@ -127,6 +127,8 @@ public class Remocon extends RosActivity {
         availableAppsCacheTime = 0;
 		availableAppsCache = new ArrayList<Interaction>();
         statusPublisher = StatusPublisher.getInstance();
+        pairSubscriber= PairSubscriber.getInstance();
+        pairSubscriber.setAppHash(0);
 	}
 
 	/** Called when the activity is first created. */
@@ -145,7 +147,7 @@ public class Remocon extends RosActivity {
         }
         else if (concertAppName.equals("AppChooser")) { // TODO ugly legacy identifier, it's misleading so change it sometime
             Log.i("Remocon", "reinitialising from a closing remocon application");
-            statusPublisher.update(false, null);
+            statusPublisher.update(false, 0, null);
             fromApplication = true;
         }
         else if (concertAppName.equals("NfcLauncher")) {
@@ -159,14 +161,16 @@ public class Remocon extends RosActivity {
 		concertNameView = (TextView) findViewById(R.id.concert_name_view);
 
         // Prepare the app manager; we do here instead of on init to keep using the same instance when switching roles
-        appsManager = new AppsManager(
-                new AppsManager.FailureHandler() {
+
+        interactionsManager = new InteractionsManager(
+                new InteractionsManager.FailureHandler() {
                     public void handleFailure(String reason) {
-                        Log.e("Remocon", "Failure on apps manager: " + reason);
+                        Log.e("Remocon", "Failure on interactions manager: " + reason);
                     }
                 }
         );
-        appsManager.setupGetInteractionsService(new ServiceResponseListener<rocon_interaction_msgs.GetInteractionsResponse>() {
+
+        interactionsManager.setupGetInteractionsService(new ServiceResponseListener<GetInteractionsResponse>() {
             @Override
             public void onSuccess(rocon_interaction_msgs.GetInteractionsResponse response) {
                 List<Interaction> apps = response.getInteractions();
@@ -184,7 +188,6 @@ public class Remocon extends RosActivity {
                     // TODO: maybe I should notify the user... he will think something is wrong!
                     Log.w("Remocon", "No suitable concert apps for " + roconDescription.getCurrentRole());
                 }
-
                 availableAppsCacheTime = System.currentTimeMillis();
             }
 
@@ -194,10 +197,8 @@ public class Remocon extends RosActivity {
                 Log.e("Remocon", "retrieve rapps for role "
                         + roconDescription.getCurrentRole() + " failed: " + e.getMessage());
             }
-
         });
-
-        appsManager.setupRequestService(new ServiceResponseListener<rocon_interaction_msgs.RequestInteractionResponse>() {
+        interactionsManager.setupRequestService(new ServiceResponseListener<rocon_interaction_msgs.RequestInteractionResponse>() {
             @Override
             public void onSuccess(rocon_interaction_msgs.RequestInteractionResponse response) {
                 Preconditions.checkNotNull(selectedInteraction);
@@ -205,21 +206,43 @@ public class Remocon extends RosActivity {
                 final boolean allowed = response.getResult();
                 final String reason = response.getMessage();
 
-                launchInteractionDialog.setup(selectedInteraction, allowed, reason);
+                boolean ret_launcher_dialog = false;
                 progressDialog.dismiss();
-                if (launchInteractionDialog.show()) {
+
+                if(AppLauncher.checkAppType(selectedInteraction.getName()) == AppLauncher.AppType.NOTHING){
+                    pairSubscriber.setAppHash(selectedInteraction.getHash());
+                    ret_launcher_dialog = true;
+                }
+                else{
+                    launchInteractionDialog.setup(selectedInteraction, allowed, reason);
+                    if(allowed){
+                        pairSubscriber.setAppHash(selectedInteraction.getHash());
+                    }
+                    else{
+                        pairSubscriber.setAppHash(0);
+                    }
+                    ret_launcher_dialog = launchInteractionDialog.show();
+                }
+
+                if (ret_launcher_dialog) {
+                    Log.i("Remocon", "Selected Launch button");
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
                             AppLauncher.Result result =
                                     AppLauncher.launch(Remocon.this, roconDescription, selectedInteraction);
                             if (result == AppLauncher.Result.SUCCESS) {
                                 // App successfully launched! Notify the concert and finish this activity
-                                statusPublisher.update(true, selectedInteraction.getName());
+                                statusPublisher.update(true, selectedInteraction.getHash(), selectedInteraction.getName());
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
+                            else if (result == AppLauncher.Result.NOTHING){
+                                statusPublisher.update(true, selectedInteraction.getHash(), selectedInteraction.getName());
+                            }
                             else if (result == AppLauncher.Result.NOT_INSTALLED) {
-                                // App not installed; ask for going to play store to download the missing app
+                               // App not installed; ask for going to play store to download the missing app
+                                statusPublisher.update(false, selectedInteraction.getHash(), selectedInteraction.getName());
                                 Log.i("Remocon", "Showing not-installed dialog.");
 
                                 final String installPackage =
@@ -263,9 +286,7 @@ public class Remocon extends RosActivity {
                                 dialog.show();
                             }
 
-                        }
-
-                        ;
+                        };
                     });
                 }
             }
@@ -277,6 +298,8 @@ public class Remocon extends RosActivity {
                         + roconDescription.getCurrentRole() + " failed: " + e.getMessage());
             }
         });
+
+        pairSubscriber.setAppHash(0);
 	}
 
     /**
@@ -295,14 +318,22 @@ public class Remocon extends RosActivity {
 	protected void init(final NodeMainExecutor nodeMainExecutor) {
         nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
                 .newNonLoopback().getHostAddress(), getMasterUri());
-        appsManager.init(roconDescription.getInteractionsNamespace());
-        appsManager.getAppsForRole(roconDescription.getMasterId(), roconDescription.getCurrentRole());
+        interactionsManager.init(roconDescription.getInteractionsNamespace());
+        interactionsManager.getAppsForRole(roconDescription.getMasterId(), roconDescription.getCurrentRole());
+        interactionsManager.setRemoconName(statusPublisher.REMOCON_FULL_NAME);
         progressDialog.show("Getting apps...",
                 "Waiting for concert apps for " + roconDescription.getCurrentRole() + " role");
-
+        //execution of publisher
         if (! statusPublisher.isInitialized()) {
             // If we come back from an app, it should be already initialized, so call execute again would crash
             nodeMainExecutorService.execute(statusPublisher, nodeConfiguration.setNodeName(StatusPublisher.NODE_NAME));
+        }
+        //execution of subscriber
+        pairSubscriber.setAppHash(0);
+
+        if (! pairSubscriber.isInitialized()) {
+            // If we come back from an app, it should be already initialized, so call execute again would crash
+            nodeMainExecutorService.execute(pairSubscriber, nodeConfiguration.setNodeName(pairSubscriber.NODE_NAME));
         }
     }
 
@@ -537,7 +568,9 @@ public class Remocon extends RosActivity {
                 selectedInteraction = apps.get(position);
                 progressDialog.show("Requesting app...", "Requesting permission to use "
                                    + selectedInteraction.getDisplayName());
-                appsManager.requestAppUse(roconDescription.getMasterId(), role, selectedInteraction);
+
+                interactionsManager.requestAppUse(roconDescription.getMasterId(), role, selectedInteraction);
+
 			}
 		});
 		Log.d("Remocon", "app list gridview updated");
@@ -561,8 +594,9 @@ public class Remocon extends RosActivity {
                 CONCERT_MASTER_CHOOSER_REQUEST_CODE);
 
         nodeMainExecutorService.shutdownNodeMain(statusPublisher);
+        nodeMainExecutorService.shutdownNodeMain(pairSubscriber);
 
-        appsManager.shutdown();
+        interactionsManager.shutdown();
     }
 
 	@Override
