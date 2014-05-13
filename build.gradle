@@ -40,7 +40,7 @@ buildscript {
 apply plugin: 'catkin'
 
 allprojects {
-    group 'com.github.robotics_in_concert.rocon_android'
+    group 'com.github.rosjava.android_remocons'
     version = project.catkin.pkg.version
 }
 
