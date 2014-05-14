@@ -13,6 +13,7 @@ import org.ros.node.topic.Publisher;
 import java.util.UUID;
 
 import rocon_interaction_msgs.RemoconStatus;
+import rocon_std_msgs.Strings;
 
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 
@@ -27,6 +28,8 @@ public class StatusPublisher implements NodeMain {
 
     private static final String REMOCON_NAME = "android_remocon";
     private static final String REMOCON_UUID = UUID.randomUUID().toString().replaceAll("-", "");
+    public static final String REMOCON_FULL_NAME = REMOCON_NAME+"_"+REMOCON_UUID;
+    public  static final String ROCON_VERSION = Strings.ROCON_VERSION;
 
     private static StatusPublisher   instance;
 
@@ -63,10 +66,12 @@ public class StatusPublisher implements NodeMain {
         publisher = connectedNode.newPublisher("/remocons/" + REMOCON_NAME + "_" + REMOCON_UUID,
                                                rocon_interaction_msgs.RemoconStatus._TYPE);
         publisher.setLatchMode(true);
+        int[] running_interactions = new int[0];
 
         // Prepare and publish default status; platform info and uuid remain for the whole session
         status = publisher.newMessage();
         status.setPlatformInfo(ANDROID_PLATFORM_INFO);
+
 //        status.getPlatformInfo().setName(REMOCON_NAME);
 //        status.getPlatformInfo().setOs(PlatformInfo.OS_ANDROID);
 //        status.getPlatformInfo().setVersion(PlatformInfo.VERSION_ANDROID_JELLYBEAN);
@@ -74,8 +79,12 @@ public class StatusPublisher implements NodeMain {
 //        status.getPlatformInfo().setSystem(PlatformInfo..SYSTEM_ROSJAVA);
 //        status.getPlatformInfo().setName(REMOCON_NAME);
 //        status.getUuid().getUuid().setByte(0, 0);//REMOCON_UUID.getBytes());
-        status.setUuid(REMOCON_UUID);  // TODO hack!  uuid is a byte[16] array but like this it fails msg delivery! must be cause the weird rosjava version of byte[] reserves 255 bytes buffer
-        status.setRunningApp(false);
+
+        // TODO hack!  uuid is a byte[16] array but like this it fails msg delivery! must be cause the weird rosjava version of byte[] reserves 255 bytes buffer
+        status.setVersion(ROCON_VERSION);
+        status.setUuid(REMOCON_UUID);
+        status.setRunningInteractions(running_interactions);
+        //status.setRunningApp(false);
         //status.setAppName("");  // not yet implemented
 
         publisher.publish(status);
@@ -102,16 +111,20 @@ public class StatusPublisher implements NodeMain {
         Log.e("Remocon", "Remocon status publisher error: " + throwable.getMessage());
     }
 
-    public void update(boolean runningApp, String appName) {
-        Log.d("Remocon", "Remocon status publisher updated. Running app: " + runningApp);
+    public void update(boolean is_runnging, int runningApp_hash, String appName) {
 
-        // not yet implemented
-        // status.setRunningApp(runningApp);
-        // if (runningApp == false || appName == null)
-        //    status.setAppName("");
-        // else
-        //    status.setAppName(appName);
-
+        int[] running_interactions = null;
+        if (is_runnging) {
+            Log.d("Remocon", "Remocon status publisher updated. Running "+appName+": " + runningApp_hash);
+            running_interactions = new int[1];
+            running_interactions[0] = runningApp_hash;
+            status.setRunningInteractions(running_interactions);
+        }
+        else{
+            Log.d("Remocon", "Remocon status publisher updated. Fail running "+appName+": " + runningApp_hash);
+            running_interactions = new int[0];
+            status.setRunningInteractions(running_interactions);
+        }
         publisher.publish(status);
     }
 }
