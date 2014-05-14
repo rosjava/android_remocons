@@ -18,8 +18,8 @@
 include 'headless_launcher'
 */
 include 'common_tools'
-//include 'listener'
-//include 'rocon_nfc_writer'
-//include 'headless_launcher'
+include 'listener'
+include 'rocon_nfc_writer'
+include 'headless_launcher'
 include 'rocon_remocon'
 //include 'talker'
