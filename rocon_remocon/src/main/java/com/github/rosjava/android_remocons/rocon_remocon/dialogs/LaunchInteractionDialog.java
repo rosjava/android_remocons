@@ -48,6 +48,7 @@ public class LaunchInteractionDialog extends AlertDialogWrapper {
         if (allowed) {
             Log.i("Remocon", "This interaction is permitted [" + reason + "]");
             dialog.setMessage(app.getDescription() + "\n\nLovely, you are allowed to launch this interaction.");
+            enablePositive = true;
         }
         else {
             Log.i("Remocon", "This interaction is not permitted [" + reason + "]");
