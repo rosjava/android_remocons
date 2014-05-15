@@ -229,10 +229,10 @@ public class InteractionsManager extends AbstractNodeMain {
         String serviceName = this.interactionsNamespace + "/get_interactions";
 
         try {
-            Log.i("InteractionsMng", "List apps service client created [" + serviceName + "]");
+            Log.i("InteractionsMng", "List interactions service client created [" + serviceName + "]");
             srvClient = connectedNode.newServiceClient(serviceName, GetInteractions._TYPE);
         } catch (ServiceNotFoundException e) {
-            Log.i("InteractionsMng", "List apps service not found [" + serviceName + "]");
+            Log.i("InteractionsMng", "List interactions service not found [" + serviceName + "]");
             throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
         }
         final GetInteractionsRequest request = srvClient.newMessage();
@@ -241,7 +241,7 @@ public class InteractionsManager extends AbstractNodeMain {
         request.setUri(ANDROID_PLATFORM_INFO.getUri());
 
         srvClient.call(request, getAppsServiceResponseListener);
-        Log.i("InteractionsMng", "List apps service call done [" + serviceName + "]");
+        Log.i("InteractionsMng", "List interactions service call done [" + serviceName + "]");
     }
 
     private void requestAppUse() {
@@ -369,7 +369,7 @@ public class InteractionsManager extends AbstractNodeMain {
                 getAppInfo();
                 break;
             default:
-                Log.i("InteractionsMng", "Unrecogniced action requested: " + action);
+                Log.i("InteractionsMng", "Unrecognised action requested: " + action);
         }
 
         Log.i("InteractionsMng", "Done");

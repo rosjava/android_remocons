@@ -115,13 +115,13 @@ public class StatusPublisher implements NodeMain {
 
         int[] running_interactions = null;
         if (is_runnging) {
-            Log.d("Remocon", "Remocon status publisher updated. Running "+appName+": " + runningApp_hash);
+            Log.i("Remocon", "Remocon status publisher updated. Running "+appName+": " + runningApp_hash);
             running_interactions = new int[1];
             running_interactions[0] = runningApp_hash;
             status.setRunningInteractions(running_interactions);
         }
         else{
-            Log.d("Remocon", "Remocon status publisher updated. Fail running "+appName+": " + runningApp_hash);
+            Log.i("Remocon", "Remocon status publisher updated. Fail running "+appName+": " + runningApp_hash);
             running_interactions = new int[0];
             status.setRunningInteractions(running_interactions);
         }
