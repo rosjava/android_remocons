@@ -77,6 +77,7 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -316,24 +317,31 @@ public class Remocon extends RosActivity {
      */
 	@Override
 	protected void init(final NodeMainExecutor nodeMainExecutor) {
-        nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory
-                .newNonLoopback().getHostAddress(), getMasterUri());
-        interactionsManager.init(roconDescription.getInteractionsNamespace());
-        interactionsManager.getAppsForRole(roconDescription.getMasterId(), roconDescription.getCurrentRole());
-        interactionsManager.setRemoconName(statusPublisher.REMOCON_FULL_NAME);
-        progressDialog.show("Getting apps...",
-                "Waiting for concert apps for " + roconDescription.getCurrentRole() + " role");
-        //execution of publisher
-        if (! statusPublisher.isInitialized()) {
-            // If we come back from an app, it should be already initialized, so call execute again would crash
-            nodeMainExecutorService.execute(statusPublisher, nodeConfiguration.setNodeName(StatusPublisher.NODE_NAME));
-        }
-        //execution of subscriber
-        pairSubscriber.setAppHash(0);
+        try {
+            java.net.Socket socket = new java.net.Socket(getMasterUri().getHost(), getMasterUri().getPort());
+            java.net.InetAddress local_network_address = socket.getLocalAddress();
+            socket.close();
+            NodeConfiguration nodeConfiguration =
+                    NodeConfiguration.newPublic(local_network_address.getHostAddress(), getMasterUri());
+            interactionsManager.init(roconDescription.getInteractionsNamespace());
+            interactionsManager.getAppsForRole(roconDescription.getMasterId(), roconDescription.getCurrentRole());
+            interactionsManager.setRemoconName(statusPublisher.REMOCON_FULL_NAME);
+            progressDialog.show("Getting apps...",
+                    "Waiting for concert apps for " + roconDescription.getCurrentRole() + " role");
+            //execution of publisher
+            if (! statusPublisher.isInitialized()) {
+                // If we come back from an app, it should be already initialized, so call execute again would crash
+                nodeMainExecutorService.execute(statusPublisher, nodeConfiguration.setNodeName(StatusPublisher.NODE_NAME));
+            }
+            //execution of subscriber
+            pairSubscriber.setAppHash(0);
 
-        if (! pairSubscriber.isInitialized()) {
-            // If we come back from an app, it should be already initialized, so call execute again would crash
-            nodeMainExecutorService.execute(pairSubscriber, nodeConfiguration.setNodeName(pairSubscriber.NODE_NAME));
+            if (! pairSubscriber.isInitialized()) {
+                // If we come back from an app, it should be already initialized, so call execute again would crash
+                nodeMainExecutorService.execute(pairSubscriber, nodeConfiguration.setNodeName(pairSubscriber.NODE_NAME));
+            }
+        } catch (IOException e) {
+            // Socket problem
         }
     }
 
