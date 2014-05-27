@@ -1,6 +1,5 @@
 package com.github.rosjava.android_remocons.headless_launcher;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -42,10 +41,10 @@ import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.N
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PAYLOAD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_SSID_FIELD_LENGTH;
 
-
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
+
 public class NfcLauncherActivity extends Activity {
 
     private enum Step {
@@ -112,7 +111,7 @@ public class NfcLauncherActivity extends Activity {
             connectToSSID();
 
             Log.i("NfcLaunch", "Connected to " + ssid);
-            toast("Connected to " + ssid, Toast.LENGTH_SHORT);
+            toast("Connected to " + ssid, Toast.LENGTH_LONG);
 
 	    	//** Step 3. Validate the concert: check for specific topics on masterUri
             checkConcert();
@@ -179,6 +178,9 @@ public class NfcLauncherActivity extends Activity {
 
         launchStep = launchStep.next();
     }
+
+
+
 
     private void connectToSSID() throws Exception {
         String masterUri  = "http://" + masterHost + ":" + masterPort;

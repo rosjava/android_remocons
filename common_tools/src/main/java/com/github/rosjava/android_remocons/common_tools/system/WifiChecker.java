@@ -34,6 +34,7 @@
 
 package com.github.rosjava.android_remocons.common_tools.system;
 
+import android.net.wifi.ScanResult;
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
@@ -41,6 +42,8 @@ import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import com.github.rosjava.android_remocons.common_tools.master.MasterId;
+
+import java.util.List;
 
 /**
  * Threaded WiFi checker. Checks and tests if the WiFi is configured properly and if not, connects to the correct network.
@@ -128,6 +131,17 @@ public class WifiChecker {
         return false;
     }
 
+    public String getScanResultSecurity(ScanResult scanResult) {
+        final String cap = scanResult.capabilities;
+        final String[] securityModes = { "WEP", "PSK", "EAP" };
+        for (int i = securityModes.length - 1; i >= 0; i--) {
+            if (cap.contains(securityModes[i])) {
+                return securityModes[i];
+            }
+        }
+        return "OPEN";
+    }
+
     private class CheckerThread extends Thread {
         private MasterId masterId;
         private WifiManager wifiManager;
@@ -192,36 +206,62 @@ public class WifiChecker {
                     //Add new network.
                     if (n == -1) {
                         Log.d("WiFiChecker", "WIFI Unknown");
-                        wc = new WifiConfiguration();
-                        wc.SSID = "\"" + masterId.getWifi() + "\"";
-                        if (masterId.getWifiPassword() != null) {
-                            wc.preSharedKey = "\"" + masterId.getWifiPassword() + "\"";
-                        } else {
-                            wc.preSharedKey = null;
-                        }
-                        wc.hiddenSSID = true;
-                        wc.status = WifiConfiguration.Status.DISABLED;
-                        wc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.LEAP);
-                        wc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
-                        wc.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED);
-                        wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-                        wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-                        wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
-                        wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
-                        wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-                        wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.IEEE8021X);
-                        wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_EAP);
-                        wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-                        wc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-                        wc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-                        wc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-                        wc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
 
-                        n = wifiManager.addNetwork(wc);
-                        Log.d("WiFiChecker", "add Network returned " + n);
-                        if (n == -1) {
-                            failureCallback.handleFailure("Failed to configure WiFi");
+                        List<ScanResult> scanResultList = null;
+                        Log.d("WiFiChecker", "WIFI Scan Start");
+                        if(wifiManager.startScan()){
+                            Log.d("WiFiChecker", "WIFI Scan Success");
                         }
+                        else{
+                            Log.d("WiFiChecker", "WIFI Scan Failure");
+                            failureCallback.handleFailure("wifi scan fail");
+                        }
+
+                        scanResultList = wifiManager.getScanResults();
+                        i = 0;
+                        while (i < 30 && scanResultList.size()==0) {
+                            scanResultList = wifiManager.getScanResults();
+                            Log.d("WiFiChecker", "Waiting for getting wifi list");
+                            Thread.sleep(1000L);
+                            i++;
+                        }
+                        wc = new WifiConfiguration();
+
+                        for (ScanResult result : scanResultList) {
+
+                            if (result.SSID.equals(masterId.getWifi())) {
+                                String securityMode = getScanResultSecurity(result);
+                                Log.d("WiFiChecker", "WIFI mode: " + securityMode);
+
+                                wc.SSID = "\"" + masterId.getWifi() + "\"";
+                                if (securityMode.equalsIgnoreCase("OPEN")) {
+                                    wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                                } else if (securityMode.equalsIgnoreCase("WEP")) {
+                                    wc.wepKeys[0] = "\"" + masterId.getWifiPassword() + "\"";
+                                    wc.wepTxKeyIndex = 0;
+                                    wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+                                    wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+                                } else {
+                                    wc.preSharedKey = "\"" + masterId.getWifiPassword() + "\"";
+                                    wc.hiddenSSID = true;
+                                    wc.status = WifiConfiguration.Status.ENABLED;
+                                    wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+                                    wc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+                                    wc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+                                    wc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+                                    wc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+                                    wc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+                                    wc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+                                }
+                                n = wifiManager.addNetwork(wc);
+                                break;
+
+                            }
+                        }
+                    }
+                    Log.d("WiFiChecker", "add Network returned " + n);
+                    if (n == -1) {
+                        failureCallback.handleFailure("Failed to configure WiFi");
                     }
 
                     //Connect to the network
@@ -231,7 +271,7 @@ public class WifiChecker {
                         wifiManager.reconnect();
                         Log.d("WiFiChecker", "Wait for wifi network");
                         i = 0;
-                        while (i < 30 && !wifiValid()) {
+                        while (i < 15 && !wifiValid()) {
                             Log.d("WiFiChecker", "Waiting for network: " + i + " " + wifiManager.getWifiState());
                             Thread.sleep(1000L);
                             i++;
