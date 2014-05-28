@@ -178,7 +178,7 @@ public class WifiChecker {
                         i++;
                     }
                     if (!wifiManager.isWifiEnabled()) {
-                        failureCallback.handleFailure("Un-able to connect to WiFi");
+                        failureCallback.handleFailure("Un-able to enable to WiFi");
                         return;
                     }
                     int n = -1;
@@ -261,7 +261,7 @@ public class WifiChecker {
                     }
                     Log.d("WiFiChecker", "add Network returned " + n);
                     if (n == -1) {
-                        failureCallback.handleFailure("Failed to configure WiFi");
+                        failureCallback.handleFailure("Failed to add the WiFi configure");
                     }
 
                     //Connect to the network

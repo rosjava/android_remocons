@@ -67,6 +67,7 @@ public class NfcLauncherActivity extends Activity {
     private Toast    lastToast;
     private Vibrator vibrator;
     private NfcManager nfcManager;
+    private String errorString;
 
     private String ssid;
     private String password;
@@ -186,7 +187,7 @@ public class NfcLauncherActivity extends Activity {
         String masterUri  = "http://" + masterHost + ":" + masterPort;
         String encryption = "WPA2";    // not needed
         masterId = new MasterId(masterUri, ssid, encryption, password);
-
+        errorString = "";
         final WifiChecker wc = new WifiChecker(
                 new WifiChecker.SuccessHandler() {
                     public void handleSuccess() {
@@ -194,8 +195,9 @@ public class NfcLauncherActivity extends Activity {
                     }
                 },
                 new WifiChecker.FailureHandler() {
-                    public void handleFailure(String reason) {
+                    public void handleFailure(String reason){
                         launchStep = Step.ABORT_LAUNCH;
+                        errorString = reason;
                     }
                 },
                 new WifiChecker.ReconnectionHandler() {
@@ -211,7 +213,12 @@ public class NfcLauncherActivity extends Activity {
         wc.beginChecking(masterId, (WifiManager) getSystemService(WIFI_SERVICE));
 
         if (waitFor(Step.VALIDATE_CONCERT, 15) == false) {
-            throw new Exception("Cannot connect to " + ssid + ". Aborting app launch");
+            if(errorString.length() == 0) {
+                throw new Exception("Cannot connect to " + ssid + ": Aborting app launch");
+            }
+            else{
+                throw new Exception("Cannot connect to " + ssid + ": "+errorString);
+            }
         }
     }
 
