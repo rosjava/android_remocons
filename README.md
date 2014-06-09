@@ -40,17 +40,16 @@ The android interactions::
 ```
 > yujin_init_workspace -j5 ~/android_interactions
 > cd ~/android_interactions
-> yujin_init_build --underlays="~/rosjava/devel;~/rocon_rosjava/devel" .
+> yujin_init_build --underlays="~/android_core/devel;~/rocon_rosjava/devel;~/rosjava/devel" .
 > cd ~/android_interactions/src
-> wstool set android_remocons --git https://github.com/robotics-in-concert/android_remocons.git --version=master
+# to compile the rocon android apps as well
 > wstool set rocon_android_apps --git https://github.com/robotics-in-concert/rocon_android_apps.git --version=headless_launcher_update
-> wstool update -j2
-> yujin_make --install-rosdeps
+> wstool update -j5
 > yujin_make
 > . .bashrc
 ```
 
-Launch the android studio, complie the ```rocon_nfc_writer``` and ```headless_launcher```
+Launch the android studio, compile the ```rocon_nfc_writer``` and ```headless_launcher```
 
 Other README's
 ==============
