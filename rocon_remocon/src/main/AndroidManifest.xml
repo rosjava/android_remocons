@@ -2,7 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.github.rosjava.android_remocons.rocon_remocon"
       android:versionCode="1"
-      android:versionName="1.0">
+      android:versionName="1.0"
+      xmlns:tools="http://schemas.android.com/tools">
 
     <uses-sdk android:minSdkVersion="10" />
 
@@ -14,7 +15,9 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.NFC" />
 
-    <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
+    <application android:label="@string/app_name"
+                 android:icon="@drawable/ic_launcher"
+                 tools:replace="icon, label">
         <provider
             android:name=".Database"
             android:authorities="com.github.rosjava.android_remocons.rocon_remocon"
