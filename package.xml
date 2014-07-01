@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>android_remocons</name>
+  <version>0.1.2</version>
+  <description>
+    Remote controllers for rocon appable robots.
+  </description>
+  <url type="website">http://ros.org/wiki/android_remocons</url>
+  <url type="repository">https://github.com/rosjava/android_remocons</url>
+  <url type="bugtracker">https://github.com/rosjava/android_remocons/issues</url>
+  <maintainer email="d.stonier@gmail.com">Daniel Stonier</maintainer>
+  <author>Daniel Stonier</author>
+  <author>Kazuto Murase</author>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rosjava_build_tools</build_depend>
+  <build_depend>rosjava_bootstrap</build_depend>
+  <build_depend>rosjava_core</build_depend>
+  <build_depend>android_core</build_depend>
+  <build_depend>android_extras</build_depend>
+  <build_depend>rocon_rosjava_core</build_depend>
+  <!-- While not officially released -->
+  <build_depend>rocon_rosjava_msgs</build_depend>
+</package>

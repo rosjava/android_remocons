@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/add_concert"
+        android:title="Add Masters" />
+  <item android:id="@+id/delete_unresponsive"
+        android:title="Delete Unresponsive Masters" />
+  <item android:id="@+id/delete_all"
+        android:title="Delete All Masters" />
+  <item android:id="@+id/kill"
+        android:title="Kill" />
+  <item android:id="@+id/delete_selected"
+        android:title="Select Masters to Delete" />
+</menu>

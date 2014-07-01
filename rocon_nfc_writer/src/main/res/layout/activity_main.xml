@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#ffffff" >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="SSID : "
+	        android:textColor="#000000"
+            android:width="80dp" />
+	    <EditText
+	        android:id="@+id/ssid"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="DesertStorm3"
+	        android:textColor="#000000"
+            android:minWidth="190dp"
+            android:maxWidth="190dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:paddingStart="10dp"
+            android:text="(16 chars)" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Password : "
+	        android:textColor="#000000"
+            android:width="80dp" />
+	    <EditText
+	        android:id="@+id/pasword"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="1234"
+	        android:textColor="#000000"
+            android:minWidth="190dp"
+            android:maxWidth="190dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:paddingStart="10dp"
+            android:text="(16 chars)" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Concert ROS Master URI : "
+        android:textColor="#000000"
+        android:paddingStart="5dp"
+        android:paddingTop="10dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Host : "
+	        android:textColor="#000000"
+            android:width="80dp"
+            android:paddingStart="15dp" />
+	    <EditText
+	        android:id="@+id/master_host"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="192.168.10.123"
+	        android:textColor="#000000"
+            android:minWidth="190dp"
+            android:maxWidth="190dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:paddingStart="10dp"
+            android:text="(16 chars)" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Port : "
+            android:textColor="#000000"
+            android:width="80dp"
+            android:paddingStart="15dp" />
+        <EditText
+            android:id="@+id/master_port"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="11311"
+            android:textColor="#000000"
+            android:minWidth="190dp"
+            android:inputType="number"
+            android:maxWidth="190dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="App hash : "
+            android:textColor="#000000"
+            android:width="80dp" />
+        <EditText
+            android:id="@+id/nfc_app_id"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="#000000"
+            android:minWidth="190dp"
+            android:inputType="number|numberSigned"
+            android:maxWidth="190dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(4 bytes)"
+            android:textColor="#000000"
+            android:paddingStart="10dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
+	    <TextView
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:text="Extra data : "
+	        android:textColor="#000000"
+            android:width="80dp" />
+	    <EditText
+	        android:id="@+id/extra_data"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:text="1"
+	        android:textColor="#000000"
+            android:minWidth="190dp"
+            android:inputType="number"
+            android:maxWidth="190dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="(2 bytes)"
+            android:textColor="#000000"
+            android:paddingStart="10dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:width="80dp"
+            android:singleLine="false"
+            android:lines="2"
+            android:text="@string/app_record_label" />
+        <EditText
+            android:id="@+id/app_record"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="com.github.rosjava.android_remocons.headless_launcher"
+            android:singleLine="false"
+            android:lines="2"
+            android:textColor="#000000"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Nfc tag is not found."
+        android:textColor="#ff0000"
+        android:layout_margin="5dp"
+        android:layout_gravity="bottom"
+        android:paddingTop="20dp" />
+    
+    <Button 
+        android:id="@+id/nfc_write"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Write to NFC Tag"
+        android:textColor="#000000"
+        android:layout_margin="5dp"
+        android:enabled="false"
+        android:onClick="onNfcWrite"
+        android:layout_gravity="bottom" />
+</LinearLayout>

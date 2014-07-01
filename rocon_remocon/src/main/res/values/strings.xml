@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Rocon Remocon</string>
+    <string name="exit">Exit</string>
+    <string name="change_role">Change Role</string>
+    <string name="leave_concert">Leave</string>
+
+</resources>
