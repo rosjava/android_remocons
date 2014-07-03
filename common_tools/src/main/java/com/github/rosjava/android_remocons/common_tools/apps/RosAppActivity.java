@@ -166,6 +166,7 @@ public abstract class RosAppActivity extends RosActivity {
 
         if (masterAppName == null) {
             // App name extra content key not present on intent; no remocon started the app, so we are standalone app
+            Log.e("We are running as standalone", ":(");
             masterAppName = defaultMasterAppName;
             appMode = InteractionMode.STANDALONE;
 		}
