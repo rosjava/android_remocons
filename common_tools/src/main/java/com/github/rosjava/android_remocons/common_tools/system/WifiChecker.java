@@ -271,7 +271,7 @@ public class WifiChecker {
                         wifiManager.reconnect();
                         Log.d("WiFiChecker", "Wait for wifi network");
                         i = 0;
-                        while (i < 15 && !wifiValid()) {
+                        while (i < 3 && !wifiValid()) {
                             Log.d("WiFiChecker", "Waiting for network: " + i + " " + wifiManager.getWifiState());
                             Thread.sleep(5000L);
                             i++;
