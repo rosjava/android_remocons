@@ -247,7 +247,7 @@ public class NfcLauncherActivity extends Activity {
         toast("Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_SHORT);
         cc.beginChecking(masterId);
 
-        if (waitFor(Step.GET_NFC_APP_INFO, 10) == false) {
+        if (waitFor(Step.GET_NFC_APP_INFO, 15) == false) {
             throw new Exception("Cannot connect to " + masterId.getMasterUri() + ". Aborting app launch");
         }
     }
@@ -285,7 +285,7 @@ public class NfcLauncherActivity extends Activity {
 
         toast("Requesting app info for hash " + appHash + "...", Toast.LENGTH_SHORT);
 
-        if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
+        if (waitFor(Step.REQUEST_PERMIT, 15) == false) {
             am.shutdown();
             throw new Exception("Cannot get app info for hash " + appHash + ". Aborting app launch");
         }
@@ -353,7 +353,7 @@ public class NfcLauncherActivity extends Activity {
         am.requestAppUse(masterId, app.getRole(), app);
         toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
 
-        if (waitFor(Step.LAUNCH_APP, 10) == false) {
+        if (waitFor(Step.LAUNCH_APP, 15) == false) {
             am.shutdown();
             throw new Exception("Cannot get permission to use " + app.getDisplayName() + ". Aborting app launch");
         }

@@ -55,8 +55,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
 
-
-
 /**
  * A rewrite of robot_remocon/AppLauncher that...
  *  - works with concerts
@@ -95,7 +93,7 @@ public class AppLauncher {
      * Launch a client app for the given concert app.
      */
     static public Result launch(final Activity parent, final RoconDescription concert,
-                                final rocon_interaction_msgs.Interaction app) {
+                                final rocon_interaction_msgs.Interaction app){
 
         Log.i("AppLaunch", "launching concert app " + app.getDisplayName() + " on service " + app.getNamespace());
 
@@ -222,7 +220,9 @@ public class AppLauncher {
             String app_name = "";
             app_name = app.getName();
             URL appURL = new URL(app_name);
-
+            //2014.12.03 comment by dwlee
+            //reason of blocking, Not necessary in web app launcher.
+            /*
             AsyncTask<URL, Void, String> asyncTask = new AsyncTask<URL, Void, String>() {
                 @Override
                 protected String doInBackground(URL... urls) {
@@ -241,6 +241,7 @@ public class AppLauncher {
             if (result == null || (result.startsWith("OK") == false && result.startsWith("ok") == false)) {
                 return Result.CANNOT_CONNECT.withMsg(result);
             }
+            */
 
             // We pass concert URL, parameters and remaps as URL parameters
             String appUriStr = app_name;
@@ -261,12 +262,7 @@ public class AppLauncher {
         catch (ActivityNotFoundException e) {
             // This cannot happen for a web site, right? must mean that I have no web browser!
             return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
-        }
-        catch (TimeoutException e)
-        {
-            return Result.CONNECT_TIMEOUT.withMsg("Timeout waiting for app");
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             return Result.OTHER_ERROR.withMsg(e.getMessage());
         }
@@ -285,6 +281,10 @@ public class AppLauncher {
             app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
 
             URL appURL = new URL(app_name);
+
+            //2014.12.03 comment by dwlee
+            //reason of blocking, Not necessary in web app launcher.
+            /*
             AsyncTask<URL, Void, String> asyncTask = new AsyncTask<URL, Void, String>() {
                 @Override
                 protected String doInBackground(URL... urls) {
@@ -303,6 +303,7 @@ public class AppLauncher {
             if (result == null || (result.startsWith("OK") == false && result.startsWith("ok") == false)) {
                 return Result.CANNOT_CONNECT.withMsg(result);
             }
+            */
 
             // We pass concert URL, parameters and remaps as URL parameters
             String appUriStr = app_name;
@@ -323,10 +324,6 @@ public class AppLauncher {
         catch (ActivityNotFoundException e) {
             // This cannot happen for a web site, right? must mean that I have no web browser!
             return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
-        }
-        catch (TimeoutException e)
-        {
-            return Result.CONNECT_TIMEOUT.withMsg("Timeout waiting for app");
         }
         catch (Exception e)
         {
@@ -436,10 +433,6 @@ public class AppLauncher {
             // This cannot happen for a web site, right? must mean that I have no web browser!
             return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
         }
-        //catch (TimeoutException e)
-        //{
-        //    return Result.CONNECT_TIMEOUT.withMsg("Timeout waiting for app");
-        //}
         catch (Exception e)
         {
             return Result.OTHER_ERROR.withMsg(e.getMessage());

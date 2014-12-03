@@ -273,7 +273,7 @@ public class WifiChecker {
                         i = 0;
                         while (i < 15 && !wifiValid()) {
                             Log.d("WiFiChecker", "Waiting for network: " + i + " " + wifiManager.getWifiState());
-                            Thread.sleep(1000L);
+                            Thread.sleep(5000L);
                             i++;
                         }
                         if (wifiValid()) {
