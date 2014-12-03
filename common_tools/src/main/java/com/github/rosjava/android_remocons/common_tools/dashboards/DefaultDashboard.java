@@ -144,6 +144,9 @@ public class DefaultDashboard extends LinearLayout implements Dashboard.Dashboar
 
 		this.connectedNode = connectedNode;
         try {
+                if(diagnosticSubscriber == null){
+
+                }
                 diagnosticSubscriber = connectedNode.newSubscriber("diagnostics_agg", "diagnostic_msgs/DiagnosticArray");
                 diagnosticSubscriber.addMessageListener(new MessageListener<DiagnosticArray>() {
                         @Override

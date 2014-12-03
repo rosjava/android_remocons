@@ -19,7 +19,7 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
         <intent-filter>
-            <action android:name="com.github.rosjava.android_remocons.listener.TalkerActivity" />
+            <action android:name="com.github.rosjava.android_remocons.talker.TalkerActivity" />
             <category android:name="android.intent.category.DEFAULT" />
         </intent-filter>
     </activity>

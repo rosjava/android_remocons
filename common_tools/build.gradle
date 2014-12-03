@@ -18,7 +18,7 @@ dependencies {
     compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
     compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
     compile 'org.ros.rosjava_bootstrap:message_generation:[0.1,0.2)'
-    compile 'org.ros.rosjava_messages:diagnostic_msgs:[1.10,1.11)'
+    compile 'org.ros.rosjava_messages:diagnostic_msgs:[1.11, 1.12)'
     compile 'org.ros.rosjava_messages:rocon_interaction_msgs:[0.7,0.8)'
     compile 'org.ros.rosjava_messages:rocon_std_msgs:[0.7,0.8)'
     compile 'org.ros.rosjava_messages:rocon_app_manager_msgs:[0.7,0.8)'

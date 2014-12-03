@@ -41,7 +41,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Patterns;
 
@@ -50,15 +49,11 @@ import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
 
@@ -351,7 +346,10 @@ public class AppLauncher {
             app_type = "web_app";
             app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
             URL appURL = new URL(app_name);
-
+            //2014.05.27 comment by dwlee
+            //reason of blocking, Not necessary in web app launcher.
+            /*
+            Log.i("AppLaunch", "Connection test (URI: " + app_name + ")");
             AsyncTask<URL, Void, String> asyncTask = new AsyncTask<URL, Void, String>() {
                 @Override
                 protected String doInBackground(URL... urls) {
@@ -366,10 +364,15 @@ public class AppLauncher {
                     }
                 }
             }.execute(appURL);
-            String result = asyncTask.get(5, TimeUnit.SECONDS);
+
+            String result = asyncTask.get(15, TimeUnit.SECONDS);
+
             if (result == null || (result.startsWith("OK") == false && result.startsWith("ok") == false)) {
+                Log.i("AppLaunch", "Connection test Fail (URI: " + app_name + ")");
                 return Result.CANNOT_CONNECT.withMsg(result);
             }
+            Log.i("AppLaunch", "Connection test Success (URI: " + app_name + ")");
+            */
 
             // We pass concert URL, parameters and remaps as URL parameters
             String appUriStr = app_name;
@@ -433,10 +436,10 @@ public class AppLauncher {
             // This cannot happen for a web site, right? must mean that I have no web browser!
             return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
         }
-        catch (TimeoutException e)
-        {
-            return Result.CONNECT_TIMEOUT.withMsg("Timeout waiting for app");
-        }
+        //catch (TimeoutException e)
+        //{
+        //    return Result.CONNECT_TIMEOUT.withMsg("Timeout waiting for app");
+        //}
         catch (Exception e)
         {
             return Result.OTHER_ERROR.withMsg(e.getMessage());

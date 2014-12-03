@@ -1,6 +1,5 @@
 package com.github.rosjava.android_remocons.headless_launcher;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -42,10 +41,10 @@ import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.N
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PAYLOAD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_SSID_FIELD_LENGTH;
 
-
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
  */
+
 public class NfcLauncherActivity extends Activity {
 
     private enum Step {
@@ -68,6 +67,7 @@ public class NfcLauncherActivity extends Activity {
     private Toast    lastToast;
     private Vibrator vibrator;
     private NfcManager nfcManager;
+    private String errorString;
 
     private String ssid;
     private String password;
@@ -112,7 +112,7 @@ public class NfcLauncherActivity extends Activity {
             connectToSSID();
 
             Log.i("NfcLaunch", "Connected to " + ssid);
-            toast("Connected to " + ssid, Toast.LENGTH_SHORT);
+            toast("Connected to " + ssid, Toast.LENGTH_LONG);
 
 	    	//** Step 3. Validate the concert: check for specific topics on masterUri
             checkConcert();
@@ -180,11 +180,14 @@ public class NfcLauncherActivity extends Activity {
         launchStep = launchStep.next();
     }
 
+
+
+
     private void connectToSSID() throws Exception {
         String masterUri  = "http://" + masterHost + ":" + masterPort;
         String encryption = "WPA2";    // not needed
         masterId = new MasterId(masterUri, ssid, encryption, password);
-
+        errorString = "";
         final WifiChecker wc = new WifiChecker(
                 new WifiChecker.SuccessHandler() {
                     public void handleSuccess() {
@@ -192,8 +195,9 @@ public class NfcLauncherActivity extends Activity {
                     }
                 },
                 new WifiChecker.FailureHandler() {
-                    public void handleFailure(String reason) {
+                    public void handleFailure(String reason){
                         launchStep = Step.ABORT_LAUNCH;
+                        errorString = reason;
                     }
                 },
                 new WifiChecker.ReconnectionHandler() {
@@ -209,7 +213,12 @@ public class NfcLauncherActivity extends Activity {
         wc.beginChecking(masterId, (WifiManager) getSystemService(WIFI_SERVICE));
 
         if (waitFor(Step.VALIDATE_CONCERT, 15) == false) {
-            throw new Exception("Cannot connect to " + ssid + ". Aborting app launch");
+            if(errorString.length() == 0) {
+                throw new Exception("Cannot connect to " + ssid + ": Aborting app launch");
+            }
+            else{
+                throw new Exception("Cannot connect to " + ssid + ": "+errorString);
+            }
         }
     }
 

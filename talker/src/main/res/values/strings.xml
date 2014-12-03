@@ -3,7 +3,7 @@
     <!-- Application Management -->
     <string name="app_name">Talker</string>
     <string name="paired_app_name">rocon_apps/listener</string>
-    <string name="default_robot">rocon</string>
+    <string name="default_robot"></string>
 
     <!-- Menu options -->
     <string name="stop_app">Stop Application</string>
