@@ -94,12 +94,9 @@ public class AppLauncher {
      */
     static public Result launch(final Activity parent, final RoconDescription concert,
                                 final rocon_interaction_msgs.Interaction app){
-
         Log.i("AppLaunch", "launching concert app " + app.getDisplayName() + " on service " + app.getNamespace());
-
         // On android apps, app name will be an intent action, while for web apps it will be its URL
         AppType app_type = checkAppType(app.getName());
-
         if(app_type == AppType.URL){
             return launchUrl(parent, concert, app);
         }
@@ -313,7 +310,7 @@ public class AppLauncher {
             Intent intent = new Intent(Intent.ACTION_VIEW, appURI);
             intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name",app_name);
 
-            Log.i("AppLaunch", "trying to start web app (URI: " + appUriStr + ")");
+            Log.i("AppLaunch", "trying to start web url (URI: " + appUriStr + ")");
             parent.startActivity(intent);
             return Result.SUCCESS;
         }
