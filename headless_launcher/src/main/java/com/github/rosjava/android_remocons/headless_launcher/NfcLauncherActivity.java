@@ -1,8 +1,11 @@
 package com.github.rosjava.android_remocons.headless_launcher;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.nfc.NfcAdapter;
 import android.os.AsyncTask;
@@ -367,6 +370,23 @@ public class NfcLauncherActivity extends Activity {
             Log.i("NfcLaunch", app.getDisplayName() + " successfully launched");
             toast(app.getDisplayName() + " successfully launched; have fun!", Toast.LENGTH_SHORT);
         }
+        else if (result == AppLauncher.Result.NOT_INSTALLED) {
+            // App not installed; ask for going to play store to download the missing app
+
+            Log.i("NfcLaunch", "Showing not-installed dialog.");
+            final String installPackage =app.getName().substring(0, app.getName().lastIndexOf("."));
+
+            Bundle bundle = new Bundle();
+            bundle.putString("InstallPackageName", installPackage);
+            bundle.putString("MainContext", "This concert app requires a client user interface app, "
+                            + "but the applicable app is not installed.\n"
+                            + "Would you like to install the app from the market place?");
+
+            Intent popup= new Intent(getApplicationContext(), AlertDialogActivity.class);
+            popup.putExtras(bundle);
+            NfcLauncherActivity.this.startActivity(popup);
+        }
+
         else {
             // I could also show an "app not-installed" dialog and ask for going to play store to download the
             // missing app, but... this would stop to be a headless launcher! But maybe is a good idea, anyway
