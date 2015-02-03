@@ -13,3 +13,5 @@ proguard-project.txt
 build.log
 build-log.xml
 docs.iml
+*.log
+*~
