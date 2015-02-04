@@ -23,6 +23,7 @@
  * like (generates Verify Errors on adb logcat).
 */
 
+//noinspection GroovyAssignabilityCheck
 dependencies {
     compile project(':common_tools')
     compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
@@ -40,7 +41,7 @@ dependencies {
 
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 15

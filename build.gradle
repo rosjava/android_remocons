@@ -20,6 +20,7 @@ task wrapper(type: Wrapper) {
 
 buildscript {
     apply from: "https://github.com/rosjava/rosjava_bootstrap/raw/indigo/buildscript.gradle"
+    //noinspection GroovyAssignabilityCheck
     dependencies {
         classpath "com.android.tools.build:gradle:1.0.1"
     }

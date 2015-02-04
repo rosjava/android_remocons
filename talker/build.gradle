@@ -31,6 +31,7 @@ dependencies {
 }
 */
 
+//noinspection GroovyAssignabilityCheck
 dependencies {
     compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
     compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
@@ -39,7 +40,7 @@ dependencies {
     compile project(':common_tools')
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
     packagingOptions {
