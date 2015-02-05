@@ -36,5 +36,3 @@ allprojects {
 subprojects {
     apply plugin: 'ros-android'
 }
-
-defaultTasks 'assembleRelease uploadArchives'

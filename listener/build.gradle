@@ -33,5 +33,3 @@ android {
     compileSdkVersion 10
 }
 
-defaultTasks 'assembleRelease'
- 

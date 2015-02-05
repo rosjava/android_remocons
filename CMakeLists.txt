@@ -4,7 +4,6 @@ project(android_remocons)
 find_package(catkin REQUIRED rosjava_build_tools)
 
 catkin_android_setup(assembleRelease uploadArchives)
-#catkin_android_setup(tasks)
 
 catkin_package()
 
