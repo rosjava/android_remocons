@@ -65,7 +65,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_apps.application_management.RobotId;
 import com.github.rosjava.android_apps.application_management.RobotsContentProvider;
 import com.github.rosjava.android_remocons.common_tools.zeroconf.MasterSearcher;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
@@ -207,17 +207,17 @@ public class RobotMasterChooser extends Activity {
 		}
 	}
 
-	private void addMaster(MasterId masterId) {
+	private void addMaster(RobotId masterId) {
 		addMaster(masterId, false);
 	}
 
-	private void addMaster(MasterId masterId, boolean connectToDuplicates) {
+	private void addMaster(RobotId masterId, boolean connectToDuplicates) {
 		Log.i("MasterChooserActivity", "adding master to the robot master chooser [" + masterId.toString() + "]");
 		if (masterId == null || masterId.getMasterUri() == null) {
 		} else {
 			for (int i = 0; i < robots.toArray().length; i++) {
 				RobotDescription robot = robots.get(i);
-				if (robot.getMasterId().equals(masterId)) {
+				if (robot.getRobotId().equals(masterId)) {
 					if (connectToDuplicates) {
 						choose(i);
 						return;
@@ -317,7 +317,7 @@ public class RobotMasterChooser extends Activity {
         else {
             try {
                 Log.d("RobotRemocon", "RobotMasterChooser OBJECT: " + data.toString());
-                addMaster(new MasterId(data), false);
+                addMaster(new RobotId(data), false);
             } catch (Exception e) {
                 Toast.makeText(this, "Invalid robot description: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -387,13 +387,13 @@ public class RobotMasterChooser extends Activity {
 				Spannable name;
 				for (int i = 0; i < robots.size(); i++) {
 					name = Factory.getInstance().newSpannable(
-							robots.get(i).getMasterName() + newline
-									+ robots.get(i).getMasterId());
+							robots.get(i).getRobotName() + newline
+									+ robots.get(i).getRobotId());
 					name.setSpan(new ForegroundColorSpan(0xff888888), robots
-							.get(i).getMasterName().length(), name.length(),
+							.get(i).getRobotName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					name.setSpan(new RelativeSizeSpan(0.8f), robots.get(i)
-							.getMasterName().length(), name.length(),
+							.getRobotName().length(), name.length(),
 							Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 					robot_names[i] = name;
 				}
@@ -499,7 +499,7 @@ public class RobotMasterChooser extends Activity {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("URL", newMasterUri);
             try {
-                addMaster(new MasterId(data));
+                addMaster(new RobotId(data));
             } catch (Exception e) {
                 Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
                         Toast.LENGTH_SHORT).show();
@@ -535,7 +535,7 @@ public class RobotMasterChooser extends Activity {
 				data.put("WIFIPW", newWifiPassword);
 			}
 			try {
-				addMaster(new MasterId(data));
+				addMaster(new RobotId(data));
 			} catch (Exception e) {
 				Toast.makeText(RobotMasterChooser.this, "Invalid Parameters.",
 						Toast.LENGTH_SHORT).show();
@@ -577,7 +577,7 @@ public class RobotMasterChooser extends Activity {
 
     public void scanNFCTagClicked(View view) {
         dismissDialog(ADD_URI_DIALOG_ID);
-        Intent i = new Intent(this, com.github.rosjava.android_remocons.common_tools.NfcReaderActivity.class);
+        Intent i = new Intent(this, com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity.class);
         // Set the request code so we can identify the callback via this code
         startActivityForResult(i, NFC_TAG_SCAN_REQUEST_CODE);
     }

@@ -12,20 +12,22 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.MasterId;
+import com.github.rosjava.android_apps.application_management.RobotId;
 import com.github.rosjava.android_apps.application_management.AppManager;
 import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.WifiChecker;
 import com.github.rosjava.android_apps.application_management.MasterChecker;
-import com.github.rosjava.android_remocons.common_tools.NfcManager;
-import com.github.rosjava.android_remocons.common_tools.NfcReaderActivity;
-import com.github.rosjava.android_remocons.common_tools.Util;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity;
+import com.github.rosjava.android_remocons.common_tools.system.Util;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)
@@ -55,7 +57,7 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     private String password;
     private String masterHost;
     private short  masterPort;
-    private MasterId masterId;
+    private RobotId masterId;
     private RobotDescription robot;
 
 
@@ -147,8 +149,13 @@ public class NfcLauncherActivity extends NfcReaderActivity {
         String masterUri  = "http://" + masterHost + ":" + masterPort;
         String controlUri = null;      // not needed  WARN; if set, rebot remocon will fail! TODO remove from everywhere
         String encryption = "WPA2";    // not needed
-        masterId = new MasterId(masterUri, controlUri, ssid, encryption, password);
-
+        Map<String,Object> params = new HashMap<String,Object>();
+        params.put("URL",masterUri);
+        params.put("CURL",controlUri);
+        params.put("WIFI",ssid);
+        params.put("WIFIENC",encryption);
+        params.put("WIFIPW",password);
+        masterId = new RobotId(params);
         final WifiChecker wc = new WifiChecker(
                 new WifiChecker.SuccessHandler() {
                     public void handleSuccess() {
@@ -209,7 +216,7 @@ public class NfcLauncherActivity extends NfcReaderActivity {
     private void startRobot() throws Exception {
         Intent intent = new Intent("com.github.rosjava.android_remocons.robot_remocon.RobotRemocon");
         intent.putExtra(RobotDescription.UNIQUE_KEY, robot);
-        intent.putExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name", "NfcLauncher");
+        intent.putExtra(AppManager.PACKAGE + "." + "app_name", "NfcLauncher");
         startActivity(intent);
     }
 

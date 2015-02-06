@@ -76,16 +76,16 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
     this.parentMca = parentMca;
     this.description = robotDescription;
     this.description.setConnectionStatus(RobotDescription.CONNECTING);
-    if (WifiChecker.wifiValid(this.description.getMasterId(),
+    if (WifiChecker.wifiValid(this.description.getRobotId(),
                         (WifiManager)parentMca.getSystemService(parentMca.WIFI_SERVICE))) {
       checker = new MasterChecker(this, this);
-      if (this.description.getMasterId().getControlUri() != null) {
+      if (this.description.getRobotId().getControlUri() != null) {
         control = true;
         controlChecker = new ControlChecker(this, this);
-        controlChecker.beginChecking(this.description.getMasterId());
+        controlChecker.beginChecking(this.description.getRobotId());
       } else {
         control = false;
-        checker.beginChecking(this.description.getMasterId());
+        checker.beginChecking(this.description.getRobotId());
       }
     } else {
       errorReason = "Wrong WiFi Network";
@@ -99,7 +99,7 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
   @Override
   public void handleSuccess() {
     control = false;
-    checker.beginChecking(this.description.getMasterId());
+    checker.beginChecking(this.description.getRobotId());
   }
   @Override
   public void receive(RobotDescription robotDescription) {
@@ -153,11 +153,11 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
       iv.setImageResource(R.drawable.question_mark);
     } else if (isWifi) {
       iv.setImageResource(R.drawable.wifi_question_mark);
-    } else if ( description.getMasterIconData() == null ) {
+    } else if ( description.getRobotIconData() == null ) {
         iv.setImageResource(R.drawable.question_mark);
-    } else if( description.getMasterIconData().array().length > 0 && description.getMasterIconFormat() != null &&
-            (description.getMasterIconFormat().equals("jpeg") || description.getMasterIconFormat().equals("png")) ) {
-      ChannelBuffer buffer = description.getMasterIconData();
+    } else if( description.getRobotIconData().array().length > 0 && description.getRobotIconFormat() != null &&
+            (description.getRobotIconFormat().equals("jpeg") || description.getRobotIconFormat().equals("png")) ) {
+      ChannelBuffer buffer = description.getRobotIconData();
       Bitmap iconBitmap = BitmapFactory.decodeByteArray(buffer.array(), buffer.arrayOffset(), buffer.readableBytes());
       if( iconBitmap != null ) {
         iv.setImageBitmap(iconBitmap);
@@ -176,9 +176,9 @@ public class MasterItem implements MasterChecker.RobotDescriptionReceiver,
     }
     TextView tv;
     tv = (TextView) view.findViewById(R.id.uri);
-    tv.setText(description.getMasterId().toString());
+    tv.setText(description.getRobotId().toString());
     tv = (TextView) view.findViewById(R.id.name);
-    tv.setText(description.getMasterFriendlyName());
+    tv.setText(description.getRobotFriendlyName());
     tv = (TextView) view.findViewById(R.id.status);
     tv.setText(errorReason);
   }
