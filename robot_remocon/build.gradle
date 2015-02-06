@@ -30,22 +30,12 @@
  * so here is a solution, that robot_remocon compile:
  * exclude rocon_app_manager_msgs v0.7.8 only for this project.
  */
-/*
-
-*/
-
-
-configurations {
-    project*.exclude group: 'org.ros.rosjava_messages', module: 'rocon_app_manager_msgs'
-
-}
-
-//classpath += configurations.rocon_app_manager_msgs
 
 dependencies {
-    //compile  fileTree(dir: '../external_libraries', include:'rocon_app_manager_msgs*.jar')
-    compile  project(':common_tools')
     compile 'org.ros.rosjava_messages:rocon_app_manager_msgs:[0.6,0.7)'
+    compile  (project(':common_tools')) {
+                transitive = false
+    }
     compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
     compile 'com.github.rosjava.zeroconf_jmdns_suite:jmdns:[0.1,0.2)'
     compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
