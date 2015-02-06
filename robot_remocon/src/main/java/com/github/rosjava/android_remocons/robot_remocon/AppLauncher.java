@@ -115,7 +115,7 @@ public class AppLauncher {
     for (int i = 0; i < appropriateAndroidApps.size(); i++) {
       ClientAppData appData = appropriateAndroidApps.get(i);
       Intent intent = appData.createIntent();
-      intent.putExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name", app.getName());
+      intent.putExtra(AppManager.PACKAGE + "." +  "app_name", app.getName());
       intent.putExtra(RobotDescription.UNIQUE_KEY, currentRobot);
       intent.putExtra("runningNodes", runningNodes);
       intent.putExtra("RemoconActivity", "com.github.rosjava.android_remocons.robot_remocon.RobotRemocon");

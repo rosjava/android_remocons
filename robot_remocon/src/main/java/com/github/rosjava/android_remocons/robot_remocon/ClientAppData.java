@@ -39,7 +39,7 @@ import android.content.Intent;
 import java.util.HashMap;
 import java.util.List;
 
-import rocon_std_msgs.KeyValue;
+import rocon_app_manager_msgs.KeyValue;
 
 /**
 * Convenience class which populates HashMaps with manager_data and app_data
@@ -47,7 +47,7 @@ import rocon_std_msgs.KeyValue;
 */
 public class ClientAppData {
   public HashMap<String, String> managerData;
-  public List<rocon_std_msgs.KeyValue> appData;
+  public List<rocon_app_manager_msgs.KeyValue> appData;
 
   public ClientAppData(rocon_app_manager_msgs.PairingClient clientApp) {
     managerData = keyValueListToMap(clientApp.getManagerData());

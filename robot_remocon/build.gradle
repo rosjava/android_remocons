@@ -22,19 +22,41 @@
  * can't use this one from maven central - it uses methods that davlik doesn't
  * like (generates Verify Errors on adb logcat).
 */
+//from https://gradle.org/docs/current/userguide/dependency_management.html 51.4.7. Excluding transitive dependencies
+/*
+ * there is duplicate rocon_app_manager_msgs: v0.6.9 abd 0.7.8
+ * common_tools must have v0.7.8
+ * robot_remocon must have 0.6.9.
+ * so here is a solution, that robot_remocon compile:
+ * exclude rocon_app_manager_msgs v0.7.8 only for this project.
+ */
+/*
+
+*/
+
+
+configurations {
+    project*.exclude group: 'org.ros.rosjava_messages', module: 'rocon_app_manager_msgs'
+
+}
+
+//classpath += configurations.rocon_app_manager_msgs
 
 dependencies {
-  compile project(':common_tools')
-  compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
-  compile 'com.github.rosjava.zeroconf_jmdns_suite:jmdns:[0.1,0.2)'
-  compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
-  compile 'com.github.rosjava.android_extras:zxing:[0.1,0.2)'
-  compile 'com.github.rosjava.android_apps:application_management:[0.1,0.2)'
+    //compile  fileTree(dir: '../external_libraries', include:'rocon_app_manager_msgs*.jar')
+    compile  project(':common_tools')
+    compile 'org.ros.rosjava_messages:rocon_app_manager_msgs:[0.6,0.7)'
+    compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
+    compile 'com.github.rosjava.zeroconf_jmdns_suite:jmdns:[0.1,0.2)'
+    compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
+    compile 'com.github.rosjava.android_extras:zxing:[0.1,0.2)'
+    compile 'com.github.rosjava.android_apps:application_management:[0.1,0.2)'
+
   // Already included in application_management; gradle complains if doubly included 
   //  compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 10
