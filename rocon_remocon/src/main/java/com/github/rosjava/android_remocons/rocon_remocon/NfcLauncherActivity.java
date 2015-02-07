@@ -10,22 +10,24 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
+import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
+import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
 import com.github.rosjava.android_remocons.common_tools.master.MasterId;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
 import com.github.rosjava.android_remocons.common_tools.nfc.NfcReaderActivity;
 import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
 import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
-import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionMode;
-
-import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_HOST_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PASSWORD_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PAYLOAD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_SSID_FIELD_LENGTH;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)

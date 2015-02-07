@@ -40,11 +40,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-import java.util.HashMap;
-
-import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
 import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
 import com.github.rosjava.android_remocons.common_tools.R;
+
+import java.util.HashMap;
+
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_HOST_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PASSWORD_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PAYLOAD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_SSID_FIELD_LENGTH;
 
 /**
  * Read NfcF tags and return the resulting hash map to the invoker action.

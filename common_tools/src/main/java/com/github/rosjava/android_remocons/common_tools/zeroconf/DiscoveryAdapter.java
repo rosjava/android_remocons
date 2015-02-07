@@ -16,8 +16,6 @@
 
 package com.github.rosjava.android_remocons.common_tools.zeroconf;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,8 +27,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.github.rosjava.android_remocons.common_tools.R;
+import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
+
+import java.util.ArrayList;
 
 
 public class DiscoveryAdapter extends ArrayAdapter<DiscoveredService> {

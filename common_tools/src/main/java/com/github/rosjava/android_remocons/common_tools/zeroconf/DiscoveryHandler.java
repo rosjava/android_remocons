@@ -16,13 +16,13 @@
 
 package com.github.rosjava.android_remocons.common_tools.zeroconf;
 
-import java.util.ArrayList;
-
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.ZeroconfDiscoveryHandler;
+
+import java.util.ArrayList;
 
 /**
  * This class is the callback handler for services being listened for

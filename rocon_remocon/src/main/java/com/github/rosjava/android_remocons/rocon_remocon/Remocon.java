@@ -39,7 +39,6 @@ package com.github.rosjava.android_remocons.rocon_remocon;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
@@ -70,7 +69,6 @@ import com.github.rosjava.android_remocons.rocon_remocon.dialogs.LaunchInteracti
 import com.github.rosjava.android_remocons.rocon_remocon.dialogs.ProgressDialogWrapper;
 import com.google.common.base.Preconditions;
 
-import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;

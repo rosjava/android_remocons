@@ -6,21 +6,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.net.URI;
+import com.github.rosjava.android_remocons.common_tools.apps.RosAppActivity;
 
-// RosJava Imports
-import org.ros.node.ConnectedNode;
-import org.ros.node.NodeMainExecutor;
-import org.ros.node.NodeConfiguration;
-import org.ros.address.InetAddressFactory;
-
-// Android Core Imports
 import org.ros.android.MessageCallable;
 import org.ros.android.view.RosTextView;
+import org.ros.node.ConnectedNode;
+import org.ros.node.NodeConfiguration;
+import org.ros.node.NodeMainExecutor;
 
+import java.io.IOException;
+
+// RosJava Imports
+// Android Core Imports
 // Android App Imports
-import com.github.rosjava.android_remocons.common_tools.apps.RosAppActivity;
 
 
 public class Listener extends RosAppActivity
