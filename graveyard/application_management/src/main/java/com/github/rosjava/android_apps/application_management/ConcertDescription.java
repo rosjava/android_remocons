@@ -35,9 +35,7 @@
 package com.github.rosjava.android_apps.application_management;
 
 import java.util.Date;
-import java.util.LinkedList;
-//import rocon_interaction_msgs.Roles;
-import rocon_interaction_msgs.GetRoles;
+import rocon_interaction_msgs.GetRolesResponse;
 
 /**
  * Extends MasterDescription with concert specific attributes.
@@ -73,7 +71,7 @@ public class ConcertDescription extends MasterDescription implements java.io.Ser
     public ConcertDescription(MasterId masterId, String concertName, String description,
                               rocon_std_msgs.Icon concertIcon, Date timeLastSeen) {
         super(masterId, concertName, "Rocon concert", concertIcon, "", timeLastSeen);
-        // empty apps namespace on concerts; allis handled by remappings
+        // empty apps namespace on concerts; allis handled by remapping
 
         this.description = description;
     }
@@ -96,14 +94,11 @@ public class ConcertDescription extends MasterDescription implements java.io.Ser
             return null;
     }
 
-    public void setUserRoles(rocon_interaction_msgs.GetRoles roles)
+    public void setUserRoles(GetRolesResponse roles)
     {
-        rocon_interaction_msgs.GetRoles tt;
-        GetRoles tal;
-        java.util.List<String> tmp = new LinkedList<>();
+        java.util.List<String> tmp = roles.getRoles();
         userRoles = new String[tmp.size()];
         tmp.toArray(userRoles);
-        
     }
     public void setCurrentRole(int role) {
         currentRole = role;
