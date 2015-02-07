@@ -48,8 +48,8 @@ import com.github.rosjava.android_apps.application_management.rapp_manager.AppRe
 import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
 import com.github.rosjava.android_apps.application_management.rapp_manager.StartAppServiceClient;
 
-import rocon_app_manager_msgs.StartAppResponse;
-import rocon_app_manager_msgs.StopAppResponse;
+import rocon_app_manager_msgs.StartRappResponse;
+import rocon_app_manager_msgs.StopRappResponse;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -345,9 +345,9 @@ public abstract class RosAppActivity extends RosActivity {
 		appManager.setFunction("stop");
 
 		appManager
-				.setStopService(new ServiceResponseListener<StopAppResponse>() {
+				.setStopService(new ServiceResponseListener<StopRappResponse>() {
 					@Override
-					public void onSuccess(StopAppResponse message) {
+					public void onSuccess(StopRappResponse message) {
 						Log.i("ApplicationManagement", "App stopped successfully");
 						try {
 							Thread.sleep(1000);
@@ -425,9 +425,9 @@ public abstract class RosAppActivity extends RosActivity {
 		appManager.setFunction("stop");
 
 		appManager
-				.setStopService(new ServiceResponseListener<StopAppResponse>() {
+				.setStopService(new ServiceResponseListener<StopRappResponse>() {
 					@Override
-					public void onSuccess(StopAppResponse message) {
+					public void onSuccess(StopRappResponse message) {
                         if ( message.getStopped() ) {
 						    Log.i("ApplicationManagement", "App stopped successfully");
                         } else {

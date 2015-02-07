@@ -14,8 +14,6 @@ import org.ros.node.service.ServiceResponseListener;
 
 import rocon_app_manager_msgs.Constants;
 import rocon_app_manager_msgs.Status;
-import rocon_app_manager_msgs.StatusRequest;
-import rocon_app_manager_msgs.StatusResponse;
 
 /**
  * Service with which the android client can check the current status
@@ -26,7 +24,7 @@ import rocon_app_manager_msgs.StatusResponse;
  */
 public class StatusServiceClient extends AbstractNodeMain {
     private String namespace; // this is the namespace under which all rapp manager services reside.
-    private ServiceResponseListener<StatusResponse> listener;
+    private ServiceResponseListener<Status> listener;
     private ConnectedNode connectedNode;
     // private String applicationNamespace; // namespace under which the rapp manager launches apps.
     private String remoteController = "";
@@ -40,9 +38,9 @@ public class StatusServiceClient extends AbstractNodeMain {
      */
     public StatusServiceClient(String namespace, final String ourControllerName) {
         this.namespace = namespace;
-        this.listener = new ServiceResponseListener<StatusResponse>() {
+        this.listener = new ServiceResponseListener<Status>() {
             @Override
-            public void onSuccess(StatusResponse message) {
+            public void onSuccess(Status message) {
                 //isAvailable = ( message.getRemoteController() == Constants.NO_REMOTE_CONNECTION) ? Boolean.TRUE : Boolean.FALSE;
                 if ( message.getRemoteController().equals(Constants.NO_REMOTE_CONNECTION)) {
                     Log.i("ApplicationManagement", "rapp manager is available");
@@ -91,7 +89,7 @@ public class StatusServiceClient extends AbstractNodeMain {
         this.connectedNode = connectedNode;
         NameResolver resolver = this.connectedNode.getResolver().newChild(this.namespace);
         String serviceName = resolver.resolve("status").toString();
-        ServiceClient<StatusRequest, StatusResponse> client;
+        ServiceClient<Status, Status> client;
         try {
             Log.d("ApplicationManagement", "service client created [" + serviceName + "]");
             client = connectedNode.newServiceClient(serviceName,
@@ -103,7 +101,7 @@ public class StatusServiceClient extends AbstractNodeMain {
             Log.e("ApplicationManagement", "failed to create connection to the rapp manager's status service [" + e.getMessage() + "]");
             throw e;
         }
-        final StatusRequest request = client.newMessage();
+        final Status request = client.newMessage();
         client.call(request, listener);
         Log.d("ApplicationManagement", "service call done [" + serviceName + "]");
     }

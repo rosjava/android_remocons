@@ -103,7 +103,7 @@ public class PlatformInfoServiceClient extends AbstractNodeMain {
     }
 
     public String getRobotType() {
-        return this.platformInfo.getName();
+        return this.platformInfo._TYPE;
     }
 
     public Icon getRobotIcon() {

@@ -29,16 +29,16 @@ import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 
-import rocon_app_manager_msgs.AppList;
-import rocon_app_manager_msgs.GetAppList;
-import rocon_app_manager_msgs.GetAppListRequest;
-import rocon_app_manager_msgs.GetAppListResponse;
-import rocon_app_manager_msgs.StartApp;
-import rocon_app_manager_msgs.StartAppRequest;
-import rocon_app_manager_msgs.StartAppResponse;
-import rocon_app_manager_msgs.StopApp;
-import rocon_app_manager_msgs.StopAppRequest;
-import rocon_app_manager_msgs.StopAppResponse;
+import rocon_app_manager_msgs.RappList;
+import rocon_app_manager_msgs.GetRappList;
+import rocon_app_manager_msgs.GetRappListRequest;
+import rocon_app_manager_msgs.GetRappListResponse;
+import rocon_app_manager_msgs.StartRapp;
+import rocon_app_manager_msgs.StartRappRequest;
+import rocon_app_manager_msgs.StartRappResponse;
+import rocon_app_manager_msgs.StopRapp;
+import rocon_app_manager_msgs.StopRappRequest;
+import rocon_app_manager_msgs.StopRappResponse;
 
 /**
  * This class implements the services and topics required to communicate
@@ -71,11 +71,11 @@ public class AppManager extends AbstractNodeMain {
 
 	private String appName;
 	private NameResolver resolver;
-	private ServiceResponseListener<StartAppResponse> startServiceResponseListener;
-	private ServiceResponseListener<StopAppResponse> stopServiceResponseListener;
-	private ServiceResponseListener<GetAppListResponse> listServiceResponseListener;
-    private MessageListener<AppList> appListListener;
-	private Subscriber<AppList> subscriber;
+	private ServiceResponseListener<StartRappResponse> startServiceResponseListener;
+	private ServiceResponseListener<StopRappResponse> stopServiceResponseListener;
+	private ServiceResponseListener<GetRappListResponse> listServiceResponseListener;
+    private MessageListener<RappList> appListListener;
+	private Subscriber<RappList> subscriber;
 	
 	private ConnectedNode connectedNode;
 	private String function = null;
@@ -101,22 +101,22 @@ public class AppManager extends AbstractNodeMain {
 		this.appName = appName;
 	}
 
-    public void setAppListSubscriber(MessageListener<AppList> appListListener) {
+    public void setAppListSubscriber(MessageListener<RappList> appListListener) {
         this.appListListener = appListListener;
     }
 
     public void setStartService(
-			ServiceResponseListener<StartAppResponse> startServiceResponseListener) {
+			ServiceResponseListener<StartRappResponse> startServiceResponseListener) {
 		this.startServiceResponseListener = startServiceResponseListener;
 	}
 
 	public void setStopService(
-			ServiceResponseListener<StopAppResponse> stopServiceResponseListener) {
+			ServiceResponseListener<StopRappResponse> stopServiceResponseListener) {
 		this.stopServiceResponseListener = stopServiceResponseListener;
 	}
 
 	public void setListService(
-			ServiceResponseListener<GetAppListResponse> listServiceResponseListener) {
+			ServiceResponseListener<GetRappListResponse> listServiceResponseListener) {
 		this.listServiceResponseListener = listServiceResponseListener;
 	}
 
@@ -128,16 +128,16 @@ public class AppManager extends AbstractNodeMain {
     public void startApp() {
 		String startTopic = resolver.resolve(this.startTopic).toString();
 
-		ServiceClient<StartAppRequest, StartAppResponse> startAppClient;
+		ServiceClient<StartRappRequest, StartRappResponse> startAppClient;
 		try {
 			Log.d("ApplicationManagement", "start app service client created [" + startTopic + "]");
 			startAppClient = connectedNode.newServiceClient(startTopic,
-					StartApp._TYPE);
+					StartRapp._TYPE);
 		} catch (ServiceNotFoundException e) {
             Log.w("ApplicationManagement", "start app service not found [" + startTopic + "]");
 			throw new RosRuntimeException(e);
 		}
-		final StartAppRequest request = startAppClient.newMessage();
+		final StartRappRequest request = startAppClient.newMessage();
 		request.setName(appName);
 		startAppClient.call(request, startServiceResponseListener);
 		Log.d("ApplicationManagement", "start app service call done [" + startTopic + "]");
@@ -146,17 +146,17 @@ public class AppManager extends AbstractNodeMain {
 	public void stopApp() {
 		String stopTopic = resolver.resolve(this.stopTopic).toString();
 
-		ServiceClient<StopAppRequest, StopAppResponse> stopAppClient;
+		ServiceClient<StopRappRequest, StopRappResponse> stopAppClient;
 		try {
 			Log.d("ApplicationManagement", "Stop app service client created");
 			stopAppClient = connectedNode.newServiceClient(stopTopic,
-					StopApp._TYPE);
+					StopRapp._TYPE);
 		} catch (ServiceNotFoundException e) {
             Log.w("ApplicationManagement", "Stop app service not found");
             // not interested in handling this exception, just pass over it.
             return;
 		}
-		final StopAppRequest request = stopAppClient.newMessage();
+		final StopRappRequest request = stopAppClient.newMessage();
 		// request.setName(appName); // stop app name unused for now
 		stopAppClient.call(request, stopServiceResponseListener);
 		Log.d("ApplicationManagement", "Stop app service call done");
@@ -165,16 +165,16 @@ public class AppManager extends AbstractNodeMain {
 	public void listApps() {
 		String listService = resolver.resolve(this.listService).toString();
 		
-		ServiceClient<GetAppListRequest, GetAppListResponse> listAppsClient;
+		ServiceClient<GetRappListRequest, GetRappListResponse> listAppsClient;
 		try {
 			Log.d("ApplicationManagement", "List app service client created [" + listService + "]");
 			listAppsClient = connectedNode.newServiceClient(listService,
-					GetAppList._TYPE);
+					GetRappList._TYPE);
 		} catch (ServiceNotFoundException e) {
             Log.w("ApplicationManagement", "List app service not found [" + listService + "]");
 			throw new RosRuntimeException(e);
 		}
-		final GetAppListRequest request = listAppsClient.newMessage();
+		final GetRappListRequest request = listAppsClient.newMessage();
 		listAppsClient.call(request, listServiceResponseListener);
 		Log.d("ApplicationManagement", "List apps service call done [" + listService + "]");
 	}

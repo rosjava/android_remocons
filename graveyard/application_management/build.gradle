@@ -24,10 +24,10 @@ dependencies {
     compile 'org.ros.rosjava_messages:concert_msgs:[0.7,0.8)'
     compile 'org.ros.rosjava_messages:gateway_msgs:[0.7,0.8)'
     compile 'org.ros.rosjava_messages:diagnostic_msgs:[1.10,1.11)'
-    compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
+    compile fileTree(dir: '../../external_libraries', include:'snakeyaml*.jar')
 }
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 10
