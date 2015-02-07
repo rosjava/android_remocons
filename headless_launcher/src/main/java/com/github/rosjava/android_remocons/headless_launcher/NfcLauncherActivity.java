@@ -1,11 +1,8 @@
 package com.github.rosjava.android_remocons.headless_launcher;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.nfc.NfcAdapter;
 import android.os.AsyncTask;

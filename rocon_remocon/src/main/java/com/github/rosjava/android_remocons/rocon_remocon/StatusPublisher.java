@@ -6,8 +6,8 @@ import com.google.common.base.Preconditions;
 
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
-import org.ros.node.NodeMain;
 import org.ros.node.Node;
+import org.ros.node.NodeMain;
 import org.ros.node.topic.Publisher;
 
 import java.util.UUID;
@@ -15,7 +15,7 @@ import java.util.UUID;
 import rocon_interaction_msgs.RemoconStatus;
 import rocon_std_msgs.Strings;
 
-import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.ANDROID_PLATFORM_INFO;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)

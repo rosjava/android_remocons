@@ -38,6 +38,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,10 +46,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.net.wifi.WifiManager;
 
-import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 import com.github.rosjava.android_remocons.common_tools.master.ConcertChecker;
+import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
 import com.github.rosjava.android_remocons.common_tools.system.WifiChecker;
 
 import org.jboss.netty.buffer.ChannelBuffer;

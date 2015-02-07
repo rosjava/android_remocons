@@ -17,11 +17,6 @@
 
 package com.github.rosjava.android_remocons.common_tools.apps;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.LinkedHashMap;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -43,8 +38,12 @@ import org.ros.exception.RosRuntimeException;
 import org.ros.namespace.NameResolver;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
-
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
 
 /**
  * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)

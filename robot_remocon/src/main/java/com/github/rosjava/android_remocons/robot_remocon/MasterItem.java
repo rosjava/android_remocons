@@ -38,6 +38,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,11 +46,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
+
 import com.github.rosjava.android_apps.application_management.ControlChecker;
 import com.github.rosjava.android_apps.application_management.MasterChecker;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
-import android.net.wifi.WifiManager;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 

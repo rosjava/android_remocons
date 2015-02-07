@@ -33,19 +33,21 @@
 
 package com.github.rosjava.android_remocons.robot_remocon;
 
-import android.graphics.BitmapFactory;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.LayoutInflater;
-import rocon_app_manager_msgs.App;
-import java.util.ArrayList;
 
 import org.jboss.netty.buffer.ChannelBuffer;
+
+import java.util.ArrayList;
+
+import rocon_app_manager_msgs.App;
 
 public class AppAdapter extends BaseAdapter {
   private Context context;

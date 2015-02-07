@@ -36,6 +36,7 @@
 package com.github.rosjava.android_apps.application_management;
 
 import java.util.Date;
+
 import rocon_std_msgs.Icon;
 
 /**

@@ -17,11 +17,6 @@
 
 package com.github.rosjava.android_apps.application_management;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.LinkedHashMap;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,6 +26,11 @@ import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
+
+import com.github.rosjava.android_apps.application_management.rapp_manager.AppParameters;
+import com.github.rosjava.android_apps.application_management.rapp_manager.AppRemappings;
+import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
+import com.github.rosjava.android_apps.application_management.rapp_manager.StartAppServiceClient;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
@@ -42,16 +42,14 @@ import org.ros.namespace.NameResolver;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
-
-import com.github.rosjava.android_apps.application_management.rapp_manager.AppParameters;
-import com.github.rosjava.android_apps.application_management.rapp_manager.AppRemappings;
-import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
-import com.github.rosjava.android_apps.application_management.rapp_manager.StartAppServiceClient;
-
-import rocon_app_manager_msgs.StartRappResponse;
-import rocon_app_manager_msgs.StopRappResponse;
-
 import org.yaml.snakeyaml.Yaml;
+
+import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.LinkedHashMap;
+
+import rocon_app_manager_msgs.StopRappResponse;
 
 /**
  * @author murase@jsk.imi.i.u-tokyo.ac.jp (Kazuto Murase)

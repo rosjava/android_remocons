@@ -1,11 +1,5 @@
 package com.ros.turtlebot.apps.rocon;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.util.Locale;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -29,7 +23,15 @@ import android.nfc.tech.NfcV;
 import android.os.Parcelable;
 import android.widget.Toast;
 
-import com.ros.turtlebot.apps.rocon.Util;;
+import com.ros.turtlebot.apps.rocon.Util;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.util.Locale;
+
+;
 
 public class RoconNfcManager {
 

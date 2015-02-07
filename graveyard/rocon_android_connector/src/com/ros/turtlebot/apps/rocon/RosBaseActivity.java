@@ -1,18 +1,5 @@
 package com.ros.turtlebot.apps.rocon;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.ros.address.InetAddressFactory;
-import org.ros.android.RosActivity;
-import org.ros.exception.ServiceException;
-import org.ros.internal.node.response.Response;
-import org.ros.node.NodeConfiguration;
-import org.ros.node.NodeMainExecutor;
-import org.ros.node.service.ServiceResponseBuilder;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -20,18 +7,24 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.ros.android.RosActivity;
+import org.ros.exception.ServiceException;
+import org.ros.node.NodeConfiguration;
+import org.ros.node.NodeMainExecutor;
+import org.ros.node.service.ServiceResponseBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import rocon_app_manager_msgs.AppDescription;
 import rocon_app_manager_msgs.Constants;
 import rocon_app_manager_msgs.ErrorCodes;
 import rocon_app_manager_msgs.GetAppListRequest;
 import rocon_app_manager_msgs.GetAppListResponse;
-import rocon_app_manager_msgs.GetPlatformInfo;
 import rocon_app_manager_msgs.GetPlatformInfoRequest;
 import rocon_app_manager_msgs.GetPlatformInfoResponse;
 import rocon_app_manager_msgs.InviteRequest;

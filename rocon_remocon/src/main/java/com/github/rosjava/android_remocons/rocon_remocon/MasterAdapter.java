@@ -33,15 +33,15 @@
 
 package com.github.rosjava.android_remocons.rocon_remocon;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
 import com.github.rosjava.android_remocons.common_tools.master.RoconDescription;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author hersh@willowgarage.com

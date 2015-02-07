@@ -1,13 +1,11 @@
 package com.ros.turtlebot.apps.rocon;
 
+import android.util.Log;
+
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceResponseBuilder;
-
-import android.util.Log;
-
-import rocon_app_manager_msgs.* ;
 
 public class RoconAppManager extends AbstractNodeMain {
 

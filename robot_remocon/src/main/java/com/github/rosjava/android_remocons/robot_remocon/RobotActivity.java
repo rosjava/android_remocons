@@ -16,33 +16,25 @@
 
 package com.github.rosjava.android_remocons.robot_remocon;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 
+import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.Dashboard;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.RobotNameResolver;
+import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
+
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
 import org.ros.exception.RemoteException;
-import org.ros.exception.RosRuntimeException;
 import org.ros.namespace.NameResolver;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
-
-import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
-import com.github.rosjava.android_apps.application_management.Dashboard;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.RobotNameResolver;
-
-import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
 
 import rocon_app_manager_msgs.StopAppResponse;
 

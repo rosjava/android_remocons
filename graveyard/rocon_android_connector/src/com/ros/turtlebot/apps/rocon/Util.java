@@ -1,5 +1,15 @@
 package com.ros.turtlebot.apps.rocon;
 
+import android.annotation.SuppressLint;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.Build;
+import android.util.Log;
+
+import com.google.common.collect.Lists;
+
+import org.ros.exception.RosRuntimeException;
+
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -7,17 +17,6 @@ import java.net.SocketException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import org.ros.exception.RosRuntimeException;
-
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.os.Build;
-import android.util.Log;
-
-import com.google.common.collect.Lists;
 
 public class Util {
 

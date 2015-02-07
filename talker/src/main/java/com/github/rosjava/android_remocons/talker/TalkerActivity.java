@@ -1,23 +1,17 @@
 package com.github.rosjava.android_remocons.talker;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
-import org.ros.address.InetAddressFactory;
+
 import org.ros.android.MessageCallable;
 import org.ros.android.RosActivity;
 import org.ros.android.view.RosTextView;
-import org.ros.namespace.GraphName;
-import org.ros.node.AbstractNodeMain;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.rosjava_tutorial_pubsub.Talker;
 
-import com.github.rosjava.android_remocons.common_tools.apps.RosAppActivity;
-
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 //import std_msgs.String;
 

@@ -34,9 +34,6 @@
 
 package com.github.rosjava.android_remocons.robot_remocon;
 
-import java.net.URI;
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -45,8 +42,10 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
+
+import java.net.URI;
+import java.util.ArrayList;
 
 import rocon_app_manager_msgs.PairingClient;
 

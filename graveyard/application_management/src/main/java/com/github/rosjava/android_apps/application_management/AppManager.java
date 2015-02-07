@@ -29,10 +29,10 @@ import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 import org.ros.node.topic.Subscriber;
 
-import rocon_app_manager_msgs.RappList;
 import rocon_app_manager_msgs.GetRappList;
 import rocon_app_manager_msgs.GetRappListRequest;
 import rocon_app_manager_msgs.GetRappListResponse;
+import rocon_app_manager_msgs.RappList;
 import rocon_app_manager_msgs.StartRapp;
 import rocon_app_manager_msgs.StartRappRequest;
 import rocon_app_manager_msgs.StartRappResponse;

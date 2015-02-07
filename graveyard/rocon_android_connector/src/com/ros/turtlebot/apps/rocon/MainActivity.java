@@ -1,24 +1,5 @@
 package com.ros.turtlebot.apps.rocon;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.http.conn.util.InetAddressUtils;
-import org.ros.address.InetAddressFactory;
-import org.ros.android.RosActivity;
-import org.ros.exception.RosRuntimeException;
-import org.ros.node.NodeMainExecutor;
-
-import com.google.common.collect.Lists;
-
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,17 +8,14 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.List;
 
 public class MainActivity extends Activity
 {
