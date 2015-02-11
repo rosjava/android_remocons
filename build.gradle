@@ -29,19 +29,23 @@ buildscript {
 apply plugin: 'catkin'
 
 allprojects {
-
-    repositories {
-        maven {
-            url "https://github.com/talregev/rosjava_mvn_repo/raw/master"
-        }
-    }
-
+    apply from: "https://github.com/talregev/rosjava_mvn_repo/raw/master/maven.gradle"
     group 'com.github.rosjava.android_remocons'
     version = project.catkin.pkg.version
 }
 
 subprojects {
     apply plugin: 'ros-android'
+    
+    afterEvaluate { project ->
+        android {
+            packagingOptions {
+                /* https://github.com/rosjava/android_core/issues/194 */
+                exclude 'META-INF/LICENSE.txt'
+                exclude 'META-INF/NOTICE.txt'
+            }
+        }
+    }
 }
 
 defaultTasks 'assembleRelease', 'uploadArchives'

@@ -37,17 +37,10 @@ dependencies {
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:master_info:[0.1,)'
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:rocon_interactions:[0.1,)'
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
-    //compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
-
 }
 
 apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 15
-    packagingOptions {
-        /* https://github.com/rosjava/android_core/issues/194 */
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-    }
 }
