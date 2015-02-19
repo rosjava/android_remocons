@@ -16,8 +16,6 @@
 
 package com.github.rosjava.android_remocons.common_tools.zeroconf;
 
-import java.lang.String;
-
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.ZeroconfLogger;
 
 public class Logger implements ZeroconfLogger {

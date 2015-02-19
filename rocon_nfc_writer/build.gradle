@@ -14,20 +14,14 @@
  * the License.
  */
 
+//noinspection GroovyAssignabilityCheck
 dependencies {
     compile project(':common_tools')
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 18
-    packagingOptions {
-        /* https://github.com/rosjava/android_core/issues/194 */
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-    }
+    compileSdkVersion 21
 }
-
-defaultTasks 'assembleRelease'

@@ -34,9 +34,6 @@
 
 package com.github.rosjava.android_remocons.robot_remocon;
 
-import java.net.URI;
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
@@ -45,8 +42,10 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
 import com.github.rosjava.android_apps.application_management.RobotDescription;
+
+import java.net.URI;
+import java.util.ArrayList;
 
 import rocon_app_manager_msgs.PairingClient;
 
@@ -115,7 +114,7 @@ public class AppLauncher {
     for (int i = 0; i < appropriateAndroidApps.size(); i++) {
       ClientAppData appData = appropriateAndroidApps.get(i);
       Intent intent = appData.createIntent();
-      intent.putExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name", app.getName());
+      intent.putExtra(AppManager.PACKAGE + "." +  "app_name", app.getName());
       intent.putExtra(RobotDescription.UNIQUE_KEY, currentRobot);
       intent.putExtra("runningNodes", runningNodes);
       intent.putExtra("RemoconActivity", "com.github.rosjava.android_remocons.robot_remocon.RobotRemocon");

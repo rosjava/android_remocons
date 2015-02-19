@@ -38,24 +38,23 @@ package com.github.rosjava.android_remocons.common_tools.master;
 
 import android.util.Log;
 
+import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfo;
+import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfoException;
+import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionsException;
+import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.RoconInteractions;
+import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
 import org.ros.internal.node.client.ParameterClient;
-import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
 import org.ros.internal.node.server.NodeIdentifier;
+import org.ros.internal.node.xmlrpc.XmlRpcTimeoutException;
 import org.ros.namespace.GraphName;
 import org.ros.node.NodeConfiguration;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
-
-import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfo;
-import com.github.robotics_in_concert.rocon_rosjava_core.master_info.MasterInfoException;
-import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.InteractionsException;
-import com.github.robotics_in_concert.rocon_rosjava_core.rocon_interactions.RoconInteractions;
-import com.github.rosjava.android_remocons.common_tools.rocon.Constants;
 
 /**
  * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS

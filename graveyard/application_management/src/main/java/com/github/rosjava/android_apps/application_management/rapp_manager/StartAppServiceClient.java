@@ -6,9 +6,6 @@ import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
 import org.ros.exception.ServiceException;
 import org.ros.exception.ServiceNotFoundException;
-import org.ros.master.client.MasterStateClient;
-import org.ros.master.client.SystemState;
-import org.ros.master.client.TopicSystemState;
 import org.ros.namespace.GraphName;
 import org.ros.namespace.NameResolver;
 import org.ros.node.AbstractNodeMain;
@@ -16,9 +13,9 @@ import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceClient;
 import org.ros.node.service.ServiceResponseListener;
 
-import rocon_app_manager_msgs.StartApp;
-import rocon_app_manager_msgs.StartAppRequest;
-import rocon_app_manager_msgs.StartAppResponse;
+import rocon_app_manager_msgs.StartRapp;
+import rocon_app_manager_msgs.StartRappRequest;
+import rocon_app_manager_msgs.StartRappResponse;
 
 /**
  * Communicates with the robot app manager and attempts to start
@@ -26,10 +23,10 @@ import rocon_app_manager_msgs.StartAppResponse;
  */
 public class StartAppServiceClient extends AbstractNodeMain {
     private NameResolver resolver; // resolves namespace under which the service resides.
-    private ServiceResponseListener<StartAppResponse> startAppListener;
+    private ServiceResponseListener<StartRappResponse> startAppListener;
     private String appName;
     private ConnectedNode connectedNode;
-    private StartAppResponse response;
+    private StartRappResponse response;
     private String errorMessage = "";
 
     /**
@@ -48,9 +45,9 @@ public class StartAppServiceClient extends AbstractNodeMain {
     public StartAppServiceClient() { this._createListeners(); }
 
     private void _createListeners() {
-        this.startAppListener = new ServiceResponseListener<StartAppResponse>() {
+        this.startAppListener = new ServiceResponseListener<StartRappResponse>() {
             @Override
-            public void onSuccess(StartAppResponse message) {
+            public void onSuccess(StartRappResponse message) {
                 if (message.getStarted()) {
                     Log.i("ApplicationManagement", "rapp started successfully [" + appName + "]");
                 } else {
@@ -110,17 +107,17 @@ public class StartAppServiceClient extends AbstractNodeMain {
         this.connectedNode = connectedNode;
 
         String startTopic = resolver.resolve("start_app").toString();
-        ServiceClient<StartAppRequest, StartAppResponse> startAppClient;
+        ServiceClient<StartRappRequest, StartRappResponse> startAppClient;
         try {
             Log.d("ApplicationManagement", "start app service client created [" + startTopic + "]");
             startAppClient = connectedNode.newServiceClient(startTopic,
-                    StartApp._TYPE);
+                    StartRapp._TYPE);
         } catch (ServiceNotFoundException e) {
             Log.w("ApplicationManagement", "start app service not found [" + startTopic + "]");
             errorMessage = "start app service not found";
             return;
         }
-        final StartAppRequest request = startAppClient.newMessage();
+        final StartRappRequest request = startAppClient.newMessage();
         request.setName(appName);
         startAppClient.call(request, startAppListener);
         Log.d("ApplicationManagement", "start app service call done [" + startTopic + "]");

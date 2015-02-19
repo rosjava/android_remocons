@@ -247,7 +247,7 @@ public class NfcLauncherActivity extends Activity {
         toast("Validating " + masterId.getMasterUri() + "...", Toast.LENGTH_SHORT);
         cc.beginChecking(masterId);
 
-        if (waitFor(Step.GET_NFC_APP_INFO, 10) == false) {
+        if (waitFor(Step.GET_NFC_APP_INFO, 15) == false) {
             throw new Exception("Cannot connect to " + masterId.getMasterUri() + ". Aborting app launch");
         }
     }
@@ -285,7 +285,7 @@ public class NfcLauncherActivity extends Activity {
 
         toast("Requesting app info for hash " + appHash + "...", Toast.LENGTH_SHORT);
 
-        if (waitFor(Step.REQUEST_PERMIT, 10) == false) {
+        if (waitFor(Step.REQUEST_PERMIT, 15) == false) {
             am.shutdown();
             throw new Exception("Cannot get app info for hash " + appHash + ". Aborting app launch");
         }
@@ -353,7 +353,7 @@ public class NfcLauncherActivity extends Activity {
         am.requestAppUse(masterId, app.getRole(), app);
         toast("Requesting permit to use " + app.getDisplayName() + "...", Toast.LENGTH_SHORT);
 
-        if (waitFor(Step.LAUNCH_APP, 10) == false) {
+        if (waitFor(Step.LAUNCH_APP, 15) == false) {
             am.shutdown();
             throw new Exception("Cannot get permission to use " + app.getDisplayName() + ". Aborting app launch");
         }
@@ -367,6 +367,23 @@ public class NfcLauncherActivity extends Activity {
             Log.i("NfcLaunch", app.getDisplayName() + " successfully launched");
             toast(app.getDisplayName() + " successfully launched; have fun!", Toast.LENGTH_SHORT);
         }
+        else if (result == AppLauncher.Result.NOT_INSTALLED) {
+            // App not installed; ask for going to play store to download the missing app
+
+            Log.i("NfcLaunch", "Showing not-installed dialog.");
+            final String installPackage =app.getName().substring(0, app.getName().lastIndexOf("."));
+
+            Bundle bundle = new Bundle();
+            bundle.putString("InstallPackageName", installPackage);
+            bundle.putString("MainContext", "This concert app requires a client user interface app, "
+                            + "but the applicable app is not installed.\n"
+                            + "Would you like to install the app from the market place?");
+
+            Intent popup= new Intent(getApplicationContext(), AlertDialogActivity.class);
+            popup.putExtras(bundle);
+            NfcLauncherActivity.this.startActivity(popup);
+        }
+
         else {
             // I could also show an "app not-installed" dialog and ask for going to play store to download the
             // missing app, but... this would stop to be a headless launcher! But maybe is a good idea, anyway

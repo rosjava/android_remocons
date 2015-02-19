@@ -16,14 +16,14 @@
 
 package com.github.rosjava.android_remocons.common_tools.zeroconf;
 
-import java.io.IOException;
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.widget.ListView;
 
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.DiscoveredService;
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.Zeroconf;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class MasterSearcher {

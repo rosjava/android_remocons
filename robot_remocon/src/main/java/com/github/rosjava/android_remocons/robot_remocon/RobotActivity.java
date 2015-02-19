@@ -16,33 +16,25 @@
 
 package com.github.rosjava.android_remocons.robot_remocon;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 
+import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.Dashboard;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.RobotNameResolver;
+import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
+
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
 import org.ros.exception.RemoteException;
-import org.ros.exception.RosRuntimeException;
 import org.ros.namespace.NameResolver;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
-
-import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
-import com.github.rosjava.android_apps.application_management.Dashboard;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.MasterNameResolver;
-
-import com.github.rosjava.android_apps.application_management.rapp_manager.PairingApplicationNamePublisher;
 
 import rocon_app_manager_msgs.StopAppResponse;
 
@@ -75,7 +67,7 @@ public abstract class RobotActivity extends RosActivity {
 	private Dashboard dashboard = null;
 	protected NodeConfiguration nodeConfiguration;
     protected NodeMainExecutor nodeMainExecutor;
-	protected MasterNameResolver robotNameResolver;
+	protected RobotNameResolver robotNameResolver;
 	protected RobotDescription robotDescription;
     protected PairingApplicationNamePublisher pairingApplicationNamePublisher = null;
 
@@ -123,14 +115,14 @@ public abstract class RobotActivity extends RosActivity {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(mainWindowId);
 
-		robotNameResolver = new MasterNameResolver();
+		robotNameResolver = new RobotNameResolver();
 
 		if (defaultRobotName != null) {
-			robotNameResolver.setMasterName(defaultRobotName);
+			robotNameResolver.setRobotName(defaultRobotName);
 		}
 
 		robotAppName = getIntent().getStringExtra(
-				AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name");
+				AppManager.PACKAGE + "." + "app_name");
 		if (robotAppName == null) {
 			robotAppName = defaultRobotAppName;
         } else if (robotAppName.equals("AppChooser")) { // ugly legacy identifier, it's misleading so change it sometime
@@ -168,7 +160,7 @@ public abstract class RobotActivity extends RosActivity {
         // robotDescription will get set by the robot master chooser as it exits
         // or passed back as an intent from a closing remocon application.
         // It should never be null!
-        robotNameResolver.setMaster(robotDescription);
+        robotNameResolver.setRobot(robotDescription);
         dashboard.setRobotName(robotDescription.getRobotType());
         pairingApplicationNamePublisher = new PairingApplicationNamePublisher("Robot Remocon");
         nodeMainExecutor.execute(pairingApplicationNamePublisher,
@@ -185,11 +177,11 @@ public abstract class RobotActivity extends RosActivity {
     }
 
 	protected NameResolver getRobotNameSpaceResolver() {
-		return robotNameResolver.getMasterNameSpace();
+		return robotNameResolver.getRobotNameSpace();
 	}
 
     protected String getRobotNameSpace() {
-        return robotNameResolver.getMasterNameSpace().getNamespace().toString();
+        return robotNameResolver.getRobotNameSpace().getNamespace().toString();
     }
 
 	protected void stopApp() {

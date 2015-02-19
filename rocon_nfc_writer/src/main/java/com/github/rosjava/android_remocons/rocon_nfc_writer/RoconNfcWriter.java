@@ -1,9 +1,9 @@
 package com.github.rosjava.android_remocons.rocon_nfc_writer;
 
-import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -11,12 +11,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
+import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
+
 import java.security.InvalidParameterException;
 
-import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
-import com.github.robotics_in_concert.rocon_rosjava_core.rosjava_utils.ByteArrays;
-
-import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_APP_RECORD_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_HOST_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PASSWORD_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_SSID_FIELD_LENGTH;
 
 /**
  * @author jorge@yujinrobot.com (Jorge Santos Simon)

@@ -23,6 +23,7 @@
  * like (generates Verify Errors on adb logcat).
 */
 
+//noinspection GroovyAssignabilityCheck
 dependencies {
     compile project(':common_tools')
     compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
@@ -36,19 +37,10 @@ dependencies {
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:master_info:[0.1,)'
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:rocon_interactions:[0.1,)'
     compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
-    //compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
-
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 15
-    packagingOptions {
-        /* https://github.com/rosjava/android_core/issues/194 */
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-    }
 }
-
-defaultTasks 'assembleRelease'

@@ -1,11 +1,5 @@
 package com.github.rosjava.android_remocons.common_tools;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.charset.Charset;
-import java.util.Locale;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -30,6 +24,12 @@ import android.nfc.tech.NfcV;
 import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
+import java.util.Locale;
 
 
 public class NfcManager {

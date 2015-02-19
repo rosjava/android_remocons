@@ -38,6 +38,9 @@ package com.github.rosjava.android_remocons.common_tools;
 
 import android.util.Log;
 
+import com.github.rosjava.android_apps.application_management.ConcertDescription;
+import com.github.rosjava.android_apps.application_management.MasterId;
+
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
 import org.ros.internal.node.client.ParameterClient;
@@ -48,9 +51,6 @@ import org.ros.node.NodeConfiguration;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
-
-import com.github.rosjava.android_apps.application_management.MasterId;
-import com.github.rosjava.android_apps.application_management.ConcertDescription;
 
 import static com.github.rosjava.android_remocons.common_tools.RoconConstants.*;
 

@@ -1,8 +1,5 @@
 package com.ros.turtlebot.apps.rocon;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +9,9 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class RoconMainActivity extends RosBaseActivity {
 

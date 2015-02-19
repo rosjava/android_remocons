@@ -69,7 +69,6 @@ import com.github.rosjava.android_remocons.rocon_remocon.dialogs.LaunchInteracti
 import com.github.rosjava.android_remocons.rocon_remocon.dialogs.ProgressDialogWrapper;
 import com.google.common.base.Preconditions;
 
-import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
 import org.ros.exception.RemoteException;
 import org.ros.exception.RosRuntimeException;
@@ -131,20 +130,16 @@ public class Remocon extends RosActivity {
         pairSubscriber= PairSubscriber.getInstance();
         pairSubscriber.setAppHash(0);
 	}
-
-	/** Called when the activity is first created. */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.rocon_remocon);
-
+    @Override
+    public void onResume(){
+        super.onResume();
         concertAppName = getIntent().getStringExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name");
         if (concertAppName == null) {
             concertAppName = defaultConcertAppName;
+            if (selectedInteraction!= null){
+                statusPublisher.update(false, 0, null);
+                selectedInteraction = null;
+            }
         }
         else if (concertAppName.equals("AppChooser")) { // TODO ugly legacy identifier, it's misleading so change it sometime
             Log.i("Remocon", "reinitialising from a closing remocon application");
@@ -155,14 +150,19 @@ public class Remocon extends RosActivity {
             Log.i("Remocon", "Directly started by Nfc launcher");
             fromNfcLauncher = true;
         }
-        // else {
-            // DJS: do we need anything here? I think the first two cases cover everything
-        // }
+    }
 
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i("[Remocon]", "Oncreate");
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.rocon_remocon);
 		concertNameView = (TextView) findViewById(R.id.concert_name_view);
-
         // Prepare the app manager; we do here instead of on init to keep using the same instance when switching roles
-
         interactionsManager = new InteractionsManager(
                 new InteractionsManager.FailureHandler() {
                     public void handleFailure(String reason) {
@@ -170,7 +170,6 @@ public class Remocon extends RosActivity {
                     }
                 }
         );
-
         interactionsManager.setupGetInteractionsService(new ServiceResponseListener<GetInteractionsResponse>() {
             @Override
             public void onSuccess(rocon_interaction_msgs.GetInteractionsResponse response) {
@@ -235,19 +234,18 @@ public class Remocon extends RosActivity {
                                     AppLauncher.launch(Remocon.this, roconDescription, selectedInteraction);
                             if (result == AppLauncher.Result.SUCCESS) {
                                 // App successfully launched! Notify the concert and finish this activity
-                                statusPublisher.update(true, selectedInteraction.getHash(), selectedInteraction.getName());
+                                //statusPublisher.update(true, selectedInteraction.getHash(), selectedInteraction.getName());
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
                             else if (result == AppLauncher.Result.NOTHING){
-                                statusPublisher.update(true, selectedInteraction.getHash(), selectedInteraction.getName());
+                                statusPublisher.update(false, selectedInteraction.getHash(), selectedInteraction.getName());
                             }
                             else if (result == AppLauncher.Result.NOT_INSTALLED) {
                                // App not installed; ask for going to play store to download the missing app
-                                statusPublisher.update(false, selectedInteraction.getHash(), selectedInteraction.getName());
+                                statusPublisher.update(false, 0, null);
                                 Log.i("Remocon", "Showing not-installed dialog.");
-
-                                final String installPackage =
-                                        selectedInteraction.getName().substring(0, selectedInteraction.getName().lastIndexOf("."));
+                                final String installPackage = selectedInteraction.getName().substring(0, selectedInteraction.getName().lastIndexOf("."));
+                                selectedInteraction = null;
 
                                 AlertDialog.Builder dialog = new AlertDialog.Builder(Remocon.this);
                                 dialog.setIcon(R.drawable.playstore_icon_small);
@@ -289,6 +287,10 @@ public class Remocon extends RosActivity {
 
                         };
                     });
+                }
+                else {
+                    Log.i("[Remocon]","User select cancel");
+                    statusPublisher.update(false, 0, null);
                 }
             }
 
@@ -576,8 +578,8 @@ public class Remocon extends RosActivity {
                 selectedInteraction = apps.get(position);
                 progressDialog.show("Requesting app...", "Requesting permission to use "
                                    + selectedInteraction.getDisplayName());
-
                 interactionsManager.requestAppUse(roconDescription.getMasterId(), role, selectedInteraction);
+                statusPublisher.update(true, selectedInteraction.getHash(), selectedInteraction.getName());
 
 			}
 		});
@@ -626,6 +628,8 @@ public class Remocon extends RosActivity {
 
     @Override
     public void onBackPressed() {
+        Log.i("Remocon", "Press Back Button");
         leaveConcertClicked(null);
     }
+
 }

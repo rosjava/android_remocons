@@ -34,10 +34,6 @@
 
 package com.github.rosjava.android_remocons.robot_remocon;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -56,6 +52,14 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
 
+import com.github.rosjava.android_apps.application_management.AppManager;
+import com.github.rosjava.android_apps.application_management.ControlChecker;
+import com.github.rosjava.android_apps.application_management.MasterChecker;
+import com.github.rosjava.android_apps.application_management.RobotDescription;
+import com.github.rosjava.android_apps.application_management.RobotId;
+import com.github.rosjava.android_apps.application_management.WifiChecker;
+import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
+
 import org.ros.address.InetAddressFactory;
 import org.ros.android.NodeMainExecutorService;
 import org.ros.exception.RemoteException;
@@ -64,19 +68,15 @@ import org.ros.message.MessageListener;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.node.service.ServiceResponseListener;
-import com.github.rosjava.android_apps.application_management.AppManager;
-import com.github.rosjava.android_apps.application_management.RosAppActivity;
-import com.github.rosjava.android_apps.application_management.ControlChecker;
-import com.github.rosjava.android_apps.application_management.MasterChecker;
-import com.github.rosjava.android_apps.application_management.MasterId;
-import com.github.rosjava.android_apps.application_management.RobotDescription;
-import com.github.rosjava.android_apps.application_management.WifiChecker;
-import com.github.rosjava.android_apps.application_management.rapp_manager.InvitationServiceClient;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import rocon_app_manager_msgs.App;
 import rocon_app_manager_msgs.AppList;
-import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.ErrorCodes;
+import rocon_app_manager_msgs.StartAppResponse;
 import rocon_app_manager_msgs.StopAppResponse;
 
 public class RobotRemocon extends RobotActivity {
@@ -243,7 +243,7 @@ public class RobotRemocon extends RobotActivity {
 		setMainWindowResource(R.layout.main);
 		super.onCreate(savedInstanceState);
 
-        String appName = getIntent().getStringExtra(AppManager.PACKAGE + "." + RosAppActivity.AppMode.PAIRED + "_app_name");
+        String appName = getIntent().getStringExtra(AppManager.PACKAGE + "." + "app_name");
         if ((appName != null) && (appName.equals("NfcLauncher"))) {
             Log.i("RobotRemocon", "Directly started by Nfc launcher");
             fromNfcLauncher = true;
@@ -338,12 +338,12 @@ public class RobotRemocon extends RobotActivity {
             robotDescription = (RobotDescription) intent
                     .getSerializableExtra(RobotDescription.UNIQUE_KEY);
 
-            robotNameResolver.setMasterName(robotDescription.getMasterName());
+            robotNameResolver.setRobotName(robotDescription.getRobotName());
 
             validatedRobot = false;
-            validateRobot(robotDescription.getMasterId());
+            validateRobot(robotDescription.getRobotId());
 
-            uri = new URI(robotDescription.getMasterId()
+            uri = new URI(robotDescription.getRobotId()
                     .getMasterUri());
         } catch (URISyntaxException e) {
             throw new RosRuntimeException(e);
@@ -415,7 +415,7 @@ public class RobotRemocon extends RobotActivity {
         }
 	}
 
-	public void validateRobot(final MasterId id) {
+	public void validateRobot(final RobotId id) {
 		wifiDialog = new AlertDialogWrapper(this, new AlertDialog.Builder(this)
 				.setTitle("Change Wifi?").setCancelable(false), "Yes", "No");
 		evictDialog = new AlertDialogWrapper(this,
@@ -459,7 +459,7 @@ public class RobotRemocon extends RobotActivity {
                                 } catch (URISyntaxException e) {
                                     return; // should handle this
                                 }
-                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName());
+                                InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName());
                                 nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_invitation_node"));
                                 Boolean result = client.waitForResponse();
                                 nodeMainExecutorService.shutdownNodeMain(client);
@@ -759,7 +759,7 @@ public class RobotRemocon extends RobotActivity {
 	public void chooseNewMasterClicked(View view) {
         if (nodeConfiguration != null) {
             // uninvite ourselves
-            InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getMasterName(), Boolean.TRUE);
+            InvitationServiceClient client = new InvitationServiceClient(robotDescription.getGatewayName(), robotDescription.getRobotName(), Boolean.TRUE);
             nodeMainExecutorService.execute(client, nodeConfiguration.setNodeName("send_uninvitation_node"));
             Boolean result = client.waitForResponse();
             nodeMainExecutorService.shutdownNodeMain(client);

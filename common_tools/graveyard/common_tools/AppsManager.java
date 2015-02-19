@@ -49,7 +49,7 @@ import rocon_interaction_msgs.RequestInteraction;
 import rocon_interaction_msgs.RequestInteractionRequest;
 import rocon_interaction_msgs.RequestInteractionResponse;
 
-import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.*;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.ANDROID_PLATFORM_INFO;
 
 /**
  * This class has been derived from RobotAppsManager in android_apps/application_management.

@@ -20,3 +20,6 @@ include 'rocon_nfc_writer'
 include 'headless_launcher'
 include 'rocon_remocon'
 include 'talker'
+include 'robot_remocon'
+include ':application_management'
+project(':application_management').projectDir = new File('graveyard/application_management')

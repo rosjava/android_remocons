@@ -16,8 +16,8 @@
 
 package com.github.rosjava.android_remocons.common_tools.zeroconf;
 
-import android.content.Context;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.github.rosjava.zeroconf_jmdns_suite.jmdns.Zeroconf;

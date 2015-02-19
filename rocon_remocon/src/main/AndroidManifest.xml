@@ -24,7 +24,6 @@
         />
         <activity android:name="com.github.rosjava.android_remocons.rocon_remocon.Remocon"
                   android:label="@string/app_name"
-                  android:screenOrientation="portrait"
                   >
             <intent-filter>
                 <action android:name="com.github.rosjava.android_remocons.rocon_remocon.Remocon" />
