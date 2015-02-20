@@ -24,31 +24,33 @@
 */
 
 dependencies {
-    compile project(':common_tools')
-    compile 'org.ros.rosjava_core:rosjava:[0.1,0.2)'
-    compile 'org.ros.rosjava_bootstrap:message_generation:[0.1,0.2)'
-    compile 'org.ros.rosjava_messages:rocon_interaction_msgs:[0.7,0.8)'
-    compile 'org.ros.rosjava_messages:rocon_std_msgs:[0.7,0.8)'
-    compile 'org.ros.rosjava_messages:rocon_app_manager_msgs:[0.7,0.8)'
-    compile 'org.ros.android_core:android_gingerbread_mr1:[0.1,0.2)'
-    compile 'com.github.rosjava.android_extras:zxing:[0.1,0.2)'
-    compile 'com.github.rosjava.zeroconf_jmdns_suite:jmdns:[0.1,0.2)'
-    compile 'com.github.robotics_in_concert.rocon_rosjava_core:master_info:[0.1,)'
-    compile 'com.github.robotics_in_concert.rocon_rosjava_core:rocon_interactions:[0.1,)'
-    compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
-    //compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
-
+  compile project(':common_tools')
+  compile 'org.ros.rosjava_core:rosjava:[0.2,0.3)'
+  compile 'org.ros.rosjava_bootstrap:message_generation:[0.2,0.3)'
+  compile 'org.ros.rosjava_messages:rocon_interaction_msgs:[0.7,0.8)'
+  compile 'org.ros.rosjava_messages:rocon_std_msgs:[0.7,0.8)'
+  compile 'org.ros.rosjava_messages:rocon_app_manager_msgs:[0.7,0.8)'
+  compile 'org.ros.android_core:android_10:[0.2,0.3)'
+  compile 'com.github.rosjava.android_extras:zxing:[0.2,0.3)'
+  compile 'com.github.rosjava.zeroconf_jmdns_suite:jmdns:[0.2,0.3)'
+  compile 'com.github.robotics_in_concert.rocon_rosjava_core:master_info:[0.2,0.3)'
+  compile 'com.github.robotics_in_concert.rocon_rosjava_core:rocon_interactions:[0.2,0.3)'
+  compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.2,0.3)'
+  //compile fileTree(dir: '../external_libraries', include:'snakeyaml*.jar')
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 15
-    packagingOptions {
-        /* https://github.com/rosjava/android_core/issues/194 */
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-    }
+  compileSdkVersion 15
+
+  defaultConfig {
+    minSdkVersion 15
+    targetSdkVersion 15
+    versionCode 2
+    versionName "1.1"
+  }
+
 }
 
 defaultTasks 'assembleRelease'
