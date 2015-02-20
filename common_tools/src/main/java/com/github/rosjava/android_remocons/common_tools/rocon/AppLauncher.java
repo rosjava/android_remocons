@@ -39,6 +39,7 @@ package com.github.rosjava.android_remocons.common_tools.rocon;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Log;
 import android.util.Patterns;
@@ -53,8 +54,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Map;
-
-
 
 /**
  * A rewrite of robot_remocon/AppLauncher that...
@@ -85,39 +84,46 @@ public class AppLauncher {
 
     public enum AppType {
         NATIVE,
+        URL,
         WEB_URL,
         WEB_APP,
         NOTHING;
     }
-
     /**
      * Launch a client app for the given concert app.
      */
     static public Result launch(final Activity parent, final RoconDescription concert,
-                                final rocon_interaction_msgs.Interaction app) {
-
+                                final rocon_interaction_msgs.Interaction app){
         Log.i("AppLaunch", "launching concert app " + app.getDisplayName() + " on service " + app.getNamespace());
-
         // On android apps, app name will be an intent action, while for web apps it will be its URL
-        if (Patterns.WEB_URL.matcher(app.getName()).matches() == true) {
+        AppType app_type = checkAppType(app.getName());
+        if(app_type == AppType.URL){
+            return launchUrl(parent, concert, app);
+        }
+        else if(app_type == AppType.WEB_URL){
+            return launchWebUrl(parent, concert, app);
+        }
+        else if(app_type == AppType.WEB_APP){
             return launchWebApp(parent, concert, app);
         }
-        else if(app.getName().length() == 0){
-            return Result.NOTHING;
-        }
-        else if(checkAppName(app.getName()).length() != 0){
-            return launchWebApp(parent, concert, app);
-        }
-        else{
+        else if(app_type == AppType.NATIVE){
             return launchAndroidApp(parent, concert, app);
         }
+        else if(app_type == AppType.NOTHING){
+            return Result.NOTHING;
+        }
+        else{
+            return Result.NOTHING;
+        }
     }
-
+    /**
+     * Check the application name whether web_url(*) or web_app(*)
+     */
     static public AppType checkAppType(String app_name){
         String web_url_desc = "web_url(";
         String web_app_desc = "web_app(";
         if (Patterns.WEB_URL.matcher(app_name).matches() == true) {
-            return AppType.WEB_URL;
+            return AppType.URL;
         }
         else if(app_name.length() == 0){
             return AppType.NOTHING;
@@ -134,34 +140,15 @@ public class AppLauncher {
     }
 
     /**
-     * Check the application name whether web_url(*) or web_app(*)
-     */
-
-    static public String checkAppName(String app_name){
-        String web_url_desc = "web_url(";
-        String web_app_desc = "web_app(";
-        if(app_name.contains(web_app_desc)){
-            return "web_app";
-        }
-        else if(app_name.contains(web_url_desc)){
-            return "web_url";
-        }
-        else{
-            return "";
-        }
-    }
-
-
-    /**
      * Launch a client android app for the given concert app.
      */
     static private Result launchAndroidApp(final Activity parent, final RoconDescription concert,
                                            final rocon_interaction_msgs.Interaction app) {
 
         // Create the Intent from rapp's name, pass it parameters and remaps and start it
+        Result result  = Result.OTHER_ERROR;
         String appName = app.getName();
         Intent intent = new Intent(appName);
-
         // Copy all app data to "extra" data in the intent.
         intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", appName);
         intent.putExtra(RoconDescription.UNIQUE_KEY, concert);
@@ -176,21 +163,170 @@ public class AppLauncher {
             remaps = remaps.substring(0, remaps.length() - 2) + "}";
             intent.putExtra("Remappings", remaps);
         }
-
-//      intent.putExtra("runningNodes", runningNodes);
-//      intent.putExtra("PairedManagerActivity", "com.github.rosjava.android_remocons.rocon_remocon.Remocon");
-
         try {
             Log.i("AppLaunch", "trying to start activity (action: " + appName + " )");
             parent.startActivity(intent);
-            return Result.SUCCESS;
+            result = Result.SUCCESS;
         } catch (ActivityNotFoundException e) {
-            Log.i("AppLaunch", "activity not found for action: " + appName);
+            Log.i("AppLaunch", "activity not found for action and find package name: " + appName);
+            result = launchAndroidAppWithPkgName(parent, concert, app);
+        }
+        return result;
+    }
+
+    static private Result launchAndroidAppWithPkgName(final Activity parent, final RoconDescription concert,
+                                           final rocon_interaction_msgs.Interaction app) {
+        // Create the Intent from rapp's name, pass it parameters and remaps and start it
+        String appName = app.getName();
+        PackageManager manager = parent.getPackageManager();
+        Intent intent = manager.getLaunchIntentForPackage(appName);
+        if(intent != null) {
+            // Copy all app data to "extra" data in the intent.
+            intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", appName);
+            intent.putExtra(RoconDescription.UNIQUE_KEY, concert);
+            intent.putExtra("RemoconActivity", Constants.ACTIVITY_ROCON_REMOCON);
+            intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
+
+            // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
+            if ((app.getRemappings() != null) && (app.getRemappings().size() > 0)) {
+                String remaps = "{";
+                for (rocon_std_msgs.Remapping remap : app.getRemappings())
+                    remaps += remap.getRemapFrom() + ": " + remap.getRemapTo() + ", ";
+                remaps = remaps.substring(0, remaps.length() - 2) + "}";
+                intent.putExtra("Remappings", remaps);
+            }
+            try {
+                Log.i("AppLaunch", "trying to start activity (action: " + appName + " )");
+                parent.startActivity(intent);
+                return Result.SUCCESS;
+            } catch (ActivityNotFoundException e) {
+                Log.i("AppLaunch", "activity not found for action: " + appName);
+            }
         }
         return Result.NOT_INSTALLED.withMsg("Android app not installed");
     }
 
+    /**
+     * Launch a client url for the given concert app.
+     */
+    static private Result launchUrl (final Activity parent, final RoconDescription concert,
+                                       final rocon_interaction_msgs.Interaction app) {
+        try
+        {
+            // Validate the URL before starting anything
+            String app_name = "";
+            app_name = app.getName();
+            URL appURL = new URL(app_name);
+            //2014.12.03 comment by dwlee
+            //reason of blocking, Not necessary in web app launcher.
+            /*
+            AsyncTask<URL, Void, String> asyncTask = new AsyncTask<URL, Void, String>() {
+                @Override
+                protected String doInBackground(URL... urls) {
+                    try {
+                        HttpURLConnection urlConnection = (HttpURLConnection)urls[0].openConnection();
+                        int unused_responseCode = urlConnection.getResponseCode();
+                        urlConnection.disconnect();
+                        return urlConnection.getResponseMessage();
+                    }
+                    catch (IOException e) {
+                        return e.getMessage();
+                    }
+                }
+            }.execute(appURL);
+            String result = asyncTask.get(5, TimeUnit.SECONDS);
+            if (result == null || (result.startsWith("OK") == false && result.startsWith("ok") == false)) {
+                return Result.CANNOT_CONNECT.withMsg(result);
+            }
+            */
 
+            // We pass concert URL, parameters and remaps as URL parameters
+            String appUriStr = app_name;
+            Uri appURI =  Uri.parse(appUriStr);
+
+            // Create an action view intent and pass rapp's name + extra information as URI
+            Intent intent = new Intent(Intent.ACTION_VIEW, appURI);
+            intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name",app_name);
+
+            Log.i("AppLaunch", "trying to start web app (URI: " + appUriStr + ")");
+            parent.startActivity(intent);
+            return Result.SUCCESS;
+        }
+        catch (MalformedURLException e)
+        {
+            return Result.MALFORMED_URI.withMsg("App URL is not valid. " + e.getMessage());
+        }
+        catch (ActivityNotFoundException e) {
+            // This cannot happen for a web site, right? must mean that I have no web browser!
+            return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
+        } catch (Exception e)
+        {
+            return Result.OTHER_ERROR.withMsg(e.getMessage());
+        }
+    }
+
+    /**
+     * Launch a client web url for the given concert app.
+     */
+    static private Result launchWebUrl(final Activity parent, final RoconDescription concert,
+                                       final rocon_interaction_msgs.Interaction app) {
+        try
+        {
+            // Validate the URL before starting anything
+            String app_name = "";
+            String app_type = "web_url";
+            app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
+
+            URL appURL = new URL(app_name);
+
+            //2014.12.03 comment by dwlee
+            //reason of blocking, Not necessary in web app launcher.
+            /*
+            AsyncTask<URL, Void, String> asyncTask = new AsyncTask<URL, Void, String>() {
+                @Override
+                protected String doInBackground(URL... urls) {
+                    try {
+                        HttpURLConnection urlConnection = (HttpURLConnection)urls[0].openConnection();
+                        int unused_responseCode = urlConnection.getResponseCode();
+                        urlConnection.disconnect();
+                        return urlConnection.getResponseMessage();
+                    }
+                    catch (IOException e) {
+                        return e.getMessage();
+                    }
+                }
+            }.execute(appURL);
+            String result = asyncTask.get(5, TimeUnit.SECONDS);
+            if (result == null || (result.startsWith("OK") == false && result.startsWith("ok") == false)) {
+                return Result.CANNOT_CONNECT.withMsg(result);
+            }
+            */
+
+            // We pass concert URL, parameters and remaps as URL parameters
+            String appUriStr = app_name;
+            Uri appURI =  Uri.parse(appUriStr);
+
+            // Create an action view intent and pass rapp's name + extra information as URI
+            Intent intent = new Intent(Intent.ACTION_VIEW, appURI);
+            intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name",app_name);
+
+            Log.i("AppLaunch", "trying to start web url (URI: " + appUriStr + ")");
+            parent.startActivity(intent);
+            return Result.SUCCESS;
+        }
+        catch (MalformedURLException e)
+        {
+            return Result.MALFORMED_URI.withMsg("App URL is not valid. " + e.getMessage());
+        }
+        catch (ActivityNotFoundException e) {
+            // This cannot happen for a web site, right? must mean that I have no web browser!
+            return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
+        }
+        catch (Exception e)
+        {
+            return Result.OTHER_ERROR.withMsg(e.getMessage());
+        }
+    }
     /**
      * Launch a client web app for the given concert app.
      */
@@ -201,21 +337,8 @@ public class AppLauncher {
             // Validate the URL before starting anything
             String app_name = "";
             String app_type = "";
-
-            // Parse the url
-            if (checkAppType(app.getName()) == AppType.WEB_URL){
-                app_type = "web_url";
-                app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
-            }
-            else if(checkAppType(app.getName()) == AppType.WEB_APP){
-                app_type = "web_app";
-                app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
-            }
-            else{
-                app_name = app.getName();
-            }
-
-
+            app_type = "web_app";
+            app_name = app.getName().substring(app_type.length()+1,app.getName().length()-1);
             URL appURL = new URL(app_name);
             //2014.05.27 comment by dwlee
             //reason of blocking, Not necessary in web app launcher.
@@ -271,7 +394,7 @@ public class AppLauncher {
 
             //add parameters
             String parameters = "\"parameters\": {";
-            if ((app.getParameters() != null) && (app.getParameters().length() > 0)) {
+            if ((app.getParameters() != null) && (app.getParameters().length() > 2)) {
                 Yaml yaml = new Yaml();
                 Map<String, String> params = (Map<String, String>) yaml.load(app.getParameters());
                 for( String key : params.keySet() ) {
@@ -284,20 +407,13 @@ public class AppLauncher {
             interaction_data += parameters;
             interaction_data +="}";
 
-            if(app_type.equals("web_url")) {
-                appUriStr = appUriStr;
-            }
-            else if(app_type.equals("web_app")){
-                appUriStr = appUriStr + "?" + "interaction_data=" + URLEncoder.encode(interaction_data);
-            }
-            else{
-                appUriStr = appUriStr + "?" + "interaction_data=" + URLEncoder.encode(interaction_data);
-            }
+            appUriStr = appUriStr + "?" + "interaction_data=" + URLEncoder.encode(interaction_data);
             appURL.toURI(); // throws URISyntaxException if fails; probably a redundant check
             Uri appURI =  Uri.parse(appUriStr);
 
             // Create an action view intent and pass rapp's name + extra information as URI
             Intent intent = new Intent(Intent.ACTION_VIEW, appURI);
+            intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name",app_name);
 
             Log.i("AppLaunch", "trying to start web app (URI: " + appUriStr + ")");
             parent.startActivity(intent);
@@ -314,10 +430,6 @@ public class AppLauncher {
             // This cannot happen for a web site, right? must mean that I have no web browser!
             return Result.NOT_INSTALLED.withMsg("Activity not found for view action??? muoia???");
         }
-        //catch (TimeoutException e)
-        //{
-        //    return Result.CONNECT_TIMEOUT.withMsg("Timeout waiting for app");
-        //}
         catch (Exception e)
         {
             return Result.OTHER_ERROR.withMsg(e.getMessage());
