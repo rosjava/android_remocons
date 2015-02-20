@@ -13,3 +13,4 @@ android_apps.
 
 * Master: https://raw.github.com/rosjava/rosjava/master/android_apps.rosinstall
 * Hydro: https://raw.github.com/rosjava/rosjava/hydro/android_apps.rosinstall
+* Indigo: https://raw.github.com/rosjava/rosjava/indigo/android_interactions.rosinstall
