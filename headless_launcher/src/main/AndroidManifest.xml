@@ -1,52 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.github.rosjava.android_remocons.headless_launcher"
-      android:versionCode="4"
-      android:versionName="1.3">
+    package="com.github.rosjava.android_remocons.headless_launcher"
+    >
 
-    <uses-sdk android:minSdkVersion="14"
-              android:targetSdkVersion="18" />
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.NFC" />
-    <uses-feature android:name="android.hardware.nfc" android:required="true" />
+
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="true" />
 
     <application android:label="@string/app_name" >
-        <activity android:name="com.github.rosjava.android_remocons.headless_launcher.NfcLauncherActivity"
+        <activity
+            android:name="com.github.rosjava.android_remocons.headless_launcher.NfcLauncherActivity"
             android:label="@string/app_name"
-            android:theme="@android:style/Theme.NoDisplay">
+            android:theme="@android:style/Theme.NoDisplay" >
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />  <!--Only for debugging; remove when done-->
+                <action android:name="android.intent.action.MAIN" /> <!-- Only for debugging; remove when done -->
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
-                <category android:name="android.intent.category.DEFAULT" />   <!--Needed?-->
-                <category android:name="android.intent.category.LAUNCHER" />  <!--Needed?-->
+
+                <category android:name="android.intent.category.DEFAULT" /> <!-- Needed? -->
+                <category android:name="android.intent.category.LAUNCHER" /> <!-- Needed? -->
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
 
+        <activity
+            android:name="com.github.rosjava.android_remocons.headless_launcher.AlertDialogActivity"
+            android:label="@string/title_activity_alert_dialog"
+            android:theme="@android:style/Theme.Dialog">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <!-- Not working; asked on stackoverflow: http://stackoverflow.com/questions/20051195/can-i-use-an-activity-alias-as-the-aar-field-on-a-nfc-tag -->
-        <!--<activity-alias-->
-            <!--android:enabled="true"-->
-            <!--android:exported="true"-->
-            <!--android:label="NFC launcher"-->
-            <!--android:name=".NFC_launcher"-->
-            <!--android:targetActivity="com.github.rosjava.android_remocons.headless_launcher.NfcLauncherActivity">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.MAIN" />  &lt;!&ndash;Only for debugging; remove when done&ndash;&gt;-->
-                <!--<action android:name="android.nfc.action.NDEF_DISCOVERED" />-->
-                <!--<category android:name="android.intent.category.DEFAULT" />   &lt;!&ndash;Needed?&ndash;&gt;-->
-                <!--<category android:name="android.intent.category.LAUNCHER" />  &lt;!&ndash;Needed?&ndash;&gt;-->
-                <!--<data android:mimeType="text/plain" />-->
-            <!--</intent-filter>-->
-        <!--</activity-alias>-->
+        <!-- <activity-alias -->
+        <!-- android:enabled="true" -->
+        <!-- android:exported="true" -->
+        <!-- android:label="NFC launcher" -->
+        <!-- android:name=".NFC_launcher" -->
+        <!-- android:targetActivity="com.github.rosjava.android_remocons.headless_launcher.NfcLauncherActivity"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="android.intent.action.MAIN" />  &lt;!&ndash;Only for debugging; remove when done&ndash;&gt; -->
+        <!-- <action android:name="android.nfc.action.NDEF_DISCOVERED" /> -->
+        <!-- <category android:name="android.intent.category.DEFAULT" />   &lt;!&ndash;Needed?&ndash;&gt; -->
+        <!-- <category android:name="android.intent.category.LAUNCHER" />  &lt;!&ndash;Needed?&ndash;&gt; -->
+        <!-- <data android:mimeType="text/plain" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity-alias> -->
 
         <service android:name="org.ros.android.NodeMainExecutorService" >
             <intent-filter>
                 <action android:name="org.ros.android.NodeMainExecutorService" />
             </intent-filter>
         </service>
+
+
     </application>
-</manifest> 
+
+</manifest>

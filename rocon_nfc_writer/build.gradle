@@ -15,19 +15,21 @@
  */
 
 dependencies {
-    compile project(':common_tools')
-    compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.1,)'
+  compile project(':common_tools')
+  compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.2,0.3)'
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 18
-    packagingOptions {
-        /* https://github.com/rosjava/android_core/issues/194 */
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-    }
+  compileSdkVersion 18
+
+  defaultConfig {
+    minSdkVersion 18
+    targetSdkVersion 18
+    versionCode 1
+    versionName "1.0"
+  }
 }
 
 defaultTasks 'assembleRelease'

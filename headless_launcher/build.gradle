@@ -16,18 +16,21 @@
 
 
 dependencies {
-    compile project(':common_tools')
+  compile project(':common_tools')
 }
 
-apply plugin: 'android'
+apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 15
-    packagingOptions {
-        /* https://github.com/rosjava/android_core/issues/194 */
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-    }
+  compileSdkVersion 15
+
+  defaultConfig {
+    minSdkVersion 15
+    targetSdkVersion 15
+    versionCode 5
+    versionName "1.4.0"
+  }
+
 }
 
 defaultTasks 'assembleRelease'

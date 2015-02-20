@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.github.rosjava.android_remocons.rocon_nfc_writer"
-      android:versionCode="1"
-      android:versionName="1.0"
       xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-sdk android:minSdkVersion="14"
-              android:targetSdkVersion="18" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-feature android:name="android.hardware.nfc" android:required="true" />
 
     <application android:label="@string/app_name"
                  android:allowBackup="true"
-                 android:icon="@drawable/ic_launcher"
+                 android:icon="@mipmap/icon"
                  tools:replace="icon, label">
         <activity android:name="RoconNfcWriter"
                   android:label="@string/app_name">

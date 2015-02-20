@@ -1,0 +1,57 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    tools:context=".AlertDialogActivity"
+    android:id="@+id/activity_alert_dialog">
+
+    <Button
+        android:layout_width="168dp"
+        android:layout_height="wrap_content"
+        android:text="Yes"
+        android:id="@+id/yes"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_gravity="left|bottom" />
+
+    <Button
+        android:layout_width="168dp"
+        android:layout_height="wrap_content"
+        android:text="No"
+        android:id="@+id/no"
+        android:layout_alignTop="@+id/yes"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_gravity="right|bottom" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scrollView"
+        android:layout_gravity="center_horizontal|top" >
+
+    </ScrollView>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MainContext&quot;, &quot;This concert app requires a client user interface app, &quot;                             + &quot;but the applicable app is not installed.\n&quot;                             + &quot;Would you like to install the app from the market place?&quot;"
+        android:id="@+id/main_context"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:textSize="20dp"
+        android:layout_gravity="center_horizontal|top" />
+
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="179dp"
+        android:layout_gravity="center" />
+
+</FrameLayout>
