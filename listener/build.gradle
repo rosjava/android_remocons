@@ -14,6 +14,7 @@
  * the License.
  */
 
+//noinspection GroovyAssignabilityCheck
 dependencies {
   compile 'org.ros.android_core:android_10:[0.2,0.3)'
   compile 'org.ros.rosjava_core:rosjava:[0.2,0.3)'

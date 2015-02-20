@@ -14,6 +14,7 @@
  * the License.
  */
 
+//noinspection GroovyAssignabilityCheck
 dependencies {
   compile project(':common_tools')
   compile 'com.github.robotics_in_concert.rocon_rosjava_core:rosjava_utils:[0.2,0.3)'
