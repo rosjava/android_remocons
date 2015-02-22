@@ -9,14 +9,14 @@
 <application android:label="@string/app_name"
              android:icon="@mipmap/icon"
              tools:replace="icon, label">
-    <activity android:name="TalkerActivity"
+    <activity android:name=".Talker"
         android:label="@string/app_name">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
         <intent-filter>
-            <action android:name="com.github.rosjava.android_remocons.talker.TalkerActivity" />
+            <action android:name="com.github.rosjava.android_remocons.talker.Talker" />
             <category android:name="android.intent.category.DEFAULT" />
         </intent-filter>
     </activity>

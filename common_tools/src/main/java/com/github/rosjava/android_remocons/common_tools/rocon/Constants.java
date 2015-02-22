@@ -42,8 +42,9 @@ public class Constants {
         // rocon:/hw/name/app_framework/os"
         platformInfo.setUri("rocon:/"
                         + Strings.URI_WILDCARD + "/" + Strings.URI_WILDCARD + "/"
-                        + Strings.APPLICATION_FRAMEWORK_HYDRO + "|" + Strings.APPLICATION_FRAMEWORK_INDIGO + "/"
-                        + Strings.OS_ICE_CREAM_SANDWICH + "|" + Strings.OS_JELLYBEAN
+                        + Strings.APPLICATION_FRAMEWORK_INDIGO + "/"
+                        + Strings.OS_ICE_CREAM_SANDWICH + "|" + Strings.OS_JELLYBEAN + "|"
+                        + Strings.OS_CHROME
         );
         platformInfo.setVersion(Strings.ROCON_VERSION);
         /* Not yet implemented */
