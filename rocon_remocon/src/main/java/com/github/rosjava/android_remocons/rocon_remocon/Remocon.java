@@ -133,26 +133,42 @@ public class Remocon extends RosActivity {
         pairSubscriber= PairSubscriber.getInstance();
         pairSubscriber.setAppHash(0);
 	}
+
     @Override
-    public void onResume(){
-        super.onResume();
-        concertAppName = getIntent().getStringExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name");
-        if (concertAppName == null) {
-            concertAppName = defaultConcertAppName;
-            if (selectedInteraction!= null){
-                statusPublisher.update(false, 0, null);
-                selectedInteraction = null;
+    protected void init() {
+        Log.d("Remocon", "init()");
+        if (!fromApplication && !fromNfcLauncher) {
+            super.init();
+        } else {
+            Log.i("Remocon", "init() - returned from closing interaction, or started by Nfc launcher");
+            // In both cases we expect a concert description in the intent
+            if (getIntent().hasExtra(RoconDescription.UNIQUE_KEY)) {
+                Log.w("Remocon", "init() - successfully retrieved concert description key and moving to init(Intent)");
+                init(getIntent());
+                Log.i("Remocon", "Successfully retrieved concert description from the intent");
+            } else {
+                Log.e("Remocon", "Closing interaction didn't return the concert description");
+                // We are fucked-up in this case... TODO: recover or close all
             }
         }
-        else if (concertAppName.equals("AppChooser")) { // TODO ugly legacy identifier, it's misleading so change it sometime
-            Log.i("Remocon", "reinitialising from a closing remocon application");
-            statusPublisher.update(false, 0, null);
-            fromApplication = true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onResume();
+        if ( getIntent().getExtras() != null ) {
+            concertAppName = getIntent().getStringExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name");
+            if (concertAppName.equals("AppChooser")) { // TODO ugly legacy identifier, it's misleading so change it sometime
+                Log.i("Remocon", "got intent from a closing remocon application");
+                statusPublisher.update(false, 0, null);
+                fromApplication = true;
+            }
+            else if (concertAppName.equals("NfcLauncher")) {
+                Log.i("Remocon", "got intent from an Nfc launched application");
+                fromNfcLauncher = true;
+            }
         }
-        else if (concertAppName.equals("NfcLauncher")) {
-            Log.i("Remocon", "Directly started by Nfc launcher");
-            fromNfcLauncher = true;
-        }
+        super.onStart();
     }
 
 	/** Called when the activity is first created. */
@@ -370,6 +386,7 @@ public class Remocon extends RosActivity {
             validateConcert(roconDescription.getMasterId());
 
             uri = new URI(roconDescription.getMasterId().getMasterUri());
+            Log.i("Remocon", "init(Intent) - master uri is " + uri.toString());
         } catch (ClassCastException e) {
             Log.e("Remocon", "Cannot get concert description from intent. " + e.getMessage());
             throw new RosRuntimeException(e);
@@ -394,6 +411,7 @@ public class Remocon extends RosActivity {
                         // should use a sleep here to avoid burnout
                         try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
                     }
+                    Log.i("Remocon", "init(Intent) passing control back to init(nodeMainExecutorService)");
                     Remocon.this.init(nodeMainExecutorService);
                     return null;
                 }
@@ -444,9 +462,12 @@ public class Remocon extends RosActivity {
      */
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i("Remocon", "onActivityResult [" + requestCode + "][" + resultCode + "]");
 		if (resultCode == RESULT_CANCELED) {
+            Log.i("Remocon", "activityResult...RESULT_CANCELLED");
 			finish();
 		} else if (resultCode == RESULT_OK) {
+            Log.i("Remocon", "activityResult...RESULT_OK");
 			if (requestCode == CONCERT_MASTER_CHOOSER_REQUEST_CODE) {
                 init(data);
             } else {
@@ -454,7 +475,9 @@ public class Remocon extends RosActivity {
 				nodeMainExecutorService.shutdown();
 				finish();
 			}
-		}
+		} else {
+            Log.w("Remocon", "activityResult...??? [" + resultCode + "]");
+        }
 	}
 
     /**
@@ -470,16 +493,6 @@ public class Remocon extends RosActivity {
 			super.startActivityForResult(new Intent(this,
 					MasterChooser.class),
 					CONCERT_MASTER_CHOOSER_REQUEST_CODE);
-		} else {
-            Log.i("Remocon", "Come back from closing interaction, or started by Nfc launcher");
-            // In both cases we expect a concert description in the intent
-            if (getIntent().hasExtra(RoconDescription.UNIQUE_KEY)) {
-                init(getIntent());
-                Log.i("Remocon", "Successfully retrieved concert description from the intent");
-            } else {
-                Log.e("Remocon", "Closing interaction didn't return the concert description");
-                // We are fucked-up in this case... TODO: recover or close all
-            }
         }
 	}
 
