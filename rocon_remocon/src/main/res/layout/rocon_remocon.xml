@@ -16,7 +16,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/concert_name_view"
-            android:textSize="30sp" />
+            android:gravity="center"
+            android:textSize="30sp"
+        />
     </LinearLayout>
 
     <GridView

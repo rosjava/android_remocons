@@ -199,7 +199,7 @@ public class Remocon extends RosActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            updateAppList(availableAppsCache, roconDescription.getCurrentRole());
+                            updateAppList(availableAppsCache, roconDescription.getMasterName(), roconDescription.getCurrentRole());
                             progressDialog.dismiss();
                         }
                     });
@@ -579,10 +579,10 @@ public class Remocon extends RosActivity {
 		wc.beginChecking(id, (WifiManager) getSystemService(WIFI_SERVICE));
 	}
 
-	protected void updateAppList(final ArrayList<Interaction> apps, final String role) {
+	protected void updateAppList(final ArrayList<Interaction> apps, final String master_name, final String role) {
 		Log.d("Remocon", "updating app list gridview");
         selectedInteraction = null;
-
+        concertNameView.setText(master_name + " - " + role);
 		GridView gridview = (GridView) findViewById(R.id.gridview);
 		AppAdapter appAdapter = new AppAdapter(Remocon.this, apps);
 		gridview.setAdapter(appAdapter);
