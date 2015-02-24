@@ -2,7 +2,6 @@
 <resources>
     <!-- Application Management -->
     <string name="app_name">Listener</string>
-    <string name="paired_app_name">rocon_apps/talker</string>
     <!-- <string name="default_robot">rocon</string>-->
     <string name="default_robot"></string>
 

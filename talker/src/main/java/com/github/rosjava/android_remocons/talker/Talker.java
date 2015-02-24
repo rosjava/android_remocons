@@ -2,6 +2,8 @@ package com.github.rosjava.android_remocons.talker;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.github.rosjava.android_remocons.common_tools.apps.RosAppActivity;
@@ -13,8 +15,6 @@ import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
 import java.io.IOException;
-
-//import std_msgs.String;
 
 public class Talker extends RosAppActivity
 {
@@ -32,26 +32,9 @@ public class Talker extends RosAppActivity
     public void onCreate(Bundle savedInstanceState)
     {
         setDefaultMasterName(getString(R.string.default_robot));
-        //setDefaultAppName(getString(R.string.paired_app_name));
         setDashboardResource(R.id.top_bar);
         setMainWindowResource(R.layout.main);
         super.onCreate(savedInstanceState);
-
-//        setContentView(R.layout.main);
-//        rosTextView = (RosTextView<std_msgs.String>) findViewById(R.id.text);
-//        rosTextView.setTopicName("chatter");
-//        rosTextView.setMessageType(std_msgs.String._TYPE);
-//        rosTextView.setMessageToStringCallable(new MessageCallable<String, std_msgs.String>() {
-//            @Override
-//            public String call(std_msgs.String message) {
-//                Log.e("Talker", "callback received [" + message.getData() + "]");
-//                return message.getData();
-//            }
-//        });
-//        setDefaultMasterName(getString(R.string.default_robot));
-//        setDefaultAppName(getString(R.string.paired_app_name));
-//        setDashboardResource(R.id.top_bar);
-//        setMainWindowResource(R.layout.main);
     }
 
     @Override
@@ -65,7 +48,7 @@ public class Talker extends RosAppActivity
         rosTextView.setMessageToStringCallable(new MessageCallable<String, std_msgs.String>() {
             @Override
             public java.lang.String call(std_msgs.String message) {
-                Log.e("Talker", "received closed loop message [" + message.getData() + "]");
+                Log.i("Talker", "received closed loop message [" + message.getData() + "]");
                 return message.getData();
             }
         });
@@ -85,10 +68,29 @@ public class Talker extends RosAppActivity
             nodeMainExecutor.execute(rosTextView, nodeConfiguration);
         } catch(InterruptedException e) {
             // Thread interruption
+            Log.e("Talker", "sleep interrupted");
         } catch (IOException e) {
             // Socket problem
+            Log.e("Talker", "socket error trying to get networking information from the master uri");
         }
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        menu.add(0,0,0,getString(R.string.stop_app));
+        return super.onCreateOptionsMenu(menu);
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        super.onOptionsItemSelected(item);
+        switch (item.getItemId()){
+            case 0:
+                finish();
+                break;
+        }
+        return true;
     }
 }
 

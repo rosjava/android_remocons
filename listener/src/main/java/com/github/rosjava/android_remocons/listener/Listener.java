@@ -16,11 +16,6 @@ import org.ros.node.NodeMainExecutor;
 
 import java.io.IOException;
 
-// RosJava Imports
-// Android Core Imports
-// Android App Imports
-
-
 public class Listener extends RosAppActivity
 {
     private Toast    lastToast;
@@ -37,7 +32,6 @@ public class Listener extends RosAppActivity
     public void onCreate(Bundle savedInstanceState)
     {
         setDefaultMasterName(getString(R.string.default_robot));
-        setDefaultAppName(getString(R.string.paired_app_name));
         setDashboardResource(R.id.top_bar);
         setMainWindowResource(R.layout.main);
         super.onCreate(savedInstanceState);
