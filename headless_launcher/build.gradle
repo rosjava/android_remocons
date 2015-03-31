@@ -27,8 +27,14 @@ android {
   defaultConfig {
     minSdkVersion 15
     targetSdkVersion 15
-    versionCode 5
-    versionName "1.4.0"
+    versionCode 6
+    versionName "1.4.1"
+  }
+
+  productFlavors {
+    indigo {
+      applicationId "com.github.rosjava.android_remocons.headless_launcher.indigo"
+    }
   }
 
 }

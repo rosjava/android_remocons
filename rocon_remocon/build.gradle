@@ -48,8 +48,13 @@ android {
   defaultConfig {
     minSdkVersion 15
     targetSdkVersion 15
-    versionCode 2
-    versionName "1.1"
+    versionCode 3
+    versionName "1.1.2"
+  }
+  productFlavors {
+    indigo {
+      applicationId "com.github.rosjava.android_remocons.rocon_remocon.indigo"
+    }
   }
 
 }
