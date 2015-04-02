@@ -144,7 +144,6 @@ public class AppLauncher {
      */
     static private Result launchAndroidApp(final Activity parent, final RoconDescription concert,
                                            final rocon_interaction_msgs.Interaction app) {
-
         // Create the Intent from rapp's name, pass it parameters and remaps and start it
         Result result  = Result.OTHER_ERROR;
         String appName = app.getName();
@@ -164,11 +163,11 @@ public class AppLauncher {
             intent.putExtra("Remappings", remaps);
         }
         try {
-            Log.i("AppLaunch", "trying to start activity (action: " + appName + " )");
+            Log.i("AppLaunch", "launchAndroidApp trying to start activity (action: " + appName + " )");
             parent.startActivity(intent);
             result = Result.SUCCESS;
         } catch (ActivityNotFoundException e) {
-            Log.i("AppLaunch", "activity not found for action and find package name: " + appName);
+            Log.i("AppLaunch", "launchAndroidApp activity not found for action, find package name: " + appName);
             result = launchAndroidAppWithPkgName(parent, concert, app);
         }
         return result;
@@ -177,6 +176,7 @@ public class AppLauncher {
     static private Result launchAndroidAppWithPkgName(final Activity parent, final RoconDescription concert,
                                            final rocon_interaction_msgs.Interaction app) {
         // Create the Intent from rapp's name, pass it parameters and remaps and start it
+        Result result  = Result.OTHER_ERROR;
         String appName = app.getName();
         PackageManager manager = parent.getPackageManager();
         Intent intent = manager.getLaunchIntentForPackage(appName);
@@ -196,14 +196,53 @@ public class AppLauncher {
                 intent.putExtra("Remappings", remaps);
             }
             try {
-                Log.i("AppLaunch", "trying to start activity (action: " + appName + " )");
+                Log.i("AppLaunch", "launchAndroidAppWithPkgName trying to start activity (action: " + appName + " )");
                 parent.startActivity(intent);
                 return Result.SUCCESS;
             } catch (ActivityNotFoundException e) {
-                Log.i("AppLaunch", "activity not found for action: " + appName);
+                Log.i("AppLaunch", "launchAndroidAppWithPkgName activity not found for action: " + appName);
+                result = launchAndroidAppWithoutRosVer(parent, concert, app);
             }
         }
-        return Result.NOT_INSTALLED.withMsg("Android app not installed");
+        else{
+            result = launchAndroidAppWithoutRosVer(parent, concert, app);
+        }
+        return result;
+    }
+
+    static private Result launchAndroidAppWithoutRosVer(final Activity parent, final RoconDescription concert,
+                                                      final rocon_interaction_msgs.Interaction app) {
+        // Create the Intent from rapp's name, pass it parameters and remaps and start it
+        Result result  = Result.OTHER_ERROR;
+        String[] appNameItem = app.getName().split("\\.");
+        String mainActivityName = appNameItem[appNameItem.length-1];
+        String rosVerName = appNameItem[appNameItem.length-2];
+
+        String appNameWithoutRosVer = app.getName().substring(0,app.getName().lastIndexOf(rosVerName)) + mainActivityName;
+        Intent intent = new Intent(appNameWithoutRosVer);
+        // Copy all app data to "extra" data in the intent.
+        intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", appNameWithoutRosVer);
+        intent.putExtra(RoconDescription.UNIQUE_KEY, concert);
+        intent.putExtra("RemoconActivity", Constants.ACTIVITY_ROCON_REMOCON);
+        intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
+
+        // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
+        if ((app.getRemappings() != null) && (app.getRemappings().size() > 0)) {
+            String remaps = "{";
+            for (rocon_std_msgs.Remapping remap: app.getRemappings())
+                remaps += remap.getRemapFrom() + ": " + remap.getRemapTo() + ", ";
+            remaps = remaps.substring(0, remaps.length() - 2) + "}";
+            intent.putExtra("Remappings", remaps);
+        }
+        try {
+            Log.i("AppLaunch", "launchAndroidAppWithoutRosVer trying to start activity (action: " + appNameWithoutRosVer + " )");
+            parent.startActivity(intent);
+            result = Result.SUCCESS;
+        } catch (ActivityNotFoundException e) {
+            Log.i("AppLaunch", "launchAndroidAppWithoutRosVer activity not found for action, find package name: " + appNameWithoutRosVer);
+            result = Result.NOT_INSTALLED;
+        }
+        return result;
     }
 
     /**
