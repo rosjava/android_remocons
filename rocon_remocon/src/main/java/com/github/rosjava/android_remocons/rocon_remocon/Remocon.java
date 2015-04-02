@@ -264,7 +264,7 @@ public class Remocon extends RosActivity {
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
                             else if (result == AppLauncher.Result.NOTHING){
-                                statusPublisher.update(false, selectedInteraction.getHash(), selectedInteraction.getName());
+                                //statusPublisher.update(false, selectedInteraction.getHash(), selectedInteraction.getName());
                             }
                             else if (result == AppLauncher.Result.NOT_INSTALLED) {
                                // App not installed; ask for going to play store to download the missing app
