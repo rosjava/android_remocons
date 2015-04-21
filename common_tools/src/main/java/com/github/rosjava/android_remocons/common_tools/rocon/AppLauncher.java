@@ -218,7 +218,7 @@ public class AppLauncher {
         Result result  = Result.OTHER_ERROR;
         String launchablePkgName = "";
         PackageManager manager = parent.getPackageManager();
-        List<ApplicationInfo> applicationInfo = manager.getInstalledApplications(manager.GET_META_DATA|manager.GET_UNINSTALLED_PACKAGES);
+        List<ApplicationInfo> applicationInfo = manager.getInstalledApplications(manager.GET_META_DATA);
         for (int i = 0; i < applicationInfo.size(); i++){
             ApplicationInfo appInfo = applicationInfo.get(i);
             if (app.getName().contains(appInfo.processName)){
