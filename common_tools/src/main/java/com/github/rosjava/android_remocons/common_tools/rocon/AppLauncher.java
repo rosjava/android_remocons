@@ -39,6 +39,7 @@ package com.github.rosjava.android_remocons.common_tools.rocon;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.util.Log;
@@ -53,6 +54,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -201,46 +203,54 @@ public class AppLauncher {
                 return Result.SUCCESS;
             } catch (ActivityNotFoundException e) {
                 Log.i("AppLaunch", "launchAndroidAppWithPkgName activity not found for action: " + appName);
-                result = launchAndroidAppWithoutRosVer(parent, concert, app);
+                result = launchAndroidAppWithAppId(parent, concert, app);
             }
         }
         else{
-            result = launchAndroidAppWithoutRosVer(parent, concert, app);
+            result = launchAndroidAppWithAppId(parent, concert, app);
         }
         return result;
     }
 
-    static private Result launchAndroidAppWithoutRosVer(final Activity parent, final RoconDescription concert,
+    static private Result launchAndroidAppWithAppId(final Activity parent, final RoconDescription concert,
                                                       final rocon_interaction_msgs.Interaction app) {
         // Create the Intent from rapp's name, pass it parameters and remaps and start it
         Result result  = Result.OTHER_ERROR;
-        String[] appNameItem = app.getName().split("\\.");
-        String mainActivityName = appNameItem[appNameItem.length-1];
-        String rosVerName = appNameItem[appNameItem.length-2];
-
-        String appNameWithoutRosVer = app.getName().substring(0,app.getName().lastIndexOf(rosVerName)) + mainActivityName;
-        Intent intent = new Intent(appNameWithoutRosVer);
-        // Copy all app data to "extra" data in the intent.
-        intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", appNameWithoutRosVer);
-        intent.putExtra(RoconDescription.UNIQUE_KEY, concert);
-        intent.putExtra("RemoconActivity", Constants.ACTIVITY_ROCON_REMOCON);
-        intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
-
-        // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
-        if ((app.getRemappings() != null) && (app.getRemappings().size() > 0)) {
-            String remaps = "{";
-            for (rocon_std_msgs.Remapping remap: app.getRemappings())
-                remaps += remap.getRemapFrom() + ": " + remap.getRemapTo() + ", ";
-            remaps = remaps.substring(0, remaps.length() - 2) + "}";
-            intent.putExtra("Remappings", remaps);
+        String launchablePkgName = "";
+        PackageManager manager = parent.getPackageManager();
+        List<ApplicationInfo> applicationInfo = manager.getInstalledApplications(manager.GET_META_DATA|manager.GET_UNINSTALLED_PACKAGES);
+        for (int i = 0; i < applicationInfo.size(); i++){
+            ApplicationInfo appInfo = applicationInfo.get(i);
+            if (app.getName().contains(appInfo.processName)){
+                launchablePkgName = appInfo.packageName;
+                break;
+            }
         }
-        try {
-            Log.i("AppLaunch", "launchAndroidAppWithoutRosVer trying to start activity (action: " + appNameWithoutRosVer + " )");
-            parent.startActivity(intent);
-            result = Result.SUCCESS;
-        } catch (ActivityNotFoundException e) {
-            Log.i("AppLaunch", "launchAndroidAppWithoutRosVer activity not found for action, find package name: " + appNameWithoutRosVer);
-            result = Result.NOT_INSTALLED;
+        if(launchablePkgName.length()!=0) {
+            Intent intent = manager.getLaunchIntentForPackage(launchablePkgName);
+            if(intent != null) {
+                // Copy all app data to "extra" data in the intent.
+                intent.putExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name", launchablePkgName);
+                intent.putExtra(RoconDescription.UNIQUE_KEY, concert);
+                intent.putExtra("RemoconActivity", Constants.ACTIVITY_ROCON_REMOCON);
+                intent.putExtra("Parameters", app.getParameters());  // YAML-formatted string
+                // Remappings come as a messages list that make YAML parser crash, so we must digest if for him
+                if ((app.getRemappings() != null) && (app.getRemappings().size() > 0)) {
+                    String remaps = "{";
+                    for (rocon_std_msgs.Remapping remap : app.getRemappings())
+                        remaps += remap.getRemapFrom() + ": " + remap.getRemapTo() + ", ";
+                    remaps = remaps.substring(0, remaps.length() - 2) + "}";
+                    intent.putExtra("Remappings", remaps);
+                }
+                try {
+                    Log.i("AppLaunch", "launchAndroidAppWithoutRosVer trying to start activity (action: " + launchablePkgName + " )");
+                    parent.startActivity(intent);
+                    result = Result.SUCCESS;
+                } catch (ActivityNotFoundException e) {
+                    Log.i("AppLaunch", "launchAndroidAppWithoutRosVer activity not found for action, find package name: " + launchablePkgName);
+                    result = Result.NOT_INSTALLED;
+                }
+            }
         }
         return result;
     }
