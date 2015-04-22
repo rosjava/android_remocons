@@ -157,15 +157,22 @@ public class Remocon extends RosActivity {
     protected void onStart() {
         super.onResume();
         if ( getIntent().getExtras() != null ) {
+            Log.i("Remocon", "onStart: " + Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name");
             concertAppName = getIntent().getStringExtra(Constants.ACTIVITY_SWITCHER_ID + "." + InteractionMode.CONCERT + "_app_name");
-            if (concertAppName.equals("AppChooser")) { // TODO ugly legacy identifier, it's misleading so change it sometime
-                Log.i("Remocon", "got intent from a closing remocon application");
-                statusPublisher.update(false, 0, null);
-                fromApplication = true;
+            if (concertAppName == null){
+                fromApplication = false;
+                fromApplication = false;
             }
-            else if (concertAppName.equals("NfcLauncher")) {
-                Log.i("Remocon", "got intent from an Nfc launched application");
-                fromNfcLauncher = true;
+            else{
+                if (concertAppName.equals("AppChooser")) { // TODO ugly legacy identifier, it's misleading so change it sometime
+                    Log.i("Remocon", "got intent from a closing remocon application");
+                    statusPublisher.update(false, 0, null);
+                    fromApplication = true;
+                }
+                else if (concertAppName.equals("NfcLauncher")) {
+                    Log.i("Remocon", "got intent from an Nfc launched application");
+                    fromNfcLauncher = true;
+                }
             }
         }
         super.onStart();
@@ -257,7 +264,7 @@ public class Remocon extends RosActivity {
                                 // TODO try to no finish so statusPublisher remains while on app;  risky, but seems to work!    finish();
                             }
                             else if (result == AppLauncher.Result.NOTHING){
-                                statusPublisher.update(false, selectedInteraction.getHash(), selectedInteraction.getName());
+                                //statusPublisher.update(false, selectedInteraction.getHash(), selectedInteraction.getName());
                             }
                             else if (result == AppLauncher.Result.NOT_INSTALLED) {
                                // App not installed; ask for going to play store to download the missing app

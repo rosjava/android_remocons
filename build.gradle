@@ -57,6 +57,7 @@ subprojects {
         exclude "META-INF/NOTICE.txt"
       }
     }
+
   }
 }
 
