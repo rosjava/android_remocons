@@ -48,8 +48,8 @@ android {
   defaultConfig {
     minSdkVersion 15
     targetSdkVersion 15
-    versionCode 5
-    versionName "1.2.1"
+    versionCode 6
+    versionName "1.2.2"
   }
   productFlavors {
     indigo {
