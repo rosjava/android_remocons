@@ -252,7 +252,7 @@ public class AppLauncher {
                 }
             }
         }
-        {
+        else{
             result = Result.NOT_INSTALLED;
         }
         return result;
