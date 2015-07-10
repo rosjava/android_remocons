@@ -17,6 +17,7 @@ import com.github.rosjava.android_remocons.common_tools.nfc.NfcManager;
 import java.security.InvalidParameterException;
 
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_APP_RECORD_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_EXTRA_DATA_FIELD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_HOST_FIELD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PASSWORD_FIELD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_SSID_FIELD_LENGTH;
@@ -148,7 +149,7 @@ public class RoconNfcWriter extends Activity {
                                          ByteArrays.toFixSizeBytes(masterHost, NFC_MASTER_HOST_FIELD_LENGTH, (byte)0),
                                          ByteArrays.toBytes(Short.decode(masterPort)),
                                          ByteArrays.toBytes(Integer.decode(appHash)),
-                                         ByteArrays.toBytes(Short.decode(extraData)));
+                                         ByteArrays.toFixSizeBytes(extraData, NFC_EXTRA_DATA_FIELD_LENGTH, (byte)0));
 
                 // Max payload size of our Ultralight C NFC tags is 137 bytes, so...
                 //   ssid             16 bytes
@@ -156,10 +157,10 @@ public class RoconNfcWriter extends Activity {
                 //   host             16 bytes
                 //   port              2 bytes
                 //   hash              4 bytes
-                //   data              2 bytes
+                //   data             10 bytes
                 //   TOTAL            56 bytes
                 // payload language and status byte require 3 bytes more
-                // AAR header needs 22 bytes, so AR max size is 56 bytes
+                // AAR header needs 22 bytes, so AR max size is 65 bytes
 
                 boolean success = mNfcManager.writeTextNdefMessage(content, appRecord);
 

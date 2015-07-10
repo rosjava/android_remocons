@@ -35,6 +35,7 @@ import rocon_interaction_msgs.Interaction;
 import rocon_interaction_msgs.RequestInteractionResponse;
 
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_APP_HASH_FIELD_LENGTH;
+import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_EXTRA_DATA_FIELD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_HOST_FIELD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_MASTER_PORT_FIELD_LENGTH;
 import static com.github.rosjava.android_remocons.common_tools.rocon.Constants.NFC_PASSWORD_FIELD_LENGTH;
@@ -74,7 +75,7 @@ public class NfcLauncherActivity extends Activity {
     private String masterHost;
     private short  masterPort;
     private int    appHash;
-    private short  extraData;
+    private String  extraData;
     private MasterId masterId;
     private Interaction app;
     private RoconDescription concert;
@@ -158,11 +159,13 @@ public class NfcLauncherActivity extends Activity {
 
     private void parseNFCData() throws Exception {
         byte[] payload = nfcManager.getPayload();
+        /* Comment out this due to the variation of extra data length
         if (payload.length != NFC_PAYLOAD_LENGTH + 3) // 1 byte for status and 2 lang bytes
         {
             throw new Exception("Payload doesn't match expected length: "
                     + payload.length +" != " + NFC_PAYLOAD_LENGTH);
         }
+        */
 
         int offset = 3; // skip 1 byte for status and 2 lang bytes
         ssid       = Util.toString(payload, offset, NFC_SSID_FIELD_LENGTH).trim();
@@ -175,7 +178,7 @@ public class NfcLauncherActivity extends Activity {
         offset    += NFC_MASTER_PORT_FIELD_LENGTH;
         appHash    = Util.toInteger(payload, offset);
         offset    += NFC_APP_HASH_FIELD_LENGTH;
-        extraData  = Util.toShort(payload, offset);
+        extraData  = Util.toString(payload, offset, NFC_EXTRA_DATA_FIELD_LENGTH).trim();
 
         launchStep = launchStep.next();
     }

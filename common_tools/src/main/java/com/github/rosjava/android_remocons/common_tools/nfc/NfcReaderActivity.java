@@ -90,12 +90,15 @@ public class NfcReaderActivity extends Activity {
 
         if ((nfcManager != null) && (nfcManager.onNewIntent(intent))) {
             Log.i("NfcReader", "NFC tag read");
+
             byte[] payload = nfcManager.getPayload();
+            /* Comment out this due to the variation of extra data length
             if (payload.length != NFC_PAYLOAD_LENGTH + 3) // 1 byte for status and 2 lang bytes
             {
                 Log.e("NfcReader", "Payload doesn't match expected length: " + payload.length +" != " + NFC_PAYLOAD_LENGTH);
                 return;
             }
+            */
 
             data = new HashMap<String, Object>();
 
