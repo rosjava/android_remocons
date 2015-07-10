@@ -17,10 +17,10 @@ public class Constants {
     public static final int NFC_MASTER_HOST_FIELD_LENGTH    =  16;
     public static final int NFC_MASTER_PORT_FIELD_LENGTH    =   2;
     public static final int NFC_APP_HASH_FIELD_LENGTH       =   4;
-    public static final int NFC_EXTRA_DATA_FIELD_LENGTH     =   2;
-    public static final int NFC_APP_RECORD_FIELD_LENGTH     =  56;
-    public static final int NFC_PAYLOAD_LENGTH              =  56; // 16 + 16 + 16 + 2 + 4 + 2
-    public static final int NFC_ULTRALIGHT_C_MAX_LENGTH     = 137;
+    public static final int NFC_EXTRA_DATA_FIELD_LENGTH     =  10;
+    public static final int NFC_APP_RECORD_FIELD_LENGTH     =  65;
+    public static final int NFC_PAYLOAD_LENGTH              =  64; // 16 + 16 + 16 + 2 + 4 + 10
+    public static final int NFC_ULTRALIGHT_C_MAX_LENGTH     = 145;
 
     // unique identifier to key string variables between activities.
     static public final String ACTIVITY_SWITCHER_ID = "com.github.rosjava.android_remocons.common_tools.rocon.Constants";

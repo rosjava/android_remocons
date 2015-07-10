@@ -20,7 +20,7 @@
 	        android:id="@+id/ssid"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
-	        android:text="DesertStorm3"
+	        android:text=""
 	        android:textColor="#000000"
             android:minWidth="190dp"
             android:maxWidth="190dp" />
@@ -47,7 +47,7 @@
 	        android:id="@+id/pasword"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
-	        android:text="1234"
+	        android:text=""
 	        android:textColor="#000000"
             android:minWidth="190dp"
             android:maxWidth="190dp" />
@@ -83,7 +83,7 @@
 	        android:id="@+id/master_host"
 	        android:layout_width="fill_parent"
 	        android:layout_height="wrap_content"
-	        android:text="192.168.10.123"
+	        android:text=""
 	        android:textColor="#000000"
             android:minWidth="190dp"
             android:maxWidth="190dp" />
@@ -164,14 +164,14 @@
 	        android:text="1"
 	        android:textColor="#000000"
             android:minWidth="190dp"
-            android:inputType="number"
+            android:inputType="text"
             android:maxWidth="190dp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="(2 bytes)"
+            android:text="(10 bytes)"
             android:textColor="#000000"
-            android:paddingStart="10dp" />
+            android:paddingStart="10dp"/>
     </LinearLayout>
 
     <LinearLayout
@@ -191,7 +191,7 @@
             android:id="@+id/app_record"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="com.github.rosjava.android_remocons.headless_launcher"
+            android:text="com.github.rosjava.android_remocons.headless_launcher.indigo"
             android:singleLine="false"
             android:lines="2"
             android:textColor="#000000"/>
