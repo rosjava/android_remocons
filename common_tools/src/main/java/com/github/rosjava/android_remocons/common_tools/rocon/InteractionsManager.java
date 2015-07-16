@@ -160,7 +160,20 @@ public class InteractionsManager extends AbstractNodeMain {
             new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... params) {
-                    getAppsForRole();
+                    try {
+                        getAppsForRole();
+                    } catch (ServiceNotFoundException e) {
+                        e.printStackTrace();
+                        try {
+                            throw new ServiceNotFoundException(e);
+                        } catch (ServiceNotFoundException e1) {
+                            e1.printStackTrace();
+                        }
+                    } catch (RosRuntimeException e){
+                        e.printStackTrace();
+                        throw new RosRuntimeException(e);
+
+                    }
                     return null;
                 }
             }.execute();  // TODO: can we use this to incorporate a timeout to service calls?
@@ -223,7 +236,7 @@ public class InteractionsManager extends AbstractNodeMain {
         }
     }
 
-    private void getAppsForRole() {
+    private void getAppsForRole() throws ServiceNotFoundException, RosRuntimeException {
         // call get_roles_and_apps concert service
         ServiceClient<GetInteractionsRequest, GetInteractionsResponse> srvClient;
         String serviceName = this.interactionsNamespace + "/get_interactions";
@@ -233,7 +246,10 @@ public class InteractionsManager extends AbstractNodeMain {
             srvClient = connectedNode.newServiceClient(serviceName, GetInteractions._TYPE);
         } catch (ServiceNotFoundException e) {
             Log.i("InteractionsMng", "List interactions service not found [" + serviceName + "]");
-            throw new RosRuntimeException(e); // TODO we should recover from this calling onFailure on listener
+            throw new ServiceNotFoundException(e); // TODO we should recover from this calling onFailure on listener
+        } catch(RosRuntimeException e){
+            Log.i("InteractionsMng", "Getting interactions service is failure [" + serviceName + "]");
+            throw new RosRuntimeException(e);
         }
         final GetInteractionsRequest request = srvClient.newMessage();
 
@@ -363,7 +379,13 @@ public class InteractionsManager extends AbstractNodeMain {
                 requestAppUse();
                 break;
             case GET_INTERACTIONS_FOR_ROLE:
-                getAppsForRole();
+                try {
+                    getAppsForRole();
+                } catch (ServiceNotFoundException e) {
+                    e.printStackTrace();
+                } catch(RosRuntimeException e){
+                    e.printStackTrace();
+                }
                 break;
             case GET_INTERACTION_INFO:
                 getAppInfo();

@@ -55,6 +55,7 @@ import org.ros.node.NodeConfiguration;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Threaded ROS-concert checker. Runs a thread which checks for a valid ROS
@@ -84,6 +85,9 @@ public class ConcertChecker {
     private CheckerThread checkerThread;
     private ConcertDescriptionReceiver foundConcertCallback;
     private FailureHandler failureCallback;
+    private NodeMainExecutorService nodeMainExecutorService = null;
+    private MasterInfo masterInfo = null;
+    private RoconInteractions roconInteractions = null;
 
     /**
      * Constructor. Should not take any time.
@@ -153,28 +157,37 @@ public class ConcertChecker {
                 String version = (String) paramClient.getParam(GraphName.of("/rosversion")).getResult();
                 Log.i("Remocon", "r ros master found [" + version + "]");
 
-                NodeMainExecutorService nodeMainExecutorService = new NodeMainExecutorService();
+                nodeMainExecutorService = new NodeMainExecutorService();
                 NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(
                         InetAddressFactory.newNonLoopback().getHostAddress(), concertUri);
 
                 // Check for the concert information topic
-                MasterInfo masterInfo = new MasterInfo();
-                RoconInteractions roconInteractions = new RoconInteractions(Constants.ANDROID_PLATFORM_INFO.getUri());
+                masterInfo = new MasterInfo();
+                roconInteractions = new RoconInteractions(Constants.ANDROID_PLATFORM_INFO.getUri());
+
+                String masterInfoNodeName = "master_info_node" + UUID.randomUUID().toString().replace("-", "_");
+                String roconInteractionsNodeName = "rocon_interactions_node" + UUID.randomUUID().toString().replace("-", "_");
+
+                Log.i("Remocon", "masterInfoNodeName: " + masterInfoNodeName);
+                Log.i("Remocon", "roconInteractionsNodeName: " + roconInteractionsNodeName);
 
                 nodeMainExecutorService.execute(
                         masterInfo,
-                        nodeConfiguration.setNodeName("master_info_node")
+                        nodeConfiguration.setNodeName(masterInfoNodeName)
                 );
                 masterInfo.waitForResponse(); // MasterInfoExc. on timeout, listener or ros runtime errors
                 Log.i("Remocon", "master info found");
+
                 nodeMainExecutorService.execute(
                         roconInteractions,
-                        nodeConfiguration.setNodeName("rocon_interactions_node")
+                        nodeConfiguration.setNodeName(roconInteractionsNodeName)
                 );
                 roconInteractions.waitForResponse(); // InteractionsExc. on timeout, service or ros runtime errors
                 Log.i("Remocon", "rocon interactions found");
 
                 // configure concert description
+
+
                 Date timeLastSeen = new Date();
                 RoconDescription description = new RoconDescription(
                         masterId,
@@ -184,6 +197,7 @@ public class ConcertChecker {
                         roconInteractions.getNamespace(),
                         timeLastSeen);
 
+                Log.i("Remocon", "finish creation RoconDescription");
                 description.setConnectionStatus(RoconDescription.OK);
                 description.setUserRoles(roconInteractions.getRoles());
                 foundConcertCallback.receive(description);
@@ -207,6 +221,15 @@ public class ConcertChecker {
             } catch (Throwable e) {
                 Log.w("Remocon", "exception while creating node in concert checker for URI " + concertUri, e);
                 failureCallback.handleFailure("unknown exception in the rocon checker [" + e.toString() + "]");
+            }finally {
+                if (nodeMainExecutorService != null){
+                    if (masterInfo != null){
+                        nodeMainExecutorService.shutdownNodeMain(masterInfo);
+                    }
+                    if (roconInteractions != null){
+                        nodeMainExecutorService.shutdownNodeMain(roconInteractions);
+                    }
+                }
             }
         }
     }
