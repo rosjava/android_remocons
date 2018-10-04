@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.3.0 (2018-04-10)
+------------------
+* First build on Kinetic with refactored android_core for Android P.
+
 0.2.0 (2015-02-22)
 ------------------
 * First build on indigo
