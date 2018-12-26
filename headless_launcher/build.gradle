@@ -22,21 +22,22 @@ dependencies {
 apply plugin: 'com.android.application'
 
 android {
-  compileSdkVersion 15
+  compileSdkVersion 28
 
   defaultConfig {
-    minSdkVersion 15
-    targetSdkVersion 15
+    minSdkVersion 16
+    targetSdkVersion 28
     versionCode 6
     versionName "1.4.1"
   }
-
   productFlavors {
-    indigo {
-      applicationId "com.github.rosjava.android_remocons.headless_launcher.indigo"
+    kinetic {
+      applicationId "com.github.rosjava.android_remocons.headless_launcher.kinetic"
     }
   }
-
+  lintOptions {
+    abortOnError = false
+  }
 }
 
 defaultTasks 'assembleRelease'
